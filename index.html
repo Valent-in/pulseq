@@ -15,7 +15,7 @@
 				<div id="pattern-tab" class="js-tab">
 					Pattern
 				</div>
-				<div id="synth-select-tab" class="js-tab">
+				<div id="synth-list-tab" class="js-tab">
 					Synth
 				</div>
 				<div id="synth-tab" class="js-tab">
@@ -26,22 +26,7 @@
 			<div id="header-spacer"></div>
 
 			<div id="header-controls">
-				<div>
-					select
-				</div>
-				<div>
-					copy
-				</div>
-				<div>
-					paste
-				</div>
-				<div>
-					&lt
-				</div>
-				<div>
-					&gt
-				</div>
-				<div class="js-tab" id="tmp-menu-tab">
+				<div id="button-settings-open">
 					menu
 				</div>
 				<div id="button-fullscreen">
@@ -50,28 +35,26 @@
 			</div>
 		</div>
 		<div id="main">
-			<div id="arrange-view" class="view-container">
+			<div id="arrange-view" class="js-view-container view-container">
 				<div id="arrange-container">
 					<div id="arrange-main"></div>
 				</div>
 				<div id="arrange-footer">
+					<div id="button-add-pattern">+</div>
 					<div class="footer-menu">
-						<div id="arrange-play">
+						<div id="button-arrange-play">
 							&gt
 						</div>
-						<div>
-							S
-						</div>
-						<div id="arrange-menu-expand">
+						<div id="button-arrange-menu-open">
 							•••
 						</div>
-						<div id="song-name">
-							Test song 1
+						<div id="song-title-area">
+							[untitled]
 						</div>
 					</div>
 				</div>
 			</div>
-			<div id="pattern-view" class="view-container hidden">
+			<div id="pattern-view" class="js-view-container view-container hidden">
 
 				<div id="pattern-container">
 					<div id="pattern-main">
@@ -86,23 +69,20 @@
 					</div>
 
 					<div class="footer-menu">
-						<div id="pattern-play">
+						<div id="button-pattern-play">
 							&gt
 						</div>
-						<div id="pattern-play-solo">
-							S
-						</div>
-						<div id="pattern-menu-expand">
+						<div id="button-pattern-menu-open">
 							•••
 						</div>
-						<div id="pattern-name">
+						<div id="pattern-name-area">
 							Pattern1
 						</div>
 					</div>
 				</div>
 			</div>
 
-			<div id="synth-view" class="view-container hidden">
+			<div id="synth-view" class="js-view-container view-container hidden">
 				<div id="synth-main">
 					<div>
 						<span>Oscillator 1</span>
@@ -116,12 +96,12 @@
 						<br>
 						<span>octave</span>
 						<br>
-						<input type="range" id="synth-osc1-octave" min=-3 max=3 step=1>
+						<input type="range" id="synth-osc1-octave" min=-5 max=5 step=1>
 						<br>
 						<span>detune</span>
 						<button id="synth-osc1-reset-detune">reset</button>
 						<br>
-						<input type="range" id="synth-osc1-detune" min=-1200 max=1200 step=10>
+						<input type="range" id="synth-osc1-detune" min=-600 max=600 step=10>
 						<br>
 						<span>level</span>
 						<br>
@@ -139,12 +119,12 @@
 						<br>
 						<span>octave</span>
 						<br>
-						<input type="range" id="synth-osc2-octave" min=-3 max=3 step=1>
+						<input type="range" id="synth-osc2-octave" min=-5 max=5 step=1>
 						<br>
 						<span>detune</span>
 						<button id="synth-osc2-reset-detune">reset</button>
 						<br>
-						<input type="range" id="synth-osc2-detune" min=-1200 max=1200 step=10>
+						<input type="range" id="synth-osc2-detune" min=-600 max=600 step=10>
 						<br>
 						<span>level</span>
 						<br>
@@ -162,26 +142,30 @@
 						<br>
 						<span>octave</span>
 						<br>
-						<input type="range" id="synth-osc3-octave" min=-3 max=3 step=1>
+						<input type="range" id="synth-osc3-octave" min=-5 max=5 step=1>
 						<br>
 						<span>detune</span>
 						<button id="synth-osc3-reset-detune">reset</button>
 						<br>
-						<input type="range" id="synth-osc3-detune" min=-1200 max=1200 step=10>
+						<input type="range" id="synth-osc3-detune" min=-600 max=600 step=10>
 						<br>
 						<span>level</span>
 						<br>
 						<input type="range" id="synth-osc3-level" min=0 max=1 step=0.01>
 					</div>
 					<div>
+						<select id="synth-envelope-type" style="float:right;">
+							<option>exponential</option>
+							<option>linear</option>
+						</select>
 						<span style="float:right;color:darkcyan;">Amplitude Envelope</span>
 						<span>Attack</span>
 						<br>
-						<input type="range" id="synth-envelope-attack" min=0 max=12 step=0.01>
+						<input type="range" id="synth-envelope-attack" min=0 max=12 step=0.02>
 						<br>
 						<span>Decay</span>
 						<br>
-						<input type="range" id="synth-envelope-decay" min=0 max=12 step=0.01>
+						<input type="range" id="synth-envelope-decay" min=0 max=12 step=0.02>
 						<br>
 						<span>Sustain</span>
 						<br>
@@ -189,7 +173,7 @@
 						<br>
 						<span>Release</span>
 						<br>
-						<input type="range" id="synth-envelope-release" min=0 max=14 step=0.01>
+						<input type="range" id="synth-envelope-release" min=0 max=12 step=0.02>
 					</div>
 					<div>
 						<span>Glide</span>
@@ -225,18 +209,18 @@
 						<br>
 						<span>Frequency</span>
 						<br>
-						<input type="range" id="synth-filter-frequency" min=0 max=10000 step=1>
+						<input type="range" id="synth-filter-frequency" min=0 max=5 step=0.02>
 						<br>
-						<span>Quality</span>
+						<span>Peak</span>
 						<br>
-						<input type="range" id="synth-filter-quality" min=0 max=25 step=0.1>
+						<input type="range" id="synth-filter-quality" min=0 max=50 step=0.1>
 					</div>
 					<div>
 						<span>Amplifier</span>
 						<br>
 						<span>Gain</span>
 						<br>
-						<input type="range" id="synth-amplifier-gain" min=0 max=1 step=0.01>
+						<input type="range" id="synth-amplifier-gain" min=0 max=1.2 step=0.01>
 					</div>
 
 					<div class="block-spacer">
@@ -257,7 +241,20 @@
 						<br>
 						<span>Frequency</span>
 						<br>
-						<input type="range" id="synth-lfo1-frequency" min=1 max=12 step=0.01>
+						<input type="range" id="synth-lfo1-frequency" min=0 max=10 step=0.01>
+						<br>
+						<span>LFO 2</span>
+						<select id="synth-lfo2-type">
+							<option>[none]</option>
+							<option>sine</option>
+							<option>triangle</option>
+							<option>sawtooth</option>
+							<option>square</option>
+						</select>
+						<br>
+						<span>Frequency</span>
+						<br>
+						<input type="range" id="synth-lfo2-frequency" min=0 max=10 step=0.01>
 					</div>
 					<div>
 						<select id="synth-mod-envelope-state" style="float:right;">
@@ -268,11 +265,11 @@
 						<span style="float:right;color:brown;">Modulation Envelope</span>
 						<span>Attack</span>
 						<br>
-						<input type="range" id="synth-mod-envelope-attack" min=0 max=12 step=0.01>
+						<input type="range" id="synth-mod-envelope-attack" min=0 max=12 step=0.02>
 						<br>
 						<span>Decay</span>
 						<br>
-						<input type="range" id="synth-mod-envelope-decay" min=0 max=12 step=0.01>
+						<input type="range" id="synth-mod-envelope-decay" min=0 max=12 step=0.02>
 						<br>
 						<span>Sustain</span>
 						<br>
@@ -280,62 +277,67 @@
 						<br>
 						<span>Release</span>
 						<br>
-						<input type="range" id="synth-mod-envelope-release" min=0 max=14 step=0.01>
+						<input type="range" id="synth-mod-envelope-release" min=0 max=12 step=0.02>
 					</div>
 					<div>
 						<span>Osc 1 mod input</span>
 						<select id="synth-osc1-mod-input">
 							<option>[none]</option>
 							<option>lfo1</option>
-							<option>osc2</option>
+							<option>lfo2</option>
 							<option>envelopeMod</option>
 							<option>envelopeModRev</option>
+							<option>osc2</option>
+							<option>osc3</option>
 						</select>
 						<br>
-						<span>Value</span>
+						<span>Intensity</span>
 						<br>
-						<input type="range" id="synth-osc1-mod-value" min=0 max=500 step=1>
+						<input type="range" id="synth-osc1-mod-value" min=0 max=5 step=0.02>
 					</div>
 					<div>
 						<span>Osc 2 mod input</span>
 						<select id="synth-osc2-mod-input">
 							<option>[none]</option>
 							<option>lfo1</option>
+							<option>lfo2</option>
 							<option>envelopeMod</option>
 							<option>envelopeModRev</option>
+							<option>osc3</option>
 						</select>
 						<br>
-						<span>Value</span>
+						<span>Intensity</span>
 						<br>
-						<input type="range" id="synth-osc2-mod-value" min=0 max=500 step=1>
+						<input type="range" id="synth-osc2-mod-value" min=0 max=5 step=0.02>
 					</div>
 					<div>
 						<span>Filter mod input</span>
 						<select id="synth-filter-mod-input">
 							<option>[none]</option>
 							<option>lfo1</option>
-							<option>osc1</option>
-							<option>osc2</option>
+							<option>lfo2</option>
 							<option>envelopeMod</option>
 							<option>envelopeModRev</option>
+							<option>osc1</option>
+							<option>osc2</option>
 						</select>
 						<br>
-						<span>Value</span>
+						<span>Intensity</span>
 						<br>
-						<input type="range" id="synth-filter-mod-value" min=0 max=2000 step=1>
+						<input type="range" id="synth-filter-mod-value" min=0 max=4 step=0.02>
 					</div>
 					<div>
 						<span>Amplifier mod input</span>
 						<select id="synth-amplifier-mod-input">
 							<option>[none]</option>
 							<option>lfo1</option>
+							<option>lfo2</option>
+							<option>envelopeModRev</option>
 							<option>osc1</option>
 							<option>osc2</option>
-							<option>envelopeMod</option>
-							<option>envelopeModRev</option>
 						</select>
 						<br>
-						<span>Value</span>
+						<span>Intensity</span>
 						<br>
 						<input type="range" id="synth-amplifier-mod-value" min=0 max=1 step=0.01>
 					</div>
@@ -343,21 +345,27 @@
 						<span>Effect</span>
 						<select id="synth-fx-type">
 							<option>[none]</option>
-							<option>distort</option>
-							<option>delay</option>
-							<option>reverb</option>
 							<option>chorus</option>
+							<option>delay</option>
+							<option>distort</option>
+							<option>phaser</option>
+							<option>pingpong</option>
+							<option>reverb</option>
 							<option>stereo</option>
 						</select>
 						<br>
 						<span>Amount (Depth)</span>
 						<br>
-						<input type="range" id="synth-fx-amount" min=0 max=1 step=0.001>
+						<input type="range" id="synth-fx-amount" min=0 max=1 step=0.002>
 						<br>
-						<span>Ratio</span>
+						<span>Delay (Speed)</span>
 						<input type="checkbox" id="synth-fx-sync">
 						<label for="synth-fx-sync">BPM sync</label>
-						<input type="range" id="synth-fx-ratio" min=0 max=1 step=0.001>
+						<input type="range" id="synth-fx-rate" min=0 max=1 step=0.002>
+						<br>
+						<span>Dry-Wet</span>
+						<br>
+						<input type="range" id="synth-fx-wet" min=0 max=1 step=0.002>
 					</div>
 				</div>
 
@@ -366,78 +374,226 @@
 				</div>
 			</div>
 
-			<div id="synth-select-view" class="view-container hidden">
-				Synth select
-				<div id="synth-select-main"></div>
+			<div id="synth-list-view" class="js-view-container view-container hidden">
+				Synth list
+				<div id="synth-list-main"></div>
 				<div>
 					<button id="button-add-synth">+ Add +</button>
-					<button id="button-cancel-assign-mode">Return</button>
-				</div>
-			</div>
-
-			<div id="tmp-menu-view" class="view-container hidden">
-				<div>
-					Menu
-					<div class="spacer"></div>
-					<button id="button-reset-synth">Reset synth</button>
-					<button id="button-import-synth">Import synth</button>
-					<button id="button-export-synth">Export synth</button>
-					<div class="spacer"></div>
-					<textarea id="export-data" style="height:40vh; width: 90%; background-color:#444;"></textarea>
-
-					<div class="spacer"></div>
-					<button id="button-import-pattern">Import pattern</button>
-					<button id="button-export-pattern">Export pattern</button>
-
-					<button id="button-import-full-pattern">Import Full pattern</button>
-					<button id="button-export-full-pattern">Export Full pattern</button>
-
-					<div class="spacer"></div>
-					<button id="button-import-song">Import song</button>
-					<button id="button-export-song">Export song</button>
-
-					<div class="spacer"></div>
-
-					<span>BPM:</span>
-					<input type="number" id="bpm-value">
-					<button id="button-set-bpm">Set!</button>
-					<div class="spacer"></div>
-					<span>LEN:</span>
-					<input type="number" id="pattern-length-value">
-					<button id="buttorn-pattern-length">Set!</button>
-
-					<div class="spacer"></div>
-					<button id="render">Render song</button>
-					<input type="number" id="render-length" style="width: 70px;"><span>sec.</span>
-					<a id="download_link">Download WAV</a>
-
-					<div class="spacer"></div>
-
-					<span>compressor threshold</span>
-					<input id="compressor-threshold" type="range" min=-100 max=0 step=1>
-					<span>compressor ratio</span>
-					<input id="compressor-ratio" type="range" min=1 max=20 step=1>
-
 				</div>
 			</div>
 
 		</div>
 
+		<div id="settings-modal-menu" class="modal-container modal-hidden">
+			<div class="modal-box">
+				Menu
+				<div class="spacer"></div>
+				<button id="button-import-synth">Import synth</button>
+				<button id="button-export-synth">Export synth</button>
+				<div class="spacer"></div>
+				<textarea id="text-export-data" style="height:40vh; width: 90%; background-color:#444;"></textarea>
+
+				<div class="spacer"></div>
+				<button id="button-import-pattern">Import pattern</button>
+				<button id="button-export-pattern">Export pattern</button>
+
+				<button id="button-import-full-pattern">Import Full pattern</button>
+				<button id="button-export-full-pattern">Export Full pattern</button>
+
+				<div class="spacer"></div>
+				<button id="button-import-song">Import song</button>
+				<button id="button-export-song">Export song</button>
+				<div class="spacer"></div>
+				<button id="button-settings-close" class="button-modal-bottom">close</button>
+			</div>
+		</div>
+
+		<div id="arrange-modal-menu" class="modal-container modal-hidden">
+			<div class="modal-box">
+				<table>
+					<tr>
+						<td>
+							Song title
+						</td>
+						<td>
+							<input type="text" id="input-song-title">
+						</td>
+					</tr>
+					<tr>
+						<td>
+							BPM
+						</td>
+						<td>
+							<input type="number" id="input-bpm-value">
+							<button id="button-bpm-set">Set!</button>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<!--spacer-->
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Compressor
+						</td>
+
+					</tr>
+					<tr>
+						<td>
+							Threshold
+						</td>
+						<td>
+							<input id="range-compressor-threshold" type="range" min=0 max=100 step=1>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Ratio
+						</td>
+						<td>
+							<input id="range-compressor-ratio" type="range" min=1 max=20 step=1>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<!--spacer-->
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<a href="" id="link-song-download">Download JSON</a>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<!--spacer-->
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<button id="button-export-menu-open">Export WAV</button>
+						</td>
+						<td>
+							<button id="button-arrange-menu-close" class="button-modal-bottom">close</button>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+
+		<div id="export-modal-menu" class="modal-container modal-hidden">
+			<div class="modal-box">
+				<button id="button-render">Render song</button>
+				<input type="number" id="input-render-length" style="width: 70px;"><span>sec.</span>
+				<a id="link-wav-download">Download WAV</a>
+
+				<div class="spacer"></div>
+				<button id="button-export-menu-close" class="button-modal-bottom">close</button>
+			</div>
+		</div>
+
+		<div id="pattern-modal-menu" class="modal-container modal-hidden">
+			<div class="modal-box">
+				<table>
+					<tr>
+						<td>
+							Pattern name
+						</td>
+						<td>
+							<input type="text" id="input-pattern-name">
+						</td>
+					</tr>
+
+					<tr>
+						<td>
+							Steps
+						</td>
+						<td>
+							<input type="number" id="input-pattern-length">
+							<button id="button-pattern-length-set">Set!</button>
+						</td>
+					</tr>
+
+					<tr>
+						<td>
+							Synth
+						</td>
+						<td>
+							<button id="button-synth-select">[none]</button>
+						</td>
+					</tr>
+				</table>
+				<div class="spacer"></div>
+				<button id="button-delete-pattern">Delete pattern</button>
+				<button id="button-delete-layer">Delete layer</button>
+				<div class="spacer"></div>
+				<button id="button-pattern-menu-close" class="button-modal-bottom">close</button>
+			</div>
+		</div>
+
+		<div id="synth-select-modal-menu" class="modal-container modal-hidden">
+			<div class="modal-box">
+				<div>
+					<span>Select synth</span>
+				</div>
+				<div id="menu-synth-list-container"></div>
+				<div>
+					<button id="button-synth-select-close" class="button-modal-bottom">close</button>
+				</div>
+			</div>
+		</div>
+
+		<div id="synth-list-modal-menu" class="modal-container modal-hidden">
+			<div class="modal-box">
+				<span>Synth name</span>
+				<input type="text" id="input-synth-name">
+				<div class="spacer"></div>
+				<button id="button-delete-synth">Delete synth</button>
+				<button id="button-reset-synth">Reset synth</button>
+				<div class="spacer"></div>
+				<button id="button-synth-menu-close" class="button-modal-bottom">close</button>
+			</div>
+		</div>
+
+		<div id="modal-alert" class="modal-container modal-hidden">
+			<div class="modal-box modal-alert-box">
+				<div>
+					<span id="modal-alert-message">Alert</span>
+				</div>
+				<div class="spacer"></div>
+				<div>
+					<input type="text" id="input-modal-alert">
+				</div>
+				<div class="spacer"></div>
+				<div>
+					<button id="button-alert-ok" class="button-modal-bottom">OK</button>
+					<button id="button-alert-cancel" class="button-modal-bottom">Cancel</button>
+				</div>
+			</div>
+		</div>
+
 	</div>
+
 	<script src="lib/Tone.js"></script>
 
 	<script src="js/defaults.js"></script>
+	<script src="js/misc.js"></script>
+
 	<script src="js/synth-param-apply.js"></script>
 	<script src="js/synth.js"></script>
 	<script src="js/synth-ui.js"></script>
-	<script src="js/misc.js"></script>
 	<script src="js/synth-list.js"></script>
+
 	<script src="js/pattern.js"></script>
 	<script src="js/pattern-ui.js"></script>
-	<script src="js/arrange.js"></script>
-	<script src="js/menu-init.js"></script>
+	<script src="js/arrange-ui.js"></script>
+
 	<script src="js/scheduler.js"></script>
 	<script src="js/scheduler-ui-init.js"></script>
+
+	<script src="js/menu-init.js"></script>
+
 	<script src="js/main.js"></script>
 
 </body>

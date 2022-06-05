@@ -64,6 +64,12 @@ body {
 	background-color: #334;
 }
 
+@media (max-width:500px) {
+	#header-controls>div:not(#button-settings-open) {
+		display: none;
+	}
+}
+
 #main {
 	flex-grow: 1;
 	position: relative;
@@ -127,14 +133,21 @@ body {
 	left: 0;
 	background-color: #222;
 	z-index: 1;
+	font-size: 0.8rem;
 }
 
-#arrange-main td.fill-tail {
-	background-color: #404;
+#arrange-main td.fill-tail-next {
+	background-color: blueviolet;
+	border-right: none;
+}
+
+#arrange-main td.fill-tail-last {
+	background-color: blueviolet;
+	border-right: 2px solid #555;
 }
 
 #arrange-main td.fill {
-	background-color: purple;
+	background-color: blueviolet;
 }
 
 #arrange-main td.select-fill {
@@ -159,7 +172,14 @@ body {
 	background-color: #334;
 }
 
-#pattern-name, #song-name {
+#button-add-pattern {
+	float: left;
+	padding: 2px 8px 2px 8px;
+	margin: 2px 5px 2px 4vw;
+	background-color: #334;
+}
+
+#pattern-name-area, #song-title-area {
 	float: right;
 	color: orange;
 	padding: 2px 8px 2px 8px;
@@ -191,6 +211,7 @@ body {
 
 #pattern-main table {
 	border-spacing: 0;
+	user-select: none;
 }
 
 #pattern-main td {
@@ -440,16 +461,70 @@ select {
 	border: 1px solid #aaa;
 	margin: 2px;
 	padding: 8px;
+	overflow: hidden;
+}
+
+.synth-entry-name {
+	float: left;
+}
+
+.js-synth-entry-menu {
+	float: right;
 }
 
 #synth-tab {
 	color: #5aa
 }
 
-#tmp-menu-tab {
-	background-color: #334
-}
-
 .spacer {
 	height: 10px;
+}
+
+/*modal menu*/
+
+.modal-container {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 10;
+}
+
+.modal-box {
+	border: 2px solid #555;
+	background-color: #222;
+	padding: 20px;
+}
+
+.modal-box td {
+	padding: 2px;
+}
+
+.modal-box table input[type=number] {
+	width: 60%;
+}
+
+.modal-hidden {
+	display: none;
+}
+
+.modal-alert-box {
+	min-width: 240px;
+}
+
+.button-modal-bottom {
+	float: right;
+	margin-left: 5px;
+	min-width: 80px;
+}
+
+#menu-synth-list-container>div {
+	margin: 5px;
+	padding: 3px;
+	border: 1px solid #555;
 }

@@ -1,7 +1,7 @@
 function schedulerUiInit(scheduler) {
     let isPlaying = false;
 
-    let songPlayBtn = document.getElementById("arrange-play");
+    let songPlayBtn = document.getElementById("button-arrange-play");
     songPlayBtn.addEventListener("click", () => {
         isPlaying = !isPlaying;
         if (isPlaying) {
@@ -11,7 +11,7 @@ function schedulerUiInit(scheduler) {
         }
     });
 
-    let patternPlayBtn = document.getElementById("pattern-play");
+    let patternPlayBtn = document.getElementById("button-pattern-play");
     patternPlayBtn.addEventListener("click", () => {
         isPlaying = !isPlaying;
         if (isPlaying) {

@@ -1,15 +1,14 @@
 "use strict"
 
-function Synth(outputNode) {
+function Synth(outputNode, transportBPM) {
 	console.log(">> CREATE SYNTH <<");
 
 	/* 
 	 * Main audio chain:
-	 * VCO1+VCO2+O3+Noise -> Mixer -> Envelope -> VC Filter -> VC Amplifier -> FX -> Amplifier -> Pan
-	 * Envelope comes before filter to avoid cracking at 0 Attack
+	 * VCO1+VCO2+O3+Noise -> Mixer -> Envelope -> VC Filter -> VC Amplifier -> FX -> Amplifier -> Pan ->
 	 */
 
-	this.envelope = new Tone.AmplitudeEnvelope(0.5, 0.5, 0.5, 0.5);
+	this.envelope = new Tone.AmplitudeEnvelope();
 	this.ampAM = new Tone.Gain(1);
 	this.ampout = new Tone.Gain(1);
 
@@ -23,12 +22,12 @@ function Synth(outputNode) {
 
 		filterFreqValue: 0,
 		filterQValue: 0,
-		driveVlaue: 0,
 		noiseValue: 0,
 		osc1gainValue: 0,
 		osc2gainValue: 0,
 		osc3gainValue: 0,
 		lfo1Value: 0,
+		lfo2Value: 0,
 		panValue: 0,
 
 		envAttackValue: 0,
@@ -42,7 +41,8 @@ function Synth(outputNode) {
 		envModReleaseValue: 0,
 
 		FXAmountValue: 0,
-		FXRatioValue: 0
+		FXRateValue: 0,
+		FXWetValue: 0,
 	};
 
 	this.modulators = {
@@ -59,19 +59,18 @@ function Synth(outputNode) {
 		ampAM_modgain: 0
 	};
 
+	this.bpm = transportBPM;
 	this.modEnvelopeState = "disabled";
 	this.FXType = "[none]";
 	this.FXsync = false;
 	this.glide = 0;
+	this.lfo1sync = false;
 
 	this.envelope.chain(this.ampAM);
 	this.ampAM.chain(this.ampout);
 	this.ampout.connect(outputNode);
 
-	let freqSignal = new Tone.Signal({
-		value: "A4",
-		units: "frequency"
-	});
+	let freqSignal = new Tone.Signal({ units: "frequency" });
 
 	this.triggerAttack = function (note, time) {
 		freqSignal.setValueAtTime(note, time);
@@ -94,185 +93,12 @@ function Synth(outputNode) {
 		freqSignal.linearRampTo(freq, duration * this.glide, time)
 	}
 
-	this.addFilter = function (isFilter) {
-		if (isFilter) {
-			if (this.filter)
-				return;
-
-			this.filter = new Tone.Filter(0, "highpass");
-			this.filter.frequency.value = this.values.filterFreqValue;
-			this.filter.Q.value = this.values.filterQValue;
-
-			this.envelope.disconnect(this.ampAM);
-
-			this.envelope.chain(this.filter);
-			this.filter.chain(this.ampAM);
-
-			if (this.filter_modgain)
-				this.filter_modgain.connect(this.filter.frequency);
-
-			console.log("add filter");
-		} else {
-			if (!this.filter)
-				return;
-
-			if (this.filter_modgain)
-				this.filter_modgain.disconnect();
-
-			this.envelope.disconnect(this.filter);
-			this.filter.disconnect(this.ampAM);
-			this.filter.dispose();
-			this.filter = null;
-
-			this.envelope.chain(this.ampAM);
-			console.log("remove filter");
-		}
-	}
-
-	this.addNoise = function (isNoise) {
-		if (isNoise) {
-			if (this.noise)
-				return;
-
-			this.noise = new Tone.Noise("white");
-			this.noisegain = new Tone.Gain(0);
-			this.noisegain.gain.value = this.values.noiseValue;
-
-			this.noise.chain(this.noisegain);
-			this.noisegain.chain(this.envelope);
-			this.noise.start();
-			console.log("add noise");
-		} else {
-			if (!this.noise)
-				return;
-
-			this.noise.stop();
-			this.noisegain.disconnect();
-			this.noise.disconnect();
-			this.noisegain.dispose();
-			this.noise.dispose();
-			this.noisegain = null;
-			this.noise = null;
-			console.log("remove noise");
-		}
-	}
-
-	this.addFX = function (type) {
-		if (this.FX) {
-			this.ampAM.disconnect();
-			this.FX.disconnect();
-			this.FX.dispose();
-			this.FX = null;
-			this.ampAM.chain(this.ampout);
-			console.log("remove FX");
-		}
-
-		this.FXType = type;
-		if (type == "[none]")
-			return
-
-		switch (type) {
-			case "distort":
-				this.FX = new Tone.Distortion(0);
-				break;
-
-			case "delay":
-				this.FX = new Tone.FeedbackDelay("8n", 0);
-				break;
-
-			case "reverb":
-				this.FX = new Tone.Reverb(0.1);
-				break;
-
-			case "chorus":
-				this.FX = new Tone.Chorus(4, 2.5, 0.5);
-				this.FX.start();
-				break;
-
-			case "stereo":
-				this.FX = new Tone.StereoWidener(0.5);
-				break;
-		}
-
-		if (!this.FX)
-			return;
-
-		this.ampAM.disconnect();
-
-		// FX bypass
-		if (type == "reverb" || type == "delay")
-			this.ampAM.chain(this.ampout);
-
-		this.ampAM.chain(this.FX);
-		this.FX.chain(this.ampout);
-
-		console.log("add FX - " + type);
-
-		this.setFXValue();
-		this.setFXRatio();
-	}
-
-	this.setFXValue = function (value) {
-		if (value)
-			this.values.FXAmountValue = value;
-
-		if (!this.FX)
-			return;
-
-		switch (this.FXType) {
-			case "distort":
-				this.FX.distortion = this.values.FXAmountValue;
-				break;
-
-			case "delay":
-				this.FX.feedback.value = this.values.FXAmountValue * 0.9;
-				break;
-
-			case "reverb":
-				this.FX.decay = this.values.FXAmountValue * 2;
-				break;
-
-			case "chorus":
-				this.FX.depth = this.values.FXAmountValue;
-				break;
-
-			case "stereo":
-				this.FX.width.value = this.values.FXAmountValue;
-				break;
-		}
-	}
-
-	this.setFXRatio = function (value) {
-		if (value)
-			this.values.FXRatioValue = value;
-
-		if (!this.FX)
-			return;
-
-		switch (this.FXType) {
-			case "delay":
-				if (this.FXsync) {
-					this.FX.delayTime.value = (2 ** (4 - Math.round(this.values.FXRatioValue * 3))) + "n";
-					console.log(this.values.FXRatioValue);
-				} else {
-					this.FX.delayTime.value = this.values.FXRatioValue;
-					console.log("delay: " + this.FX.delayTime.value);
-				}
-				break;
-
-			case "chorus":
-				this.FX.delayTime = this.values.FXRatioValue * 10;
-				break;
-		}
-	}
-
 	this.addOsc1 = function (isOsc) {
-		//freqSignal.disconnect();
 		if (isOsc) {
 			if (this.osc1)
 				return;
 
-			this.osc1 = new Tone.Oscillator(400, "sine");
+			this.osc1 = new Tone.Oscillator();
 			this.osc1.detune.value = this.values.osc1octaveValue + this.values.osc1detuneValue;
 			this.gain1 = new Tone.Gain(0);
 			this.gain1.gain.value = this.values.osc1gainValue;
@@ -306,12 +132,11 @@ function Synth(outputNode) {
 	}
 
 	this.addOsc2 = function (isOsc) {
-		//freqSignal.disconnect();
 		if (isOsc) {
 			if (this.osc2)
 				return;
 
-			this.osc2 = new Tone.Oscillator(400, "sine");
+			this.osc2 = new Tone.Oscillator();
 			this.osc2.detune.value = this.values.osc2octaveValue + this.values.osc2detuneValue;
 			this.gain2 = new Tone.Gain(0);
 			this.gain2.gain.value = this.values.osc2gainValue;
@@ -345,12 +170,11 @@ function Synth(outputNode) {
 	}
 
 	this.addOsc3 = function (isOsc) {
-		//freqSignal.disconnect();
 		if (isOsc) {
 			if (this.osc3)
 				return;
 
-			this.osc3 = new Tone.Oscillator(400, "sine");
+			this.osc3 = new Tone.Oscillator();
 			this.osc3.detune.value = this.values.osc3octaveValue + this.values.osc3detuneValue;
 			this.gain3 = new Tone.Gain(0);
 
@@ -360,6 +184,7 @@ function Synth(outputNode) {
 			this.osc3.chain(this.gain3);
 			this.gain3.chain(this.envelope);
 			this.osc3.start();
+			this.restoreModulator("osc3");
 			console.log("add osc3");
 		} else {
 			if (!this.osc3)
@@ -388,12 +213,224 @@ function Synth(outputNode) {
 			freqSignal.connect(this.osc3.frequency);
 	}
 
+	this.addNoise = function (isNoise) {
+		if (isNoise) {
+			if (this.noise)
+				return;
+
+			this.noise = new Tone.Noise();
+			this.noise.channelCount = 1;
+			this.noise.channelCountMode = "explicit";
+			this.noisegain = new Tone.Gain(0);
+			this.noisegain.gain.value = this.values.noiseValue;
+
+			this.noise.chain(this.noisegain);
+			this.noisegain.chain(this.envelope);
+			this.noise.start();
+			console.log("add noise");
+		} else {
+			if (!this.noise)
+				return;
+
+			this.noise.stop();
+			this.noisegain.disconnect();
+			this.noise.disconnect();
+			this.noisegain.dispose();
+			this.noise.dispose();
+			this.noisegain = null;
+			this.noise = null;
+			console.log("remove noise");
+		}
+	}
+
+	this.addFilter = function (filterType) {
+		if (filterType == "[none]") {
+			if (!this.filter)
+				return;
+
+			if (this.filter_modgain)
+				this.filter_modgain.disconnect();
+
+			this.envelope.disconnect(this.filter);
+			this.filter.disconnect(this.ampAM);
+			this.filter.dispose();
+			this.filter = null;
+
+			this.envelope.chain(this.ampAM);
+			console.log("remove filter");
+		} else {
+			if (this.filter) {
+				this.filter.type = filterType;
+			} else {
+				this.filter = new Tone.BiquadFilter(this.values.filterFreqValue, filterType);
+
+				this.envelope.disconnect(this.ampAM);
+				this.envelope.chain(this.filter);
+				this.filter.chain(this.ampAM);
+
+				if (this.filter_modgain)
+					this.filter_modgain.connect(this.filter.frequency);
+
+				console.log("add filter");
+			}
+			this.filter.frequency.value = this.values.filterFreqValue;
+			this.filter.Q.value = this.values.filterQValue;
+		}
+	}
+
+	this.addFX = function (type) {
+		if (this.FX) {
+			this.ampAM.disconnect();
+			this.FX.disconnect();
+			this.FX.dispose();
+			this.FX = null;
+			this.ampAM.chain(this.ampout);
+			console.log("remove FX");
+		}
+
+		this.FXType = type;
+		if (type == "[none]")
+			return
+
+		switch (type) {
+			case "distort":
+				this.FX = new Tone.Distortion();
+				break;
+
+			case "delay":
+				this.FX = new Tone.FeedbackDelay();
+				break;
+
+			case "pingpong":
+				this.FX = new Tone.PingPongDelay();
+				break;
+
+			case "reverb":
+				this.FX = new Tone.Reverb();
+				break;
+
+			case "chorus":
+				this.FX = new Tone.Chorus(0.5);
+				this.FX.start();
+				break;
+
+			case "stereo":
+				this.FX = new Tone.StereoWidener();
+				break;
+
+			case "phaser":
+				this.FX = new Tone.Phaser({ baseFrequency: 1000 });
+				break;
+		}
+
+		if (!this.FX)
+			return;
+
+		this.ampAM.disconnect();
+
+		this.ampAM.chain(this.FX);
+		this.FX.chain(this.ampout);
+
+		this.setFXValue();
+		this.setFXRate();
+		this.FX.wet.value = this.values.FXWetValue;
+		console.log("add FX - " + type);
+	}
+
+	this.setFXValue = function (value) {
+		if (value !== undefined)
+			this.values.FXAmountValue = value;
+
+		if (!this.FX)
+			return;
+
+		switch (this.FXType) {
+			case "distort":
+				this.FX.distortion = this.values.FXAmountValue;
+				break;
+
+			case "delay":
+			case "pingpong":
+				this.FX.feedback.value = this.values.FXAmountValue * 0.9;
+				break;
+
+			case "reverb":
+				this.FX.ready.then(() => {
+					this.FX.decay = this.values.FXAmountValue * 4 + 0.001;
+				});
+				break;
+
+			case "chorus":
+				this.FX.depth = this.values.FXAmountValue;
+				break;
+
+			case "stereo":
+				this.FX.width.value = this.values.FXAmountValue;
+				break;
+
+			case "phaser":
+				this.FX.octaves = this.values.FXAmountValue * 5;
+				break;
+		}
+	}
+
+	this.setFXRate = function (value) {
+		if (value !== undefined)
+			this.values.FXRateValue = value;
+
+		if (!this.FX)
+			return;
+
+		switch (this.FXType) {
+			case "delay":
+			case "pingpong":
+				if (this.FXsync) {
+					this.FX.delayTime.value = (2 ** (4 - Math.round(this.values.FXRateValue * 3))) + "n";
+				} else {
+					this.FX.delayTime.value = this.values.FXRateValue;
+				}
+				break;
+
+			case "chorus":
+				this.FX.delayTime = this.values.FXRateValue * 22 - 2;
+				break;
+
+			case "phaser":
+				this.FX.frequency.value = this.values.FXRateValue * 50;
+				break;
+		}
+	}
+
+	this.addPan = function (isPan) {
+		if (isPan) {
+			if (this.pan)
+				return;
+
+			this.pan = new Tone.Panner(0);
+			this.pan.pan.value = this.values.panValue;
+			this.ampout.disconnect();
+			this.ampout.chain(this.pan);
+			this.pan.connect(outputNode);
+			console.log("add pan");
+		} else {
+			if (!this.pan)
+				return;
+
+			this.ampout.disconnect();
+			this.pan.disconnect();
+			this.pan.dispose();
+			this.pan = null;
+			this.ampout.connect(outputNode);
+			console.log("remove pan");
+		}
+	}
+
 	this.addLfo1 = function (isLfo) {
 		if (isLfo) {
 			if (this.lfo1)
 				return;
 
-			this.lfo1 = new Tone.Oscillator(this.values.lfo1Value, "sine");
+			this.lfo1 = new Tone.Oscillator(this.values.lfo1Value);
 			this.lfo1.start();
 			this.restoreModulator("lfo1");
 			console.log("add lfo1");
@@ -409,84 +446,58 @@ function Synth(outputNode) {
 		}
 	}
 
+	this.setLfo1Frequency = function (frequency) {
+		if (frequency != undefined)
+			this.values.lfo1Value = frequency;
 
-	this.setModulator = function (modulatorStr, driverStr) {
-		for (let key in this.modulators) {
-			if (!this.modulators[key])
-				this[key] = new Tone.Gain(0);
-			this[key].gain.value = this.modulatorValues[key];
-
-			let target = key.substr(0, key.indexOf("_"));
-			//console.log("GAIN: ", key, " TARGET: ", target);
-
-			if (this[target] && this[key]) {
-				if (this[target].frequency)
-					this[key].connect(this[target].frequency);
-				else
-					this[key].connect(this[target].gain);
-			}
-		}
-
-		let driver = this[driverStr];
-		let prevMod = this[this.modulators[driverStr]];
-		let nextMod = modulatorStr == "[none]" ? null : this[modulatorStr];
-
-		//console.log(this.modulators[driverStr], driverStr, "  --- next: " + modulatorStr);
-		if (driver) {
-			if (prevMod) {
-				prevMod.disconnect(driver);
-			}
-
-			if (nextMod) {
-				nextMod.connect(driver);
-			}
-		}
-
-		this.modulators[driverStr] = modulatorStr == "[none]" ? null : modulatorStr;
-
-		for (let key in this.modulators) {
-			if (!this.modulators[key])
-				if (this[key] && this[key].disconnect) {
-					this[key].disconnect();
-					this[key].dispose();
-					this[key] = null;
-				}
-		}
-	}
-
-	this.restoreModulator = function (modulatorStr) {
-		let modulator = this[modulatorStr];
-		if (!modulator)
+		if (!this.lfo1)
 			return;
 
-		for (let key in this.modulators) {
-			if (this.modulators[key] == modulatorStr)
-				modulator.connect(this[key]);
+		if (this.lfo1sync) {
+			this.lfo1.frequency.value = syncFreqToBpm(this.values.lfo1Value, this.bpm);
+		} else {
+			this.lfo1.frequency.value = this.values.lfo1Value;
+		}
+
+		function syncFreqToBpm(freq, bpm) {
+			if (freq == 0 || bpm == 0)
+				return 0;
+
+			let freqPerMin = freq * 60;
+
+			if (freqPerMin >= bpm) {
+				return Math.round(freqPerMin / bpm) * bpm / 60;
+			} else {
+				let bpmInHz = bpm / 60;
+				return bpmInHz / Math.round(bpmInHz / freq);
+			}
 		}
 	}
 
-	this.addPan = function (isPan) {
-		if (isPan) {
-			if (this.pan)
+	this.setBpm = function (bpm) {
+		this.bpm = bpm;
+		this.setLfo1Frequency(this.values.lfo1Value);
+		this.addFX(this.FXType);
+	}
+
+	this.addLfo2 = function (isLfo) {
+		if (isLfo) {
+			if (this.lfo2)
 				return;
 
-			this.pan = new Tone.Panner(0);
-			this.pan.pan.value = this.values.panValue;
-			this.ampout.disconnect();
-			this.ampout.chain(this.pan);
-			this.pan.connect(outputNode);
-			console.log("add pan");
-
+			this.lfo2 = new Tone.Oscillator(this.values.lfo2Value);
+			this.lfo2.start();
+			this.restoreModulator("lfo2");
+			console.log("add lfo2");
 		} else {
-			if (!this.pan)
+			if (!this.lfo2)
 				return;
 
-			this.ampout.disconnect();
-			this.pan.disconnect();
-			this.pan.dispose();
-			this.pan = null;
-			this.ampout.connect(outputNode);
-			console.log("remove pan");
+			this.lfo2.stop();
+			this.lfo2.disconnect();
+			this.lfo2.dispose();
+			this.lfo2 = null;
+			console.log("remove lfo2");
 		}
 	}
 
@@ -505,7 +516,7 @@ function Synth(outputNode) {
 			this.envelopeModRev = null;
 			console.log("remove mod envelope");
 		} else if (!this.envelopeMod) {
-			this.envelopeMod = new Tone.Envelope(0.5, 0.5, 0.5, 0.5);
+			this.envelopeMod = new Tone.Envelope();
 			this.envelopeModRev = new Tone.Negate();
 
 			this.envelopeMod.connect(this.envelopeModRev);
@@ -537,6 +548,53 @@ function Synth(outputNode) {
 		}
 
 		console.log("envelope sync");
+	}
+
+	this.setModulator = function (modulatorStr, carrierGainStr) {
+		let carrierGain = this[carrierGainStr];
+		let previousModulator = this[this.modulators[carrierGainStr]];
+
+		if (previousModulator && carrierGain) {
+			previousModulator.disconnect(carrierGain);
+		}
+
+		if (modulatorStr == "[none]") {
+			if (carrierGain && carrierGain.disconnect) {
+				carrierGain.disconnect();
+				carrierGain.dispose();
+				this[carrierGainStr] = null;
+			}
+		} else {
+			if (!carrierGain) {
+				// Get carrier name - remove "_modgain" from "carrier_modgain"
+				let targetStr = carrierGainStr.substr(0, carrierGainStr.indexOf("_"));
+				this[carrierGainStr] = new Tone.Gain(this.modulatorValues[carrierGainStr]);
+
+				if (this[targetStr]) {
+					if (this[targetStr].frequency)
+						this[carrierGainStr].connect(this[targetStr].frequency);
+					else
+						this[carrierGainStr].connect(this[targetStr].gain);
+				}
+			}
+
+			if (this[modulatorStr]) {
+				this[modulatorStr].connect(this[carrierGainStr]);
+			}
+		}
+
+		this.modulators[carrierGainStr] = modulatorStr == "[none]" ? null : modulatorStr;
+	}
+
+	this.restoreModulator = function (modulatorStr) {
+		let modulator = this[modulatorStr];
+		if (!modulator)
+			return;
+
+		for (let key in this.modulators) {
+			if (this.modulators[key] == modulatorStr)
+				modulator.connect(this[key]);
+		}
 	}
 
 	this.destroy = () => {

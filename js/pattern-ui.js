@@ -1,42 +1,136 @@
 "use strict"
 
 function PatternUi(songObj, assignSynthCallback) {
+	let noteArr = DEFAULT_PARAMS.noteSet.slice().reverse();
+
+	let lengthMod = "75";
+	let patternObj = {};
+	let patternLength = 64;
+
+	let dragStartRow = 0;
+	let dragStartCol = 0;
+	let pointerPress = false;
+	let pressTimeout = 0;
+	let cancelClick = false;
+
+	let patternName = document.getElementById("pattern-name-area");
 	let pattern = document.getElementById("pattern-main");
 	let table = document.createElement("TABLE");
-	let noteArr = DEFAULT_PARAMS.noteSet.slice().reverse();
-	this.length = 64;
 
-	let patternObj = {};
+	table.oncontextmenu = () => false;
+
+	table.addEventListener("pointerdown", (e) => {
+		if (e.target.nodeName != "TD" || !e.target.id.includes("_row-") || e.which == 2)
+			return;
+
+		pointerPress = true;
+		cancelClick = false;
+
+		let coords = getCellCoordinates(e.target);
+		dragStartCol = coords.col;
+		dragStartRow = coords.row;
+
+		pressTimeout = setTimeout(() => {
+			cancelClick = true;
+			pointerPress = false;
+
+			if (getNoteByColumn(dragStartCol) && getNoteByColumn(dragStartCol) == noteArr[dragStartRow])
+				clearLineOfNotes();
+			else
+				setLineOfNotes();
+		}, 400)
+	});
+
+	table.addEventListener("click", (e) => {
+		if (e.target.nodeName != "TD" || !e.target.id.includes("_row-") || e.which == 2)
+			return;
+
+		if (!cancelClick)
+			sequencerCellListener(e.target);
+
+		pointerPress = false;
+	});
+
+	table.addEventListener("pointerover", (e) => {
+		if (!pointerPress)
+			return
+
+		if (e.target.nodeName != "TD" || !e.target.id.includes("_row-") || e.which == 2)
+			return;
+
+		clearTimeout(pressTimeout);
+
+		let { col } = getCellCoordinates(e.target);
+		redrawLine(col);
+		for (let i = Math.min(dragStartCol, col); i <= Math.max(dragStartCol, col); i++) {
+			setNoteAtColumn(noteArr[dragStartRow], i);
+			setNoteLengthAtColumn(lengthMod, i);
+		}
+
+		cancelClick = true;
+	});
+
+	table.addEventListener("pointerup", pointerEndListener);
+	table.addEventListener("pointercancel", pointerEndListener);
+	table.addEventListener("touchend", pointerEndListener);
+
+
+	function pointerEndListener() {
+		pointerPress = false;
+		clearTimeout(pressTimeout);
+	}
+
+	function getCellCoordinates(cell) {
+		let idParts = cell.id.split("_");
+		return {
+			col: Number(idParts[1].split("-")[1]),
+			row: Number(idParts[2].split("-")[1])
+		};
+	}
+
+	function getNoteByColumn(col) {
+		return songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].notes[col];
+	}
+
+	function getNoteLengthByColumn(col) {
+		return songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].lengths[col];
+	}
+
+	function setNoteAtColumn(note, col) {
+		songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].notes[col] = note;
+	}
+
+	function setNoteLengthAtColumn(length, col) {
+		songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].lengths[col] = Number(length);
+	}
 
 	this.build = function () {
-		pattern.addEventListener("click", sequencerCellListener);
-
-		for (let i = 0; i < 73; i++) {
+		for (let i = 0; i <= DEFAULT_PARAMS.noteSet.length; i++) {
 			let tr = document.createElement("TR");
 			table.appendChild(tr);
 			for (let j = 0; j < 65; j++) {
 				let td = document.createElement("TD");
 
-				if (i == 0 && j == 0)
+				if (i == 0 && j == 0) {
 					td.id = "note-length-control";
+					td.classList.add("fill-" + lengthMod);
+				}
 
 				if (i == 0 && j > 0)
-					td.id = "seq_header_col-" + (j - 1);
+					td.id = "seq_col-" + (j - 1) + "_header";
 
 				if (i == 0 && (j - 1) % 4 == 0)
 					td.appendChild(document.createTextNode(j));
 
 				if (i > 0 && j == 0)
-					if (noteArr[i - 1].indexOf("b") != -1) {
+					if (noteArr[i - 1].includes("b")) {
 						td.classList.add("pattern-black-key");
 					} else {
 						td.appendChild(document.createTextNode(noteArr[i - 1]));
 					}
 
-
 				if (i > 0 && j > 0) {
 					td.id = "seq_col-" + (j - 1) + "_row-" + (i - 1);
-					td.dataset.note = noteArr[i - 1];
 				}
 
 				tr.appendChild(td);
@@ -45,9 +139,10 @@ function PatternUi(songObj, assignSynthCallback) {
 
 		pattern.appendChild(table);
 
-
 		let lControl = document.getElementById("note-length-control");
 		lControl.addEventListener("click", (e) => {
+			e.target.classList.remove("fill-" + lengthMod);
+
 			switch (lengthMod) {
 				case "25":
 					lengthMod = "50";
@@ -66,119 +161,138 @@ function PatternUi(songObj, assignSynthCallback) {
 					break;
 			}
 
-			classListCheck(e.target);
 			e.target.classList.add("fill-" + lengthMod);
 		})
-
 	}
 
-	let sequenceNotes = [];
-	let sequenceLengths = [];
-	let sequenceElementRows = [];
-	let shadowNotes = [];
-	for (let i = 0; i < 64; i++) {
-		sequenceNotes[i] = null;
-		sequenceElementRows[i] = null;
-		sequenceLengths[i] = 0;
-		shadowNotes[i] = null;
-	}
-
-	this.data = {
-		notes: sequenceNotes,
-		lengths: sequenceLengths
-	}
-
-	let btnLength = document.getElementById("buttorn-pattern-length");
-	btnLength.addEventListener("click", () => {
-		let lenValue = document.getElementById("pattern-length-value").value;
+	document.getElementById("button-pattern-length-set").onclick = () => {
+		let lenValue = document.getElementById("input-pattern-length").value;
 		let len = Number(lenValue);
 		this.setLength(len);
 
-		sequenceNotes.length = len;
-		sequenceLengths.length = len;
-		patternObj.length = len;
-	})
+		for (let seq of patternObj.patternData) {
+			seq.notes.length = len;
+			seq.lengths.length = len;
+		}
 
+		if (patternObj) {
+			patternObj.length = len;
+			this.importSequence(patternObj);
+		}
+	};
 
-	let lengthMod = "75";
-	function sequencerCellListener(event) {
-		//console.log(event.target);
-		let tgt = event.target;
-		if (tgt.nodeName == "TD" && tgt.id.includes("seq_")) {
-			//tgt.classList.toggle("fill-" + lengthMod);
-			let idParts = tgt.id.split("_");
-			let col = Number(idParts[1].split("-")[1]);
-			let row = Number(idParts[2].split("-")[1]);
-			let note = tgt.dataset.note;
-			//console.log(col,row,note);
+	function setLineOfNotes() {
+		let col = dragStartCol;
+		let snote = noteArr[dragStartRow];
+		for (let i = col; i >= 0; i--) {
+			if (getNoteByColumn(i) == snote) {
+				col = i;
+				break;
+			}
+		}
 
-			if (!classListCheck(tgt)) {
-				tgt.classList.add("fill-" + lengthMod);
+		redrawLine(col);
+		for (let i = col; i <= dragStartCol; i++) {
+			setNoteAtColumn(snote, i);
+			setNoteLengthAtColumn(lengthMod, i);
+		}
+	}
 
-				if (sequenceNotes[col]) {
-					let checked = document.getElementById("seq_col-" + col + "_row-" + sequenceElementRows[col]);
-					classListCheck(checked);
-				}
+	function clearLineOfNotes() {
+		let col = dragStartCol;
+		let snote = noteArr[dragStartRow];
+		for (let i = col; i < patternLength; i++) {
+			if (getNoteByColumn(i) != snote) {
+				break;
+			}
+			col = i;
+		}
 
-				sequenceNotes[col] = note;
-				sequenceLengths[col] = Number(lengthMod);
-				sequenceElementRows[col] = row;
-				//seq.events = sequenceNotes;
-				//console.log(note,row,col)
+		clearLine(col);
+		for (let i = dragStartCol; i <= col; i++) {
+			setNoteAtColumn(null, i);
+			setNoteLengthAtColumn(0, i);
+		}
+	}
+
+	function redrawLine(col) {
+		for (let i = 0; i < patternLength; i++) {
+
+			let note = getNoteByColumn(i);
+			let row = findRowByNote(note);
+			let prevCell = document.getElementById("seq_col-" + i + "_row-" + row);
+
+			let nextCell = document.getElementById("seq_col-" + i + "_row-" + dragStartRow);
+
+			if (i >= Math.min(dragStartCol, col) && i <= Math.max(dragStartCol, col)) {
+				if (prevCell)
+					prevCell.classList.remove("fill-" + getNoteLengthByColumn(i));
+				nextCell.classList.add("fill-" + lengthMod);
 			} else {
-				sequenceNotes[col] = null;
-				sequenceElementRows[col] = null;
-				sequenceLengths[col] = 0;
-				//seq.events = sequenceNotes;
+				nextCell.classList.remove("fill-" + lengthMod);
+				if (prevCell)
+					prevCell.classList.add("fill-" + getNoteLengthByColumn(i));
 			}
 		}
 	}
 
-	function classListCheck(element) {
-		if (!element)
-			return;
+	function clearLine(col) {
+		for (let i = 0; i < patternLength; i++) {
 
-		let lengths = ["25", "50", "75", "100", "125"];
+			let note = getNoteByColumn(i);
+			let row = findRowByNote(note);
+			let cell = document.getElementById("seq_col-" + i + "_row-" + row);
 
-		for (let e of lengths) {
-			if (element.classList.contains("fill-" + e)) {
-				element.classList.remove("fill-" + e);
-				return true;
+			if (i >= Math.min(dragStartCol, col) && i <= Math.max(dragStartCol, col)) {
+				if (cell)
+					cell.classList.remove("fill-" + getNoteLengthByColumn(i));
 			}
 		}
+	}
 
-		return false;
+	function sequencerCellListener(tgt) {
+		let { col, row } = getCellCoordinates(tgt);
+		let note = noteArr[row];
+		let prevNote = getNoteByColumn(col);
+
+		if (prevNote == note) {
+			tgt.classList.remove("fill-" + getNoteLengthByColumn(col))
+			setNoteAtColumn(null, col);
+			setNoteLengthAtColumn(0, col);
+		} else {
+			if (prevNote) {
+				let prevRow = findRowByNote(prevNote);
+				let prevCell = document.getElementById("seq_col-" + col + "_row-" + prevRow);
+				prevCell.classList.remove("fill-" + getNoteLengthByColumn(col));
+			}
+
+			tgt.classList.add("fill-" + lengthMod);
+			setNoteAtColumn(note, col);
+			setNoteLengthAtColumn(lengthMod, col);
+		}
 	}
 
 	this.setLength = function (len) {
-		this.length = len;
-
-		if (sequenceNotes.length > len)
-			for (let i = len; i < sequenceNotes.length; i++) {
-				if (sequenceNotes[i]) {
-					let cell = document.getElementById("seq_col-" + i + "_row-" + sequenceElementRows[i]);
-					cell.classList.remove("fill-" + sequenceLengths[i])
-				}
-			}
-
-		for (let i = 0; i < 72; i++)
-			for (let j = 0; j < Math.max(len, sequenceNotes.length); j++) {
+		for (let i = 0; i < DEFAULT_PARAMS.noteSet.length; i++) {
+			for (let j = 0; j < Math.max(len, patternLength); j++) {
 				let cell = document.getElementById("seq_col-" + j + "_row-" + i);
-				//console.log("seq_col-" + j + "_row-" + i)
+
 				if (j < len)
 					cell.style.display = "table-cell";
 				else
 					cell.style.display = "none";
 			}
+		}
 
-		for (let j = 1; j < Math.max(len, sequenceNotes.length); j++) {
-			let cell = document.getElementById("seq_header_col-" + j);
-			//console.log("seq_header_col-" + j)
+		for (let j = 1; j < Math.max(len, patternLength); j++) {
+			let cell = document.getElementById("seq_col-" + j + "_header");
 			if (j < len)
 				cell.style.display = "table-cell";
 			else
 				cell.style.display = "none";
 		}
+
+		patternLength = len;
 	}
 
 	function findRowByNote(note) {
@@ -189,80 +303,41 @@ function PatternUi(songObj, assignSynthCallback) {
 		return -1;
 	}
 
-	this.exportData = function () {
-		let data = {
-			notes: sequenceNotes,
-			lengths: sequenceLengths
-		}
-
-		return data;
-	}
-
-	this.importData = function (data) {
-		for (let i = 0; i < sequenceNotes.length; i++) {
-			if (sequenceNotes[i] === null)
+	function importData(data) {
+		for (let i = 0; i < data.notes.length; i++) {
+			if (data.notes[i] === null)
 				continue;
 
-			let row = findRowByNote(sequenceNotes[i])
+			let row = findRowByNote(data.notes[i])
 			let cell = document.getElementById("seq_col-" + i + "_row-" + row);
 			if (cell)
-				cell.classList.remove("fill-" + sequenceLengths[i]);
-		}
-
-		sequenceNotes = data.notes;
-		sequenceLengths = data.lengths;
-
-		//console.log(sequenceLengths);
-
-		sequenceElementRows = [];
-		for (let i = 0; i < 72; i++)
-			sequenceElementRows[i] = null;
-
-		for (let i = 0; i < sequenceNotes.length; i++) {
-			if (sequenceNotes[i] === null)
-				continue;
-
-			let row = findRowByNote(sequenceNotes[i])
-			sequenceElementRows[i] = row;
-			let cell = document.getElementById("seq_col-" + i + "_row-" + row);
-			if (cell)
-				cell.classList.add("fill-" + sequenceLengths[i]);
-		}
-
-		this.data = {
-			notes: sequenceNotes,
-			lengths: sequenceLengths
+				cell.classList.add("fill-" + data.lengths[i]);
 		}
 	}
 
-
-	this.importShadowData = function (dataArr, excludeIndex) {
-		//console.log(dataArr)
-		for (let i = 0; i < 64; i++)
-			for (let j = 0; j < 64; j++) {
-
-				let cell = document.getElementById("seq_col-" + i + "_row-" + j);
-				if (cell)
-					cell.classList.remove("mark-shadow");
-			}
-
-		//console.log(sequenceLengths);
+	function importShadowData(dataArr, excludeIndex) {
 		for (let i = 0; i < dataArr.length; i++) {
 			if (i == excludeIndex)
 				continue;
-
 
 			for (let j = 0; j < dataArr[i].notes.length; j++) {
 				if (dataArr[i][j] === null)
 					continue;
 
 				let row = findRowByNote(dataArr[i].notes[j])
-				//console.log(dataArr[i].notes[j], j,row);
 				let cell = document.getElementById("seq_col-" + j + "_row-" + row);
 				if (cell)
 					cell.classList.add("mark-shadow");
-
 			}
+		}
+	}
+
+	this.clearGrid = function () {
+		for (let className of ["mark-shadow", "fill-25", "fill-50", "fill-75", "fill-100", "fill-125",]) {
+			document.querySelectorAll("." + className).forEach(e => {
+				if (e.id != "note-length-control")
+					e.classList.remove(className);
+			});
 		}
 	}
 
@@ -274,36 +349,31 @@ function PatternUi(songObj, assignSynthCallback) {
 
 		let dataArr = data.patternData;
 		let currentIndex = data.activeIndex;
-		this.importData(dataArr[currentIndex]);
-		this.importShadowData(dataArr, currentIndex);
 
-		let index = songObj.currentPattern.activeIndex;
-		let synthIndex = songObj.currentPattern.patternData[index].synthIndex;
-		if (synthIndex !== null)
-			assignSynthCallback(songObj.synthParams[synthIndex], songObj.synths[synthIndex], songObj.synthNames[synthIndex]);
+		this.clearGrid();
+		importData(dataArr[currentIndex]);
+		importShadowData(dataArr, currentIndex);
+
+		patternName.innerHTML = "";
+		patternName.appendChild(document.createTextNode(data.name));
 	}
 
 
 	// Sequencer footer (pattern synth tabs)
-	let addLayer = document.getElementById("button-add-pattern-layer");
-	addLayer.addEventListener("click", () => {
-		songObj.synthAssignMode = true;
-		document.getElementById("pattern-view").classList.add("hidden");
-		document.getElementById("synth-select-view").classList.remove("hidden");
-	})
-
-	let active = null;
 	const patternLayerTabListener = (event) => {
-
-		if (active)
-			active.classList.remove("tab--active");
+		let activeLayerTab = document.querySelectorAll(".js-pattern-synth-tab.tab--active")[0];
+		if (activeLayerTab)
+			activeLayerTab.classList.remove("tab--active");
 
 		event.target.classList.add("tab--active");
-		active = event.target;
 		let index = Number(event.target.dataset.index);
 		songObj.currentPattern.activeIndex = index;
 
 		this.importSequence(songObj.currentPattern);
+
+		let synthIndex = songObj.currentPattern.patternData[index].synthIndex;
+		if (synthIndex !== null)
+			assignSynthCallback(songObj.synthParams[synthIndex], songObj.synths[synthIndex], songObj.synthNames[synthIndex]);
 	}
 
 	this.rebuildPatternSynthList = function (pattern) {
@@ -311,20 +381,24 @@ function PatternUi(songObj, assignSynthCallback) {
 		let patternTabs = document.querySelectorAll(".js-pattern-synth-tab");
 		patternTabs.forEach(e => e.remove());
 
+		if (pattern.patternData.length == 1 && pattern.patternData[0].synthIndex === null)
+			return;
+
 		for (let i = 0; i < pattern.patternData.length; i++) {
-
-			if (pattern.patternData[i].synthIndex === null)
-				break;
-
 			let index = pattern.patternData[i].synthIndex;
 			let tab = document.createElement("DIV");
-			tab.appendChild(document.createTextNode(songObj.synthNames[index]));
+
+			let name;
+			if (index === null)
+				name = "[none]";
+			else
+				name = songObj.synthNames[index];
+
+			tab.appendChild(document.createTextNode(name));
 			tab.dataset.index = i;
 
-			if (i == pattern.activeIndex) {
-				active = tab;
+			if (i == pattern.activeIndex)
 				tab.classList.add("tab--active");
-			}
 
 			tab.classList.add("js-pattern-synth-tab");
 			addLayerBtn.before(tab);

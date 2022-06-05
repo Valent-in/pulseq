@@ -19,7 +19,7 @@ function SynthUi() {
 	}
 
 
-	for (let i = 0; i < 72; i++) {
+	for (let i = 0; i < DEFAULT_PARAMS.noteSet.length; i++) {
 		let key = document.createElement("DIV");
 		let note = DEFAULT_PARAMS.noteSet[i];
 
@@ -34,6 +34,11 @@ function SynthUi() {
 
 		key.addEventListener(eventDown, () => {
 			//console.log(note);
+			if (this.currentSynth.lfo1) {
+				this.currentSynth.lfo1.stop();
+				this.currentSynth.lfo1.start();
+			}
+
 			this.currentSynth.triggerAttack(note);
 		})
 
@@ -64,14 +69,14 @@ function SynthUi() {
 
 	const universalSynthListener = (e) => {
 		//console.log("synth listener :", e.target.id, e.target.value)
-		let value;
+		let idValue;
 		if (e.target.type == "checkbox")
-			value = synthParamApply(e.target.id, e.target.checked, this.currentSynth);
+			idValue = synthParamApply(e.target.id, e.target.checked, this.currentSynth);
 		else
-			value = synthParamApply(e.target.id, e.target.value, this.currentSynth);
+			idValue = synthParamApply(e.target.id, e.target.value, this.currentSynth);
 
-		if (e.target.id && value !== undefined)
-			this.curSynthParamObj[e.target.id] = value;
+		if (idValue)
+			this.curSynthParamObj[idValue.id] = idValue.value;
 	}
 
 	let controls = document.querySelectorAll("#synth-main input, #synth-main select, #synth-main button");
@@ -93,55 +98,74 @@ function SynthUi() {
 		}
 	})
 
+	// Restore slider position after scroll misclick (touchscreen)
+	let rangeInputs = document.querySelectorAll("#synth-main input[type=range]");
+	rangeInputs.forEach((e) => {
+		e.addEventListener("pointerup", saveValue);
+		e.addEventListener("touchend", saveValue);
+		e.addEventListener("keyup", saveValue);
+		e.addEventListener("wheel", saveValue);
+
+		e.addEventListener("pointercancel", (el) => {
+			el.target.value = el.target.dataset.value;
+			universalSynthListener(el);
+		});
+
+		function saveValue(el) {
+			el.target.dataset.value = el.target.value;
+		};
+	});
+
 	this.loadSynth = function (params, targetSynth) {
 		for (let key in params) {
 			synthParamApply(key, params[key], targetSynth);
-
-			let input = document.getElementById(key);
-			if (input)
-				if (input.type == "checkbox")
-					input.checked = params[key];
-				else
-					input.value = params[key];
 		}
 	};
 
 	this.assignSynth = (params, targetSynth, name) => {
 		this.curSynthParamObj = params;
 		this.currentSynth = targetSynth;
-		//this.loadSynth(params, targetSynth);
 
 		for (let key in params) {
-			//synthParamApply(key, params[key], targetSynth, false);
-
 			let input = document.getElementById(key);
-			if (input)
-				if (input.type == "checkbox")
+			if (input) {
+				if (input.type == "checkbox") {
 					input.checked = params[key];
-				else
+				} else {
 					input.value = params[key];
+					input.dataset.value = params[key];
+				}
+			}
 		}
 
-		let synthTab = document.getElementById("synth-tab");
-		synthTab.innerHTML = "";
-		synthTab.appendChild(document.createTextNode(name));
+		if (name) {
+			let synthTab = document.getElementById("synth-tab");
+			synthTab.innerHTML = "";
+			synthTab.appendChild(document.createTextNode(name));
+		}
 	}
 
 	this.resetCurrentSynth = () => {
-		this.loadSynth(DEFAULT_PARAMS.synthState, this.currentSynth);
-
 		for (let key in DEFAULT_PARAMS.synthState)
 			this.curSynthParamObj[key] = DEFAULT_PARAMS.synthState[key];
+
+		this.loadSynth(this.curSynthParamObj, this.currentSynth);
+		this.assignSynth(this.curSynthParamObj, this.currentSynth);
+
 	}
 
 	let resetSynthButton = document.getElementById("button-reset-synth");
-	resetSynthButton.addEventListener("click", this.resetCurrentSynth);
+	resetSynthButton.addEventListener("click", () => g_showConfirm("Reset synth?", (isOk) => {
+		if (isOk)
+			this.resetCurrentSynth();
+	}));
 
 	let importSynthButton = document.getElementById("button-import-synth");
 	importSynthButton.addEventListener("click", () => {
-		let str = document.getElementById("export-data").value;
+		let str = document.getElementById("text-export-data").value;
 		let params = JSON.parse(str);
 		this.loadSynth(params, this.currentSynth);
+		this.assignSynth(params, this.currentSynth);
 
 		for (let key in params)
 			this.curSynthParamObj[key] = params[key];
@@ -149,7 +173,7 @@ function SynthUi() {
 
 	let exportSynthButton = document.getElementById("button-export-synth");
 	exportSynthButton.addEventListener("click", () => {
-		let outText = document.getElementById("export-data");
+		let outText = document.getElementById("text-export-data");
 		outText.value = JSON.stringify(this.curSynthParamObj, null, 1);
 	});
 
