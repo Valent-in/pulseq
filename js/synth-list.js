@@ -17,8 +17,13 @@ function SynthList(songObj, synthUi, rebuildPatternSynthListCallback) {
 		}, defaultName);
 	});
 
+	document.getElementById("button-synth-menu-open").onclick = () => {
+		selectedSynthIndex = songObj.currentSynthIndex;
+		openSynthMenu();
+	};
+
 	document.getElementById("button-synth-menu-close").onclick = () => {
-		document.getElementById("synth-list-modal-menu").classList.add("modal-hidden");
+		document.getElementById("synth-modal-menu").classList.add("nodisplay");
 	};
 
 	let synthNameInput = document.getElementById("input-synth-name");
@@ -30,10 +35,11 @@ function SynthList(songObj, synthUi, rebuildPatternSynthListCallback) {
 			o.rebuildSynthList();
 			rebuildPatternSynthListCallback();
 
-			let name = songObj.synthNames[selectedSynthIndex];
-			let synthTab = document.getElementById("synth-tab");
-			synthTab.innerHTML = "";
-			synthTab.appendChild(document.createTextNode(name));
+			if (selectedSynthIndex == songObj.currentSynthIndex) {
+				let synthName = document.getElementById("synth-name-area");
+				synthName.innerHTML = "";
+				synthName.appendChild(document.createTextNode(value));
+			}
 		}
 	});
 
@@ -48,26 +54,129 @@ function SynthList(songObj, synthUi, rebuildPatternSynthListCallback) {
 				return;
 
 			songObj.deleteSynth(selectedSynthIndex);
-			o.rebuildSynthList();
 			rebuildPatternSynthListCallback();
 			synthUi.assignSynth(songObj.synthParams[0], songObj.synths[0], songObj.synthNames[0]);
-			document.getElementById("synth-list-modal-menu").classList.add("modal-hidden");
+			songObj.currentSynthIndex = 0;
+			o.rebuildSynthList();
+			g_switchTab("synth-list");
+			document.getElementById("synth-modal-menu").classList.add("nodisplay");
 		});
 	};
 
-	o.createNewSynth = function (name) {
+	let resetSynthButton = document.getElementById("button-reset-synth");
+	resetSynthButton.addEventListener("click", () => g_showConfirm("Reset synth?", (isOk) => {
+		if (!isOk)
+			return;
+
+		let synthParams = songObj.synthParams[selectedSynthIndex];
+		let synth = songObj.synths[selectedSynthIndex];
+
+		for (let key in DEFAULT_PARAMS.synthState) {
+			synthParams[key] = DEFAULT_PARAMS.synthState[key];
+			synthParamApply(key, synthParams[key], synth);
+		}
+
+		if (selectedSynthIndex == songObj.currentSynthIndex)
+			synthUi.assignSynth(synthParams, synth, songObj.synthNames[selectedSynthIndex]);
+
+		document.getElementById("synth-modal-menu").classList.add("nodisplay");
+	}));
+
+	document.getElementById("button-copy-synth").onclick = () => {
+		let name = songObj.synthNames[selectedSynthIndex];
+		g_showPrompt("Copy synth \"" + name + "\" to", (result) => {
+			if (result === null)
+				return;
+
+			for (let i = 0; i < songObj.synthNames.length; i++) {
+				if (result == songObj.synthNames[i]) {
+					g_showConfirm("Synth with name '" + result + "' already exists. Overwrite?", (isOk) => {
+						document.getElementById("synth-modal-menu").classList.add("nodisplay");
+						if (!isOk)
+							return;
+
+						let sourceParams = songObj.synthParams[selectedSynthIndex];
+						let targetParams = songObj.synthParams[i];
+						let targetSynth = songObj.synths[i];
+
+						for (let key in sourceParams) {
+							targetParams[key] = sourceParams[key];
+							synthParamApply(key, targetParams[key], targetSynth);
+						}
+
+						g_switchTab("synth-list");
+					});
+
+					return;
+				}
+			}
+
+			o.createNewSynth(result, songObj.synthParams[selectedSynthIndex]);
+
+			console.log("Synth '" + name + "' copied to '" + result + "'");
+			o.rebuildSynthList();
+			g_switchTab("synth-list");
+			document.getElementById("synth-modal-menu").classList.add("nodisplay");
+		}, name + "-2");
+	};
+
+	document.getElementById("input-import-synth").onchange = (e) => {
+		let file = e.target.files[0];
+		if (!file)
+			return;
+
+		let reader = new FileReader();
+		reader.onload = function (ev) {
+			let synthStr = ev.target.result;
+			let params;
+
+			try {
+				params = JSON.parse(synthStr);
+			} catch {
+				g_showAlert("JSON parsing error");
+				return;
+			}
+
+			let synth = songObj.synths[selectedSynthIndex];
+			let newParams = o.loadSynth(params, synth);
+			for (let key in newParams)
+				songObj.synthParams[selectedSynthIndex][key] = newParams[key];
+
+			if (selectedSynthIndex == songObj.currentSynthIndex)
+				synthUi.assignSynth(newParams, synth, songObj.synthNames[selectedSynthIndex]);
+
+			document.getElementById("synth-modal-menu").classList.add("nodisplay");
+		};
+		reader.readAsText(file);
+	};
+
+	document.getElementById("link-synth-export").onclick = (e) => {
+		let expString = JSON.stringify(songObj.synthParams[selectedSynthIndex], null, 1);
+		let file = new Blob([expString], { type: 'text/json' });
+		e.target.href = URL.createObjectURL(file);
+		let name = songObj.synthNames[selectedSynthIndex] || "synth";
+		e.target.download = name + ".json";
+	};
+
+
+	o.createNewSynth = function (name, copyFromParams) {
 		let newSynth = new Synth(songObj.compressor, songObj.bpm);
 		let newSynthParamObj = {};
+		let params = copyFromParams || DEFAULT_PARAMS.synthState;
 
-		for (let key in DEFAULT_PARAMS.synthState)
-			newSynthParamObj[key] = DEFAULT_PARAMS.synthState[key];
+		for (let key in params) {
+			newSynthParamObj[key] = params[key];
+			synthParamApply(key, newSynthParamObj[key], newSynth);
+		}
 
 		songObj.synthParams.push(newSynthParamObj);
 		songObj.synths.push(newSynth);
 		songObj.synthNames.push(name);
 
-		synthUi.assignSynth(newSynthParamObj, newSynth, name);
-		synthUi.resetCurrentSynth();
+		if (!copyFromParams) {
+			synthUi.assignSynth(newSynthParamObj, newSynth, name);
+			songObj.currentSynthIndex = songObj.synths.length - 1;
+		}
 
 		o.rebuildSynthList();
 	}
@@ -77,22 +186,26 @@ function SynthList(songObj, synthUi, rebuildPatternSynthListCallback) {
 		container.innerHTML = "";
 
 		for (let i = 0; i < songObj.synthNames.length; i++) {
-			let entry = createSynthEntry(songObj.synthNames[i])
+			let entry = createSynthEntry(songObj.synthNames[i]);
+			entry.id = "synth-list-entry_" + i;
 			container.appendChild(entry);
+
 			entry.addEventListener("click", (event) => {
-				synthUi.assignSynth(songObj.synthParams[i], songObj.synths[i], songObj.synthNames[i]);
 				selectedSynthIndex = i;
 
 				if (event.target.classList.contains("js-synth-entry-menu")) {
-					let menu = document.getElementById("synth-list-modal-menu");
-					menu.classList.remove("modal-hidden");
-					document.getElementById("input-synth-name").value = songObj.synthNames[i];
+					openSynthMenu();
 					return;
 				}
 
+				synthUi.assignSynth(songObj.synthParams[i], songObj.synths[i], songObj.synthNames[i]);
+				songObj.currentSynthIndex = i;
+				g_markCurrentSynth();
 				g_switchTab("synth");
 			})
 		}
+
+		g_markCurrentSynth();
 
 		function createSynthEntry(name) {
 			let entry = document.createElement("DIV");
@@ -112,6 +225,27 @@ function SynthList(songObj, synthUi, rebuildPatternSynthListCallback) {
 			entry.classList.add("synth-list-entry");
 			return entry;
 		}
+	}
+
+	o.loadSynth = function (synthParams, targetSynth) {
+		let newParams = {};
+
+		for (let key in DEFAULT_PARAMS.synthState) {
+			if (key in synthParams)
+				newParams[key] = synthParams[key];
+			else
+				newParams[key] = DEFAULT_PARAMS.synthState[key];
+
+			synthParamApply(key, newParams[key], targetSynth);
+		}
+
+		return newParams;
+	}
+
+	function openSynthMenu() {
+		let menu = document.getElementById("synth-modal-menu");
+		menu.classList.remove("nodisplay");
+		document.getElementById("input-synth-name").value = songObj.synthNames[selectedSynthIndex];
 	}
 
 	return o;

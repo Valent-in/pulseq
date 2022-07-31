@@ -3,7 +3,7 @@
 const DEFAULT_PARAMS = {};
 
 DEFAULT_PARAMS.synthState = {
-	"synth-amplifier-gain": 0.75,
+	"synth-amplifier-gain": 0.9,
 	"synth-amplifier-mod-input": "[none]",
 	"synth-amplifier-mod-value": 0,
 	"synth-envelope-attack": 0.2,

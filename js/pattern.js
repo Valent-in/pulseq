@@ -1,10 +1,10 @@
-function Pattern(name) {
-    this.name = name;
-    this.length = 16;
+function Pattern(name, steps) {
+    this.name = name || "ptrn";
+    this.length = steps || 16;
     this.activeIndex = 0;
 
     this.patternData = [
-        { notes: [], lengths: [], synthIndex: null }
+        { notes: [], lengths: [], volumes: [], synthIndex: null }
     ];
 
     this.addLayer = () => {
@@ -12,7 +12,7 @@ function Pattern(name) {
             console.log("Layer already created. No synth index.")
         } else {
             this.activeIndex = this.patternData.length;
-            this.patternData.push({ notes: [], lengths: [], synthIndex: null });
+            this.patternData.push({ notes: [], lengths: [], volumes: [], synthIndex: null });
         }
     }
 

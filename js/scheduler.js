@@ -1,43 +1,83 @@
 "use strict"
 
-function Scheduler(songObj) {
+function Scheduler(songObj, barCallback, stepCallback) {
 	Tone.Transport.bpm.value = songObj.bpm;
 
 	let isPlaying = false;
+	let isPatternPlaying = false;
+	let onInnerStopCallback = null;
 
-	this.stop = function () {
+	function stop() {
 		if (!isPlaying)
 			return;
 
 		Tone.Transport.stop();
 		Tone.Transport.cancel();
 		isPlaying = false;
+		isPatternPlaying = false;
 		console.log("STOP Playback");
+
+		scheduleCall(stepCallback, -1, Tone.now());
+		scheduleCall(barCallback, -1, Tone.now());
 
 		for (let i = 0; i < songObj.synths.length; i++)
 			songObj.synths[i].triggerRelease();
 	}
 
 	this.playSong = () => {
-		this.stop();
+		stop();
 
 		isPlaying = true;
+		isPatternPlaying = false;
 		scheduleSong();
 		Tone.Transport.start();
 		console.log("Play SONG");
 	}
 
 	this.playPattern = () => {
-		this.stop();
+		stop();
 
 		isPlaying = true;
+		isPatternPlaying = true;
 		schedulePattern();
 		Tone.Transport.start();
 		console.log("Play PATTERN");
 	}
 
+	this.releasePattern = () => {
+		if (!isPatternPlaying)
+			return;
+
+		for (let i = 0; i < songObj.synths.length; i++)
+			songObj.synths[i].triggerRelease();
+	}
+
+	this.playStopSong = (callback) => {
+		onInnerStopCallback = callback;
+
+		if (isPlaying) {
+			stop();
+			return false;
+		} else {
+			this.playSong();
+			return true;
+		}
+	}
+
+	this.playStopPattern = (callback) => {
+		onInnerStopCallback = callback;
+
+		if (isPlaying) {
+			stop();
+			return false;
+		} else {
+			this.playPattern();
+			return true;
+		}
+	}
+
 	this.renderSong = (renderLength) => {
-		this.stop();
+		stop();
 
 		let schedulerData = {
 			stepIndex: 0,
@@ -68,7 +108,7 @@ function Scheduler(songObj) {
 					synced = true;
 				}
 
-				performSchedulerStep(schedulerData, lSynths, time);
+				performSchedulerStep(schedulerData, lSynths, time, null);
 			}, "16n");
 
 			transport.bpm.value = songObj.bpm;
@@ -86,6 +126,10 @@ function Scheduler(songObj) {
 		}
 	}
 
+	function scheduleCall(callback, param, time) {
+		Tone.Draw.schedule(() => { callback(param) }, time)
+	}
+
 	function schedulePattern() {
 		let sequenceIndex = 0;
 		let synced = false;
@@ -97,6 +141,8 @@ function Scheduler(songObj) {
 			}
 
 			playPatternStep(sequenceIndex, songObj.currentPattern, songObj.synths, time);
+
+			scheduleCall(stepCallback, sequenceIndex, time);
 
 			sequenceIndex++;
 			if (sequenceIndex >= songObj.currentPattern.length)
@@ -118,16 +164,32 @@ function Scheduler(songObj) {
 				synced = true;
 			}
 
-			performSchedulerStep(schedulerData, songObj.synths, time);
+			performSchedulerStep(schedulerData, songObj.synths, time, barCallback);
 		}, "16n");
 	}
 
-	function performSchedulerStep(data, synths, time) {
-		if (data.stepIndex % 16 == 0 && songObj.song[data.barIndex]) {
+	function performSchedulerStep(data, synths, time, realtimeBarCallback) {
+		if (data.stepIndex % songObj.barSteps == 0) {
+			if (data.barIndex >= songObj.song.length) {
+
+				if (realtimeBarCallback) {
+					console.log("Song END");
+					stop();
+					if (onInnerStopCallback)
+						onInnerStopCallback();
+				}
+
+				return;
+			}
+
+			if (realtimeBarCallback)
+				scheduleCall(realtimeBarCallback, data.barIndex, time);
+
 			for (let i = 0; i < songObj.song[data.barIndex].length; i++) {
 				if (songObj.song[data.barIndex][i])
 					data.queue.push({ pattern: i, index: 0 });
 			}
+
 			data.barIndex++;
 		}
 
@@ -153,22 +215,23 @@ function Scheduler(songObj) {
 			let notes = pattern.patternData[j].notes;
 			let lengths = pattern.patternData[j].lengths;
 			let note = notes[stepIndex];
+			let volume = pattern.patternData[j].volumes[stepIndex];
 			let synthIndex = pattern.patternData[j].synthIndex;
 
 			if (note && synthIndex !== null) {
 				let synth = synths[synthIndex];
 
 				let lenCoef = lengths[stepIndex] / 100;
-				let stepLen = (60 / songObj.bpm) / 4;
+				let stepLen = (60 / songObj.bpm) / 4 - 0.001;
 
-				if (stepIndex > 0 && lengths[stepIndex - 1] > 100)
-					synth.glideTo(note, time, stepLen)
+				if (stepIndex > 0 && lengths[stepIndex - 1] >= 100)
+					synth.glideTo(note, volume, time, stepLen)
 				else
-					synth.triggerAttack(note, time);
+					synth.triggerAttack(note, volume, time, stepLen);
 
-				let stopTime = time + lenCoef * stepLen - 0.001;
+				let stopTime = time + lenCoef * stepLen;
 
-				if (lengths[stepIndex] <= 100 || stepIndex == pattern.length - 1 || !notes[stepIndex + 1])
+				if (lengths[stepIndex] < 100 || stepIndex == pattern.length - 1 || !notes[stepIndex + 1])
 					synth.triggerRelease(stopTime);
 			}
 		}

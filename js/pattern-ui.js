@@ -1,22 +1,29 @@
 "use strict"
 
 function PatternUi(songObj, assignSynthCallback) {
+	const maxSequencerLength = 64;
+	let sequencerLength = maxSequencerLength;
+
 	let noteArr = DEFAULT_PARAMS.noteSet.slice().reverse();
 
-	let lengthMod = "75";
-	let patternObj = {};
-	let patternLength = 64;
-
+	let lengthMod = 75;
+	let volumeMod = 0;
 	let dragStartRow = 0;
 	let dragStartCol = 0;
 	let pointerPress = false;
 	let pressTimeout = 0;
 	let cancelClick = false;
 
+	let playbackMarkers = [];
+	let previousMarker = 0;
+
 	let patternName = document.getElementById("pattern-name-area");
 	let pattern = document.getElementById("pattern-main");
-	let table = document.createElement("TABLE");
 
+	let volumeControl = document.createElement("DIV");
+	volumeControl.id = "note-volume-control";
+
+	let table = document.createElement("TABLE");
 	table.oncontextmenu = () => false;
 
 	table.addEventListener("pointerdown", (e) => {
@@ -62,9 +69,15 @@ function PatternUi(songObj, assignSynthCallback) {
 
 		let { col } = getCellCoordinates(e.target);
 		redrawLine(col);
-		for (let i = Math.min(dragStartCol, col); i <= Math.max(dragStartCol, col); i++) {
+
+		let startCol = Math.min(dragStartCol, col);
+		let endCol = Math.max(dragStartCol, col);
+		let fillBlock = dragStartCol > col ? lengthMod : 100;
+
+		for (let i = startCol; i <= endCol; i++) {
 			setNoteAtColumn(noteArr[dragStartRow], i);
-			setNoteLengthAtColumn(lengthMod, i);
+			setNoteLengthAtColumn(i == endCol ? lengthMod : fillBlock, i);
+			setNoteVolumeAtColumn(volumeMod, i);
 		}
 
 		cancelClick = true;
@@ -72,6 +85,7 @@ function PatternUi(songObj, assignSynthCallback) {
 
 	table.addEventListener("pointerup", pointerEndListener);
 	table.addEventListener("pointercancel", pointerEndListener);
+	table.addEventListener("pointerleave", pointerEndListener);
 	table.addEventListener("touchend", pointerEndListener);
 
 
@@ -96,30 +110,42 @@ function PatternUi(songObj, assignSynthCallback) {
 		return songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].lengths[col];
 	}
 
+	function getNoteVolumeByColumn(col) {
+		return songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].volumes[col];
+	}
+
 	function setNoteAtColumn(note, col) {
 		songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].notes[col] = note;
 	}
 
 	function setNoteLengthAtColumn(length, col) {
-		songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].lengths[col] = Number(length);
+		songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].lengths[col] = length;
+	}
+
+	function setNoteVolumeAtColumn(length, col) {
+		songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].volumes[col] = length;
 	}
 
 	this.build = function () {
 		for (let i = 0; i <= DEFAULT_PARAMS.noteSet.length; i++) {
 			let tr = document.createElement("TR");
 			table.appendChild(tr);
-			for (let j = 0; j < 65; j++) {
+			for (let j = 0; j <= maxSequencerLength; j++) {
 				let td = document.createElement("TD");
 
 				if (i == 0 && j == 0) {
-					td.id = "note-length-control";
-					td.classList.add("fill-" + lengthMod);
+					let lControl = document.createElement("DIV");
+					lControl.id = "note-length-control";
+					lControl.classList.add("control-fill-" + lengthMod);
+					td.appendChild(lControl);
 				}
 
-				if (i == 0 && j > 0)
+				if (i == 0 && j > 0) {
 					td.id = "seq_col-" + (j - 1) + "_header";
+					playbackMarkers.push(td);
+				}
 
-				if (i == 0 && (j - 1) % 4 == 0)
+				if (i == 0 && (j - 1) % 4 == 0 && j > 1)
 					td.appendChild(document.createTextNode(j));
 
 				if (i > 0 && j == 0)
@@ -134,52 +160,63 @@ function PatternUi(songObj, assignSynthCallback) {
 				}
 
 				tr.appendChild(td);
+
+				if (i == 0 && j == maxSequencerLength) {
+					let tdl = document.createElement("TD");
+					tdl.id = "seq-volume-cell";
+					tdl.appendChild(volumeControl);
+					tr.appendChild(tdl);
+				}
 			}
 		}
 
 		pattern.appendChild(table);
 
 		let lControl = document.getElementById("note-length-control");
-		lControl.addEventListener("click", (e) => {
-			e.target.classList.remove("fill-" + lengthMod);
+		lControl.addEventListener("click", (event) => {
+			lControl.classList.remove("control-fill-" + lengthMod);
 
-			switch (lengthMod) {
-				case "25":
-					lengthMod = "50";
-					break;
-				case "50":
-					lengthMod = "75";
-					break;
-				case "75":
-					lengthMod = "100";
-					break;
-				case "100":
-					lengthMod = "125";
-					break;
-				case "125":
-					lengthMod = "25";
-					break;
-			}
+			let fullWidth = event.target.clientWidth;
+			if (event.offsetX < fullWidth / 2)
+				lengthMod -= 25;
+			else
+				lengthMod += 25;
 
-			e.target.classList.add("fill-" + lengthMod);
+			if (lengthMod > 100)
+				lengthMod = 25;
+
+			if (lengthMod < 25)
+				lengthMod = 100;
+
+			lControl.classList.add("control-fill-" + lengthMod);
 		})
 	}
 
-	document.getElementById("button-pattern-length-set").onclick = () => {
-		let lenValue = document.getElementById("input-pattern-length").value;
-		let len = Number(lenValue);
-		this.setLength(len);
-
-		for (let seq of patternObj.patternData) {
-			seq.notes.length = len;
-			seq.lengths.length = len;
+	this.setMarker = function (index) {
+		playbackMarkers[previousMarker].style.backgroundColor = "#111";
+		if (index >= 0 && index < playbackMarkers.length) {
+			playbackMarkers[index].style.backgroundColor = "#696969";
+			previousMarker = index;
 		}
+	}
 
-		if (patternObj) {
-			patternObj.length = len;
-			this.importSequence(patternObj);
-		}
-	};
+	volumeControl.addEventListener("click", (event) => {
+		let fullWidth = event.target.clientWidth;
+
+		if (event.offsetX < fullWidth / 2)
+			volumeMod -= 16;
+		else
+			volumeMod += 16;
+
+		if (volumeMod > 0)
+			volumeMod = -80;
+
+		if (volumeMod < -80)
+			volumeMod = 0;
+
+		let shadow = "inset " + Math.round(fullWidth * volumeMod / 100) + "px 0 0 0 #111";
+		event.target.style.boxShadow = shadow;
+	});
 
 	function setLineOfNotes() {
 		let col = dragStartCol;
@@ -191,17 +228,22 @@ function PatternUi(songObj, assignSynthCallback) {
 			}
 		}
 
+		let tmp = dragStartCol;
+		dragStartCol = col;
+		col = tmp;
+
 		redrawLine(col);
-		for (let i = col; i <= dragStartCol; i++) {
+		for (let i = dragStartCol; i <= col; i++) {
 			setNoteAtColumn(snote, i);
-			setNoteLengthAtColumn(lengthMod, i);
+			setNoteLengthAtColumn(i == col ? lengthMod : 100, i);
+			setNoteVolumeAtColumn(volumeMod, i);
 		}
 	}
 
 	function clearLineOfNotes() {
 		let col = dragStartCol;
 		let snote = noteArr[dragStartRow];
-		for (let i = col; i < patternLength; i++) {
+		for (let i = col; i < sequencerLength; i++) {
 			if (getNoteByColumn(i) != snote) {
 				break;
 			}
@@ -212,11 +254,12 @@ function PatternUi(songObj, assignSynthCallback) {
 		for (let i = dragStartCol; i <= col; i++) {
 			setNoteAtColumn(null, i);
 			setNoteLengthAtColumn(0, i);
+			setNoteVolumeAtColumn(0, i);
 		}
 	}
 
 	function redrawLine(col) {
-		for (let i = 0; i < patternLength; i++) {
+		for (let i = 0; i < sequencerLength; i++) {
 
 			let note = getNoteByColumn(i);
 			let row = findRowByNote(note);
@@ -224,28 +267,40 @@ function PatternUi(songObj, assignSynthCallback) {
 
 			let nextCell = document.getElementById("seq_col-" + i + "_row-" + dragStartRow);
 
-			if (i >= Math.min(dragStartCol, col) && i <= Math.max(dragStartCol, col)) {
-				if (prevCell)
+			let startCol = Math.min(dragStartCol, col);
+			let endCol = Math.max(dragStartCol, col);
+			let fillBlock = dragStartCol > col ? lengthMod : 100;
+
+			if (i >= startCol && i <= endCol) {
+				if (prevCell) {
 					prevCell.classList.remove("fill-" + getNoteLengthByColumn(i));
-				nextCell.classList.add("fill-" + lengthMod);
+					prevCell.classList.remove("vol-" + getNoteVolumeByColumn(i));
+				}
+				nextCell.classList.add("fill-" + (i == endCol ? lengthMod : fillBlock));
+				nextCell.classList.add("vol-" + volumeMod);
 			} else {
 				nextCell.classList.remove("fill-" + lengthMod);
-				if (prevCell)
+				nextCell.classList.remove("vol-" + volumeMod);
+				if (prevCell) {
 					prevCell.classList.add("fill-" + getNoteLengthByColumn(i));
+					prevCell.classList.add("vol-" + getNoteVolumeByColumn(i));
+				}
 			}
 		}
 	}
 
 	function clearLine(col) {
-		for (let i = 0; i < patternLength; i++) {
+		for (let i = 0; i < sequencerLength; i++) {
 
 			let note = getNoteByColumn(i);
 			let row = findRowByNote(note);
 			let cell = document.getElementById("seq_col-" + i + "_row-" + row);
 
 			if (i >= Math.min(dragStartCol, col) && i <= Math.max(dragStartCol, col)) {
-				if (cell)
+				if (cell) {
 					cell.classList.remove("fill-" + getNoteLengthByColumn(i));
+					cell.classList.remove("vol-" + getNoteVolumeByColumn(i));
+				}
 			}
 		}
 	}
@@ -256,25 +311,30 @@ function PatternUi(songObj, assignSynthCallback) {
 		let prevNote = getNoteByColumn(col);
 
 		if (prevNote == note) {
-			tgt.classList.remove("fill-" + getNoteLengthByColumn(col))
+			tgt.classList.remove("fill-" + getNoteLengthByColumn(col));
+			tgt.classList.remove("vol-" + getNoteVolumeByColumn(col));
 			setNoteAtColumn(null, col);
 			setNoteLengthAtColumn(0, col);
+			setNoteVolumeAtColumn(0, col);
 		} else {
 			if (prevNote) {
 				let prevRow = findRowByNote(prevNote);
 				let prevCell = document.getElementById("seq_col-" + col + "_row-" + prevRow);
 				prevCell.classList.remove("fill-" + getNoteLengthByColumn(col));
+				prevCell.classList.remove("vol-" + getNoteVolumeByColumn(col));
 			}
 
 			tgt.classList.add("fill-" + lengthMod);
+			tgt.classList.add("vol-" + volumeMod);
 			setNoteAtColumn(note, col);
 			setNoteLengthAtColumn(lengthMod, col);
+			setNoteVolumeAtColumn(volumeMod, col);
 		}
 	}
 
 	this.setLength = function (len) {
 		for (let i = 0; i < DEFAULT_PARAMS.noteSet.length; i++) {
-			for (let j = 0; j < Math.max(len, patternLength); j++) {
+			for (let j = 0; j < Math.max(len, sequencerLength); j++) {
 				let cell = document.getElementById("seq_col-" + j + "_row-" + i);
 
 				if (j < len)
@@ -284,7 +344,7 @@ function PatternUi(songObj, assignSynthCallback) {
 			}
 		}
 
-		for (let j = 1; j < Math.max(len, patternLength); j++) {
+		for (let j = 1; j < Math.max(len, sequencerLength); j++) {
 			let cell = document.getElementById("seq_col-" + j + "_header");
 			if (j < len)
 				cell.style.display = "table-cell";
@@ -292,7 +352,7 @@ function PatternUi(songObj, assignSynthCallback) {
 				cell.style.display = "none";
 		}
 
-		patternLength = len;
+		sequencerLength = len;
 	}
 
 	function findRowByNote(note) {
@@ -310,8 +370,10 @@ function PatternUi(songObj, assignSynthCallback) {
 
 			let row = findRowByNote(data.notes[i])
 			let cell = document.getElementById("seq_col-" + i + "_row-" + row);
-			if (cell)
+			if (cell) {
 				cell.classList.add("fill-" + data.lengths[i]);
+				cell.classList.add("vol-" + data.volumes[i]);
+			}
 		}
 	}
 
@@ -327,13 +389,15 @@ function PatternUi(songObj, assignSynthCallback) {
 				let row = findRowByNote(dataArr[i].notes[j])
 				let cell = document.getElementById("seq_col-" + j + "_row-" + row);
 				if (cell)
-					cell.classList.add("mark-shadow");
+					cell.classList.add("shade");
 			}
 		}
 	}
 
 	this.clearGrid = function () {
-		for (let className of ["mark-shadow", "fill-25", "fill-50", "fill-75", "fill-100", "fill-125",]) {
+		let classNames = ["shade", "fill-25", "fill-50", "fill-75", "fill-100",
+			"vol--16", "vol--32", "vol--48", "vol--64", "vol--80", "vol-0"];
+		for (let className of classNames) {
 			document.querySelectorAll("." + className).forEach(e => {
 				if (e.id != "note-length-control")
 					e.classList.remove(className);
@@ -342,8 +406,6 @@ function PatternUi(songObj, assignSynthCallback) {
 	}
 
 	this.importSequence = (data) => {
-		patternObj = data;
-
 		if (data.length)
 			this.setLength(data.length);
 
@@ -361,7 +423,7 @@ function PatternUi(songObj, assignSynthCallback) {
 
 	// Sequencer footer (pattern synth tabs)
 	const patternLayerTabListener = (event) => {
-		let activeLayerTab = document.querySelectorAll(".js-pattern-synth-tab.tab--active")[0];
+		let activeLayerTab = document.querySelectorAll(".js-pattern-layer-tab.tab--active")[0];
 		if (activeLayerTab)
 			activeLayerTab.classList.remove("tab--active");
 
@@ -372,13 +434,16 @@ function PatternUi(songObj, assignSynthCallback) {
 		this.importSequence(songObj.currentPattern);
 
 		let synthIndex = songObj.currentPattern.patternData[index].synthIndex;
-		if (synthIndex !== null)
+		if (synthIndex !== null) {
 			assignSynthCallback(songObj.synthParams[synthIndex], songObj.synths[synthIndex], songObj.synthNames[synthIndex]);
+			songObj.currentSynthIndex = synthIndex;
+			g_markCurrentSynth();
+		}
 	}
 
 	this.rebuildPatternSynthList = function (pattern) {
 		let addLayerBtn = document.getElementById("button-add-pattern-layer");
-		let patternTabs = document.querySelectorAll(".js-pattern-synth-tab");
+		let patternTabs = document.querySelectorAll(".js-pattern-layer-tab");
 		patternTabs.forEach(e => e.remove());
 
 		if (pattern.patternData.length == 1 && pattern.patternData[0].synthIndex === null)
@@ -400,7 +465,8 @@ function PatternUi(songObj, assignSynthCallback) {
 			if (i == pattern.activeIndex)
 				tab.classList.add("tab--active");
 
-			tab.classList.add("js-pattern-synth-tab");
+			tab.classList.add("tab");
+			tab.classList.add("js-pattern-layer-tab");
 			addLayerBtn.before(tab);
 			tab.addEventListener("click", patternLayerTabListener);
 		}

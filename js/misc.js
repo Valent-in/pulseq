@@ -9,7 +9,7 @@
 		let viewId = tabName + "-view";
 
 		containers.forEach(e => {
-			e.classList.add("hidden")
+			e.classList.add("view--hidden")
 		})
 
 		tabs.forEach(e => {
@@ -20,7 +20,7 @@
 		cTab.classList.add("tab--active");
 
 		let cView = document.getElementById(viewId);
-		cView.classList.remove("hidden");
+		cView.classList.remove("view--hidden");
 	}
 
 	tabs.forEach((elem) => {
@@ -65,6 +65,7 @@
 	let okButton = document.getElementById("button-alert-ok");
 	let cancelButton = document.getElementById("button-alert-cancel");
 	let textField = document.getElementById("input-modal-alert");
+	let textFieldArea = document.getElementById("input-area-modal-alert");
 
 	let dialogTypes = [];
 	let messages = [];
@@ -77,20 +78,20 @@
 	let isShow = false;
 
 	okButton.onclick = () => {
-		if (dialogType == "confirm")
+		if (dialogType == "confirm" && typeof callbackFunc == "function")
 			callbackFunc(true);
 
-		if (dialogType == "prompt")
+		if (dialogType == "prompt" && typeof callbackFunc == "function")
 			callbackFunc(textField.value);
 
 		hideDialog();
 	};
 
 	cancelButton.onclick = () => {
-		if (dialogType == "confirm")
+		if (dialogType == "confirm" && typeof callbackFunc == "function")
 			callbackFunc(false);
 
-		if (dialogType == "prompt")
+		if (dialogType == "prompt" && typeof callbackFunc == "function")
 			callbackFunc(null);
 
 		hideDialog();
@@ -116,10 +117,10 @@
 			dialogTypes.push(type);
 		} else {
 			showFieldsByType(type);
-			setDialogText(alertText, inputText);
+			setDialogText(alertText || "", inputText || "");
 			callbackFunc = callback;
 			dialogType = type;
-			alertDialog.classList.remove("modal-hidden");
+			alertDialog.classList.remove("nodisplay");
 			isShow = true;
 		}
 	}
@@ -127,18 +128,18 @@
 	function showFieldsByType(type) {
 		switch (type) {
 			case "alert":
-				cancelButton.classList.add("modal-hidden");
-				textField.classList.add("modal-hidden");
+				cancelButton.classList.add("nodisplay");
+				textFieldArea.classList.add("nodisplay");
 				break;
 
 			case "confirm":
-				cancelButton.classList.remove("modal-hidden");
-				textField.classList.add("modal-hidden");
+				cancelButton.classList.remove("nodisplay");
+				textFieldArea.classList.add("nodisplay");
 				break;
 
 			case "prompt":
-				cancelButton.classList.remove("modal-hidden");
-				textField.classList.remove("modal-hidden");
+				cancelButton.classList.remove("nodisplay");
+				textFieldArea.classList.remove("nodisplay");
 				break;
 		}
 	}
@@ -150,7 +151,7 @@
 	}
 
 	function hideDialog() {
-		alertDialog.classList.add("modal-hidden");
+		alertDialog.classList.add("nodisplay");
 		isShow = false;
 
 		if (messages.length > 0) {

@@ -5,7 +5,7 @@ function Synth(outputNode, transportBPM) {
 
 	/* 
 	 * Main audio chain:
-	 * VCO1+VCO2+O3+Noise -> Mixer -> Envelope -> VC Filter -> VC Amplifier -> FX -> Amplifier -> Pan ->
+	 * VCO1+VCO2+O3+Noise -> Mixer -> Envelope -> VC Filter -> VC Amplifier -> Pan -> Amplifier -> FX ->
 	 */
 
 	this.envelope = new Tone.AmplitudeEnvelope();
@@ -29,6 +29,7 @@ function Synth(outputNode, transportBPM) {
 		lfo1Value: 0,
 		lfo2Value: 0,
 		panValue: 0,
+		volumeValue: 0,
 
 		envAttackValue: 0,
 		envDecayValue: 0,
@@ -71,9 +72,24 @@ function Synth(outputNode, transportBPM) {
 	this.ampout.connect(outputNode);
 
 	let freqSignal = new Tone.Signal({ units: "frequency" });
+	let lastVolumeMod = 0;
+	let lastNote = "";
 
-	this.triggerAttack = function (note, time) {
+	this.triggerAttack = function (note, volumeMod, time, duration) {
+		lastNote = note;
 		freqSignal.setValueAtTime(note, time);
+
+		if (volumeMod != lastVolumeMod) {
+			if (lastVolumeMod < volumeMod) {
+				lastVolumeMod = volumeMod;
+				let attackMod = Math.min(this.values.envAttackValue, duration);
+				this.ampout.gain.linearRampTo(this.calculateVolume(), attackMod, time);
+			} else {
+				lastVolumeMod = volumeMod;
+				// Reduce volume before triggerAttack
+				this.ampout.gain.exponentialRampTo(this.calculateVolume(), 0.01, time - 0.011);
+			}
+		}
 
 		this.envelope.triggerAttack(time);
 
@@ -88,9 +104,28 @@ function Synth(outputNode, transportBPM) {
 			this.envelopeMod.triggerRelease(time);
 	}
 
-	this.glideTo = function (note, time, duration) {
-		let freq = Tone.Frequency(note).toFrequency();
-		freqSignal.linearRampTo(freq, duration * this.glide, time)
+	this.glideTo = function (note, volumeMod, time, duration) {
+		if (note != lastNote) {
+			lastNote = note;
+			let freq = Tone.Frequency(note).toFrequency();
+			freqSignal.linearRampTo(freq, duration * this.glide, time);
+		}
+
+		if (volumeMod != lastVolumeMod) {
+			lastVolumeMod = volumeMod;
+			let glideTime = Math.max(duration * this.glide, 0.01);
+			this.ampout.gain.linearRampTo(this.calculateVolume(), glideTime, time);
+		}
+	}
+
+	this.calculateVolume = function () {
+		let volume = (1 + lastVolumeMod / 100) * this.values.volumeValue;
+		return (Math.exp(volume * 5.76) - 1) / 1000 * 3.1611;
+	}
+
+	this.setVolume = function (value) {
+		this.values.volumeValue = value
+		this.ampout.gain.value = this.calculateVolume();
 	}
 
 	this.addOsc1 = function (isOsc) {
@@ -280,11 +315,11 @@ function Synth(outputNode, transportBPM) {
 
 	this.addFX = function (type) {
 		if (this.FX) {
-			this.ampAM.disconnect();
+			this.ampout.disconnect();
 			this.FX.disconnect();
 			this.FX.dispose();
 			this.FX = null;
-			this.ampAM.chain(this.ampout);
+			this.ampout.chain(outputNode);
 			console.log("remove FX");
 		}
 
@@ -321,15 +356,23 @@ function Synth(outputNode, transportBPM) {
 			case "phaser":
 				this.FX = new Tone.Phaser({ baseFrequency: 1000 });
 				break;
+
+			case "tremolo":
+				this.FX = new Tone.Tremolo();
+				this.FX.start();
+				break;
+
+			case "vibrato":
+				this.FX = new Tone.Vibrato();
+				break;
 		}
 
 		if (!this.FX)
 			return;
 
-		this.ampAM.disconnect();
-
-		this.ampAM.chain(this.FX);
-		this.FX.chain(this.ampout);
+		this.ampout.disconnect();
+		this.ampout.chain(this.FX);
+		this.FX.chain(outputNode);
 
 		this.setFXValue();
 		this.setFXRate();
@@ -371,6 +414,11 @@ function Synth(outputNode, transportBPM) {
 			case "phaser":
 				this.FX.octaves = this.values.FXAmountValue * 5;
 				break;
+
+			case "tremolo":
+			case "vibrato":
+				this.FX.depth.value = this.values.FXAmountValue;
+				break;
 		}
 	}
 
@@ -396,6 +444,8 @@ function Synth(outputNode, transportBPM) {
 				break;
 
 			case "phaser":
+			case "tremolo":
+			case "vibrato":
 				this.FX.frequency.value = this.values.FXRateValue * 50;
 				break;
 		}
@@ -408,19 +458,20 @@ function Synth(outputNode, transportBPM) {
 
 			this.pan = new Tone.Panner(0);
 			this.pan.pan.value = this.values.panValue;
-			this.ampout.disconnect();
-			this.ampout.chain(this.pan);
-			this.pan.connect(outputNode);
+			this.ampAM.disconnect();
+			this.ampAM.chain(this.pan);
+			this.pan.chain(this.ampout);
+
 			console.log("add pan");
 		} else {
 			if (!this.pan)
 				return;
 
-			this.ampout.disconnect();
+			this.ampAM.disconnect();
 			this.pan.disconnect();
 			this.pan.dispose();
 			this.pan = null;
-			this.ampout.connect(outputNode);
+			this.ampAM.connect(this.ampout);
 			console.log("remove pan");
 		}
 	}

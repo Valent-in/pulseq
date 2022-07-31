@@ -1,7 +1,6 @@
 function synthParamApply(paramId, controlValue, synth) {
     let value = Number(controlValue);
 
-    const volumeExp = (x) => (10 ** x - 1) * 0.111111;
     const envelopeExp = (x) => (2 ** x - 1) / 255;
     const freqModExp = (x) => (2 ** x - 1) * 20;
     const filterExp = (x) => (2 ** x - 1) * 320;
@@ -146,7 +145,7 @@ function synthParamApply(paramId, controlValue, synth) {
             break;
 
         case "synth-envelope-decay":
-            synth.values.envDecayValue = envelopeExp(value);
+            synth.values.envDecayValue = envelopeExp(value) + 0.001;
             synth.envelope.decay = synth.values.envDecayValue;
             synth.syncEnvelope();
             break;
@@ -158,7 +157,7 @@ function synthParamApply(paramId, controlValue, synth) {
             break;
 
         case "synth-envelope-release":
-            synth.values.envReleaseValue = envelopeExp(value);
+            synth.values.envReleaseValue = envelopeExp(value) + 0.001;
             synth.envelope.release = synth.values.envReleaseValue;
             synth.syncEnvelope();
             break;
@@ -189,7 +188,7 @@ function synthParamApply(paramId, controlValue, synth) {
 
         // Amplifier
         case "synth-amplifier-gain":
-            synth.ampout.gain.value = volumeExp(value);
+            synth.setVolume(value);
             break;
 
         //Glide
@@ -268,7 +267,7 @@ function synthParamApply(paramId, controlValue, synth) {
             break;
 
         case "synth-mod-envelope-decay":
-            synth.values.envModDecayValue = envelopeExp(value);
+            synth.values.envModDecayValue = envelopeExp(value) + 0.001;
             synth.syncEnvelope();
             break;
 
@@ -278,7 +277,7 @@ function synthParamApply(paramId, controlValue, synth) {
             break;
 
         case "synth-mod-envelope-release":
-            synth.values.envModReleaseValue = envelopeExp(value);
+            synth.values.envModReleaseValue = envelopeExp(value) + 0.001;
             synth.syncEnvelope();
             break;
 

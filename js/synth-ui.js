@@ -1,12 +1,9 @@
 "use strict"
 
 function SynthUi() {
-
-	let synthFooter = document.getElementById("synth-footer");
-	synthFooter.addEventListener("click", () => {
-		synthFooter.classList.remove("synth-footer-shrink");
-		synthFooter.classList.add("synth-footer-expand");
-	})
+	document.getElementById("button-piano-show").onclick = () => {
+		document.getElementById("synth-view").classList.toggle("synth-footer-shrink");
+	}
 
 	let pianoContainer = document.getElementById("piano-container");
 
@@ -15,9 +12,9 @@ function SynthUi() {
 	if ("ontouchstart" in window) {
 		eventDown = "touchstart";
 		eventUp = "touchend";
-		//console.log("touch device");
-	}
 
+		document.getElementById("synth-main").classList.add("slider-drag-only-area");
+	}
 
 	for (let i = 0; i < DEFAULT_PARAMS.noteSet.length; i++) {
 		let key = document.createElement("DIV");
@@ -39,7 +36,7 @@ function SynthUi() {
 				this.currentSynth.lfo1.start();
 			}
 
-			this.currentSynth.triggerAttack(note);
+			this.currentSynth.triggerAttack(note, 0, Tone.now(), 0.5);
 		})
 
 		key.addEventListener(eventUp, () => {
@@ -49,23 +46,6 @@ function SynthUi() {
 
 		pianoContainer.appendChild(key);
 	}
-
-	let pianoControls = document.createElement("div");
-	pianoControls.id = "piano-controls";
-	let pianoHide = document.createElement("div");
-	pianoHide.id = "piano-hide";
-	let noRelease = document.createElement("div");
-	noRelease.id = "piano-no-release";
-
-	pianoControls.appendChild(pianoHide);
-	pianoControls.appendChild(noRelease);
-	pianoContainer.appendChild(pianoControls);
-
-	pianoHide.addEventListener("click", (event) => {
-		event.stopPropagation();
-		synthFooter.classList.remove("synth-footer-expand");
-		synthFooter.classList.add("synth-footer-shrink");
-	})
 
 	const universalSynthListener = (e) => {
 		//console.log("synth listener :", e.target.id, e.target.value)
@@ -81,8 +61,6 @@ function SynthUi() {
 
 	let controls = document.querySelectorAll("#synth-main input, #synth-main select, #synth-main button");
 	controls.forEach((e) => {
-		//console.log(e.id, e.tagName);
-
 		switch (e.tagName) {
 			case "INPUT":
 				e.addEventListener("input", universalSynthListener);
@@ -96,31 +74,7 @@ function SynthUi() {
 				e.addEventListener("click", universalSynthListener);
 				break;
 		}
-	})
-
-	// Restore slider position after scroll misclick (touchscreen)
-	let rangeInputs = document.querySelectorAll("#synth-main input[type=range]");
-	rangeInputs.forEach((e) => {
-		e.addEventListener("pointerup", saveValue);
-		e.addEventListener("touchend", saveValue);
-		e.addEventListener("keyup", saveValue);
-		e.addEventListener("wheel", saveValue);
-
-		e.addEventListener("pointercancel", (el) => {
-			el.target.value = el.target.dataset.value;
-			universalSynthListener(el);
-		});
-
-		function saveValue(el) {
-			el.target.dataset.value = el.target.value;
-		};
 	});
-
-	this.loadSynth = function (params, targetSynth) {
-		for (let key in params) {
-			synthParamApply(key, params[key], targetSynth);
-		}
-	};
 
 	this.assignSynth = (params, targetSynth, name) => {
 		this.curSynthParamObj = params;
@@ -128,53 +82,18 @@ function SynthUi() {
 
 		for (let key in params) {
 			let input = document.getElementById(key);
-			if (input) {
-				if (input.type == "checkbox") {
+			if (input)
+				if (input.type == "checkbox")
 					input.checked = params[key];
-				} else {
+				else
 					input.value = params[key];
-					input.dataset.value = params[key];
-				}
-			}
 		}
 
 		if (name) {
-			let synthTab = document.getElementById("synth-tab");
+			let synthTab = document.getElementById("synth-name-area");
 			synthTab.innerHTML = "";
 			synthTab.appendChild(document.createTextNode(name));
 		}
 	}
-
-	this.resetCurrentSynth = () => {
-		for (let key in DEFAULT_PARAMS.synthState)
-			this.curSynthParamObj[key] = DEFAULT_PARAMS.synthState[key];
-
-		this.loadSynth(this.curSynthParamObj, this.currentSynth);
-		this.assignSynth(this.curSynthParamObj, this.currentSynth);
-
-	}
-
-	let resetSynthButton = document.getElementById("button-reset-synth");
-	resetSynthButton.addEventListener("click", () => g_showConfirm("Reset synth?", (isOk) => {
-		if (isOk)
-			this.resetCurrentSynth();
-	}));
-
-	let importSynthButton = document.getElementById("button-import-synth");
-	importSynthButton.addEventListener("click", () => {
-		let str = document.getElementById("text-export-data").value;
-		let params = JSON.parse(str);
-		this.loadSynth(params, this.currentSynth);
-		this.assignSynth(params, this.currentSynth);
-
-		for (let key in params)
-			this.curSynthParamObj[key] = params[key];
-	});
-
-	let exportSynthButton = document.getElementById("button-export-synth");
-	exportSynthButton.addEventListener("click", () => {
-		let outText = document.getElementById("text-export-data");
-		outText.value = JSON.stringify(this.curSynthParamObj, null, 1);
-	});
 
 }
