@@ -6,15 +6,7 @@ function SynthUi() {
 	}
 
 	let pianoContainer = document.getElementById("piano-container");
-
-	let eventDown = "mousedown";
-	let eventUp = "mouseup";
-	if ("ontouchstart" in window) {
-		eventDown = "touchstart";
-		eventUp = "touchend";
-
-		document.getElementById("synth-main").classList.add("slider-drag-only-area");
-	}
+	pianoContainer.oncontextmenu = () => false;
 
 	for (let i = 0; i < DEFAULT_PARAMS.noteSet.length; i++) {
 		let key = document.createElement("DIV");
@@ -29,7 +21,7 @@ function SynthUi() {
 			key.classList.add("piano-key-black");
 		}
 
-		key.addEventListener(eventDown, () => {
+		key.addEventListener("pointerdown", () => {
 			//console.log(note);
 			if (this.currentSynth.lfo1) {
 				this.currentSynth.lfo1.stop();
@@ -39,12 +31,16 @@ function SynthUi() {
 			this.currentSynth.triggerAttack(note, 0, Tone.now(), 0.5);
 		})
 
-		key.addEventListener(eventUp, () => {
+		key.addEventListener("pointerup", () => {
 			//if (silence)
 			this.currentSynth.triggerRelease();
 		})
 
 		pianoContainer.appendChild(key);
+	}
+
+	if ("ontouchstart" in window) {
+		document.getElementById("synth-main").classList.add("slider-drag-only-area");
 	}
 
 	const universalSynthListener = (e) => {
