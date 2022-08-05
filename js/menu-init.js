@@ -39,6 +39,56 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, showSequence
         reader.readAsText(file);
     }
 
+    document.getElementById("button-demo-track").onclick = () => {
+        document.getElementById("demo-modal-menu").classList.remove("nodisplay");
+
+        let container = document.getElementById("demo-list-container");
+        container.innerHTML = "Loading...";
+
+        fetch("data/tracklist.json").then(response => response.json()).then(data => {
+            console.log(data);
+            container.innerHTML = "";
+            for (let i = 0; i < data.length; i++) {
+                let item = document.createElement("DIV");
+                item.appendChild(document.createTextNode(data[i].name));
+                item.classList.add("startup-menu-entry");
+                item.classList.add("js-demo-entry");
+                item.dataset.file = data[i].file;
+                container.appendChild(item);
+            }
+        }).catch(() => {
+            container.innerHTML = "Data loading error!";
+        });
+    }
+
+    /*
+     * Demo modal menu
+     */
+    document.getElementById("demo-list-container").onclick = (event) => {
+        console.log(event.target.dataset.file);
+
+        if (!event.target.classList.contains("js-demo-entry"))
+            return;
+
+        let container = document.getElementById("demo-list-container");
+        container.innerHTML = "Loading...";
+
+        let filename = event.target.dataset.file;
+        fetch("data/tracks/" + filename).then(response => response.json()).then(data => {
+            importSong(JSON.stringify(data));
+
+            document.getElementById("demo-modal-menu").classList.add("nodisplay");
+            document.getElementById("startup-modal-menu").classList.add("nodisplay");
+
+        }).catch(() => {
+            container.innerHTML = "Data loading error!";
+        });
+    };
+
+    document.getElementById("button-demo-menu-close").onclick = () => {
+        document.getElementById("demo-modal-menu").classList.add("nodisplay");
+    };
+
     /*
      * Arrange modal menu
      */

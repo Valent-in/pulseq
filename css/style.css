@@ -7,6 +7,31 @@ a {
 	color: #55f;
 }
 
+#app-icons {
+	float: right;
+}
+
+#app-icons>div {
+	width: 20px;
+	height: 20px;
+	float: left;
+	margin-left: 4px;
+	background-size: 100% 100%;
+	border-radius: 4px;
+}
+
+#app-icons> :nth-child(1) {
+	background-image: url("../img/stop.svg");
+}
+
+#app-icons> :nth-child(2) {
+	background-image: url("../img/icon.svg");
+}
+
+#app-icons> :nth-child(3) {
+	background-image: url("../img/stopg.svg");
+}
+
 #container {
 	height: 100vh;
 	display: flex;

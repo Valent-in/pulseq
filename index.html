@@ -4,6 +4,7 @@
 <head>
 	<meta charset="UTF-8">
 	<title>PulseQ</title>
+	<link rel='shortcut icon' type='image/svg' href='img/icon.svg'>
 	<meta name="viewport" content="width=device-width, user-scalable=no" />
 	<meta name="theme-color" content="#111111" />
 
@@ -397,7 +398,12 @@
 		<div id="startup-modal-menu" class="modal-container">
 			<div class="modal-box" id="startup-menu-box">
 				<div class="modal-box-block">
-					PulseQ
+					<span>PulseQ</span>
+					<div id="app-icons">
+						<div></div>
+						<div></div>
+						<div></div>
+					</div>
 				</div>
 
 				<div class="modal-box-block" id="startup-loading-title">
@@ -410,6 +416,17 @@
 						<input type="file" accept=".json" id="input-import-track">
 						<span>Import</span>
 					</div>
+					<div class="startup-menu-entry" id="button-demo-track">Demo</div>
+				</div>
+			</div>
+		</div>
+
+		<div id="demo-modal-menu" class="modal-container nodisplay">
+			<div class="modal-box">
+				<div class="modal-box-block" id="demo-list-container"></div>
+
+				<div class="modal-box-block modal-box-footer">
+					<button id="button-demo-menu-close" class="button-modal-bottom">Close</button>
 				</div>
 			</div>
 		</div>
