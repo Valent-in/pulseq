@@ -1,5 +1,5 @@
 {
- "songFormatVersion": "1.0",
+ "songFormatVersion": "1.1",
  "synthParams": [
   {
    "synth-amplifier-gain": 1,
@@ -3365,8 +3365,25 @@
   "bass1",
   "bass3"
  ],
+ "patternColors": [
+  5,
+  5,
+  5,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  1,
+  1,
+  7,
+  9,
+  9,
+  9
+ ],
  "compressorThreshold": -35,
- "compressorRatio": "3",
+ "compressorRatio": 3,
  "bpm": 122,
  "barSteps": 16,
  "title": "demo1"

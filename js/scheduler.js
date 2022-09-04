@@ -7,12 +7,19 @@ function Scheduler(songObj, barCallback, stepCallback) {
 	let isPatternPlaying = false;
 	let onInnerStopCallback = null;
 
+	let schedulerId = null;
+
 	function stop() {
 		if (!isPlaying)
 			return;
 
-		Tone.Transport.stop();
+		if (schedulerId !== null) {
+			Tone.Transport.clear(schedulerId);
+			schedulerId = null;
+		}
 		Tone.Transport.cancel();
+		Tone.Transport.stop();
+
 		isPlaying = false;
 		isPatternPlaying = false;
 		console.log("STOP Playback");
@@ -134,7 +141,7 @@ function Scheduler(songObj, barCallback, stepCallback) {
 		let sequenceIndex = 0;
 		let synced = false;
 
-		Tone.Transport.scheduleRepeat(function (time) {
+		schedulerId = Tone.Transport.scheduleRepeat(function (time) {
 			if (!synced) {
 				syncLfos(songObj.synths, time);
 				synced = true;
@@ -158,7 +165,7 @@ function Scheduler(songObj, barCallback, stepCallback) {
 		};
 		let synced = false;
 
-		Tone.Transport.scheduleRepeat(function (time) {
+		schedulerId = Tone.Transport.scheduleRepeat(function (time) {
 			if (!synced) {
 				syncLfos(songObj.synths, time);
 				synced = true;

@@ -32,9 +32,12 @@ function SynthUi() {
 		})
 
 		key.addEventListener("pointerup", () => {
-			//if (silence)
 			this.currentSynth.triggerRelease();
-		})
+		});
+
+		key.addEventListener("pointercancel", () => {
+			this.currentSynth.triggerRelease();
+		});
 
 		pianoContainer.appendChild(key);
 	}

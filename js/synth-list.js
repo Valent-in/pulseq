@@ -1,18 +1,18 @@
 "use strict"
 
 function SynthList(songObj, synthUi, rebuildPatternSynthListCallback) {
-	let o = {};
+	let that = this;
 	let selectedSynthIndex = 0;
 
 	let addSynth = document.getElementById("button-add-synth");
 	addSynth.addEventListener("click", () => {
-		let defaultName = "synth" + (songObj.synths.length + 1);
+		let defaultName = songObj.generateSynthName();
 		g_showPrompt("Enter synth name", (result) => {
 			if (!result) {
 				console.log("Synth NOT created");
 				return;
 			}
-			o.createNewSynth(result);
+			that.createNewSynth(result);
 			g_switchTab("synth");
 		}, defaultName);
 	});
@@ -32,7 +32,7 @@ function SynthList(songObj, synthUi, rebuildPatternSynthListCallback) {
 
 		if (value) {
 			songObj.synthNames[selectedSynthIndex] = value;
-			o.rebuildSynthList();
+			that.rebuildSynthList();
 			rebuildPatternSynthListCallback();
 
 			if (selectedSynthIndex == songObj.currentSynthIndex) {
@@ -57,7 +57,7 @@ function SynthList(songObj, synthUi, rebuildPatternSynthListCallback) {
 			rebuildPatternSynthListCallback();
 			synthUi.assignSynth(songObj.synthParams[0], songObj.synths[0], songObj.synthNames[0]);
 			songObj.currentSynthIndex = 0;
-			o.rebuildSynthList();
+			that.rebuildSynthList();
 			g_switchTab("synth-list");
 			document.getElementById("synth-modal-menu").classList.add("nodisplay");
 		});
@@ -84,40 +84,55 @@ function SynthList(songObj, synthUi, rebuildPatternSynthListCallback) {
 
 	document.getElementById("button-copy-synth").onclick = () => {
 		let name = songObj.synthNames[selectedSynthIndex];
+		let defaultName = songObj.generateSynthName(name.split("-")[0] + "-", 2);
+
 		g_showPrompt("Copy synth \"" + name + "\" to", (result) => {
 			if (result === null)
 				return;
 
-			for (let i = 0; i < songObj.synthNames.length; i++) {
-				if (result == songObj.synthNames[i]) {
-					g_showConfirm("Synth with name '" + result + "' already exists. Overwrite?", (isOk) => {
-						document.getElementById("synth-modal-menu").classList.add("nodisplay");
-						if (!isOk)
-							return;
+			let sameCount = 0;
+			for (let e of songObj.synthNames)
+				if (e == result)
+					sameCount++;
 
-						let sourceParams = songObj.synthParams[selectedSynthIndex];
-						let targetParams = songObj.synthParams[i];
-						let targetSynth = songObj.synths[i];
+			let confirmMsg = sameCount <= 1 ?
+				"Synth with name '" + result + "' already exists. Overwrite?" :
+				sameCount + " synths with name '" + result + "' already exist. Overwrite?";
 
-						for (let key in sourceParams) {
-							targetParams[key] = sourceParams[key];
-							synthParamApply(key, targetParams[key], targetSynth);
+			if (sameCount > 0) {
+				g_showConfirm(confirmMsg, (isOk) => {
+					document.getElementById("synth-modal-menu").classList.add("nodisplay");
+					if (!isOk)
+						return;
+
+					for (let i = 0; i < songObj.synthNames.length; i++) {
+						if (result == songObj.synthNames[i]) {
+
+							let sourceParams = songObj.synthParams[selectedSynthIndex];
+							let targetParams = songObj.synthParams[i];
+							let targetSynth = songObj.synths[i];
+
+							for (let key in sourceParams) {
+								targetParams[key] = sourceParams[key];
+								synthParamApply(key, targetParams[key], targetSynth);
+							}
 						}
-
-						g_switchTab("synth-list");
-					});
-
-					return;
-				}
+					}
+				});
 			}
 
-			o.createNewSynth(result, songObj.synthParams[selectedSynthIndex]);
+			if (sameCount >= 1) {
+				g_switchTab("synth-list");
+				return;
+			}
+
+			that.createNewSynth(result, songObj.synthParams[selectedSynthIndex]);
 
 			console.log("Synth '" + name + "' copied to '" + result + "'");
-			o.rebuildSynthList();
+			that.rebuildSynthList();
 			g_switchTab("synth-list");
 			document.getElementById("synth-modal-menu").classList.add("nodisplay");
-		}, name + "-2");
+		}, defaultName);
 	};
 
 	document.getElementById("input-import-synth").onchange = (e) => {
@@ -138,7 +153,7 @@ function SynthList(songObj, synthUi, rebuildPatternSynthListCallback) {
 			}
 
 			let synth = songObj.synths[selectedSynthIndex];
-			let newParams = o.loadSynth(params, synth);
+			let newParams = that.loadSynth(params, synth);
 			for (let key in newParams)
 				songObj.synthParams[selectedSynthIndex][key] = newParams[key];
 
@@ -155,33 +170,24 @@ function SynthList(songObj, synthUi, rebuildPatternSynthListCallback) {
 		let file = new Blob([expString], { type: 'text/json' });
 		e.target.href = URL.createObjectURL(file);
 		let name = songObj.synthNames[selectedSynthIndex] || "synth";
-		e.target.download = name + ".json";
+		e.target.download = name + ".synth.json";
 	};
 
 
-	o.createNewSynth = function (name, copyFromParams) {
-		let newSynth = new Synth(songObj.compressor, songObj.bpm);
-		let newSynthParamObj = {};
-		let params = copyFromParams || DEFAULT_PARAMS.synthState;
-
-		for (let key in params) {
-			newSynthParamObj[key] = params[key];
-			synthParamApply(key, newSynthParamObj[key], newSynth);
-		}
-
-		songObj.synthParams.push(newSynthParamObj);
-		songObj.synths.push(newSynth);
-		songObj.synthNames.push(name);
+	this.createNewSynth = function (name, copyFromParams) {
+		songObj.createSynth(name, copyFromParams);
 
 		if (!copyFromParams) {
-			synthUi.assignSynth(newSynthParamObj, newSynth, name);
 			songObj.currentSynthIndex = songObj.synths.length - 1;
+			let synthParamObj = songObj.synthParams[songObj.currentSynthIndex];
+			let synth = songObj.synths[songObj.currentSynthIndex];
+			synthUi.assignSynth(synthParamObj, synth, name);
 		}
 
-		o.rebuildSynthList();
+		this.rebuildSynthList();
 	}
 
-	o.rebuildSynthList = function () {
+	this.rebuildSynthList = function () {
 		let container = document.getElementById("synth-list-main");
 		container.innerHTML = "";
 
@@ -227,7 +233,7 @@ function SynthList(songObj, synthUi, rebuildPatternSynthListCallback) {
 		}
 	}
 
-	o.loadSynth = function (synthParams, targetSynth) {
+	this.loadSynth = function (synthParams, targetSynth) {
 		let newParams = {};
 
 		for (let key in DEFAULT_PARAMS.synthState) {
@@ -247,6 +253,4 @@ function SynthList(songObj, synthUi, rebuildPatternSynthListCallback) {
 		menu.classList.remove("nodisplay");
 		document.getElementById("input-synth-name").value = songObj.synthNames[selectedSynthIndex];
 	}
-
-	return o;
 }

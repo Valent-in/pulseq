@@ -13,6 +13,7 @@ function PatternUi(songObj, assignSynthCallback) {
 	let pointerPress = false;
 	let pressTimeout = 0;
 	let cancelClick = false;
+	let barLength = 0;
 
 	let playbackMarkers = [];
 	let previousMarker = 0;
@@ -363,6 +364,18 @@ function PatternUi(songObj, assignSynthCallback) {
 		return -1;
 	}
 
+	function updateBarSeparator() {
+		if (barLength == songObj.barSteps)
+			return;
+
+		barLength = songObj.barSteps;
+		let style = document.getElementById("bar-separator-style");
+		style.innerText = `
+			#pattern-main td:nth-child(${barLength}n+1) {
+				border-right: 1px solid #6a6a6a;
+			}`;
+	}
+
 	function importData(data) {
 		for (let i = 0; i < data.notes.length; i++) {
 			if (data.notes[i] === null)
@@ -415,6 +428,7 @@ function PatternUi(songObj, assignSynthCallback) {
 		this.clearGrid();
 		importData(dataArr[currentIndex]);
 		importShadowData(dataArr, currentIndex);
+		updateBarSeparator();
 
 		patternName.innerHTML = "";
 		patternName.appendChild(document.createTextNode(data.name));

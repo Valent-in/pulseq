@@ -1,4 +1,4 @@
-# PulseQ
+# PulseQueue
 
 Simple web-based application for creating electronic music.
 

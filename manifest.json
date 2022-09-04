@@ -1,0 +1,16 @@
+{
+	"name": "PulseQueue",
+	"display": "standalone",
+	"background_color": "#111111",
+	"theme_color": "#111111",
+	"icons": [
+		{
+			"src": "img/icon.png",
+			"sizes": "104x104"
+		},
+		{
+			"src": "img/icon.svg",
+			"sizes": "any"
+		}
+	]
+}

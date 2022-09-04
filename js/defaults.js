@@ -51,7 +51,7 @@ DEFAULT_PARAMS.synthState = {
 	"synth-osc3-octave": 0,
 	"synth-osc3-type": "[none]",
 	"synth-pan": 0
-}
+};
 
 DEFAULT_PARAMS.noteSet = [
 	"C2", "Db2", "D2", "Eb2", "E2", "F2", "Gb2", "G2", "Ab2", "A2", "Bb2", "B2",
@@ -59,4 +59,11 @@ DEFAULT_PARAMS.noteSet = [
 	"C4", "Db4", "D4", "Eb4", "E4", "F4", "Gb4", "G4", "Ab4", "A4", "Bb4", "B4",
 	"C5", "Db5", "D5", "Eb5", "E5", "F5", "Gb5", "G5", "Ab5", "A5", "Bb5", "B5",
 	"C6", "Db6", "D6", "Eb6", "E6", "F6", "Gb6", "G6", "Ab6", "A6", "Bb6", "B6"
+];
+
+DEFAULT_PARAMS.colorSet = [
+	"#b4d", "#4bd", "#4db", "#bd4", "#db4", "#d4b",
+	"#97d", "#7dd", "#7d9", "#dd7", "#d94", "#d77",
+	"#b9d", "#9bd", "#bd9", "#dd9", "#db9", "#d9b",
+	"#999", "#bbb", "#ddd", "#55d", "#5b5", "#d55"
 ];

@@ -1,6 +1,10 @@
+html, body {
+	overscroll-behavior-y: contain;
+}
+
 body {
 	background-color: #111;
-	overflow-y: hidden;
+	overflow-y: visible;
 }
 
 a {
@@ -230,7 +234,7 @@ a {
 }
 
 #synth-main>div {
-	border: 1px solid #333;
+	border: 1px solid #444;
 	background-color: #191919;
 	border-radius: 3px;
 	flex-grow: 1;
@@ -238,7 +242,7 @@ a {
 	min-width: 40vw;
 	max-width: 80vh;
 	padding: 10px 15px;
-	margin: 3px;
+	margin: 4px;
 	-webkit-user-select: none;
 	user-select: none;
 }
@@ -248,9 +252,10 @@ a {
 	box-sizing: border-box;
 	border: none;
 	background-color: inherit;
-	padding: 6px 0 0 0;
+	padding: 8px 0 0 0;
 	text-align: center;
-	color: #eee;
+	color: #aaa;
+	font-weight: bold;
 }
 
 #synth-mod-envelope-state, #synth-envelope-type {
@@ -261,6 +266,7 @@ a {
 .envelope-caption {
 	float: right;
 	padding: 0 4px;
+	font-weight: bold;
 }
 
 input[type=range] {
@@ -353,7 +359,7 @@ input[type=range].range--volume {
 .piano-key-white {
 	height: 100%;
 	min-width: 25px;
-	background-color: white;
+	background-color: #ccc;
 	border-left: 1px solid #111;
 	box-sizing: border-box;
 	z-index: 1;
@@ -363,7 +369,7 @@ input[type=range].range--volume {
 .piano-key-white span {
 	display: inline-block;
 	padding-top: 32px;
-	color: #ddd;
+	color: #b5b5b5;
 	pointer-events: none;
 	user-select: none;
 }
@@ -421,6 +427,10 @@ input[type=range].range--volume {
 	background-color: #191919;
 }
 
+.synth-list-entry--disabled {
+	opacity: 0.4;
+}
+
 .synth-entry-name {
 	float: left;
 }
@@ -451,12 +461,13 @@ input[type=range].range--volume {
 	padding: 4px;
 }
 
-.dim-text {
-	color: #555;
+.caption-text {
+	color: #ddd;
+	font-weight: bold;
 }
 
-.bright-text {
-	color: #eee;
+.dim-text {
+	color: #555;
 }
 
 .modal-container {
@@ -555,6 +566,43 @@ input[type=range].range--volume {
 	background-position: center right 0.5em;
 	background-repeat: no-repeat;
 	background-size: auto 25%;
+}
+
+#button-color-select {
+	color: transparent;
+}
+
+#color-list-container {
+	max-width: 300px;
+}
+
+#color-list-container button {
+	float: left;
+	box-sizing: border-box;
+	height: 25px;
+	width: 44px;
+	margin: 3px;
+}
+
+button.button--selected {
+	border: 1px solid #999;
+}
+
+button.button--selected:focus {
+	border: 1px solid #777;
+}
+
+button.button--shadowed {
+	color: transparent;
+	box-shadow: inset 0 0 0 2px #333, inset -15px 0px 0 0 rgba(0, 0, 0, 0.39);
+}
+
+button.button--shadowed:hover {
+	box-shadow: inset 0 0 0 2px #444, inset -15px 0px 0 0 rgba(0, 0, 0, 0.39);
+}
+
+button.button--shadowed:active {
+	box-shadow: inset 0 0 0 2px #282828, inset -15px 0px 0 0 rgba(0, 0, 0, 0.39);
 }
 
 #button-export-menu-open, #button-render {

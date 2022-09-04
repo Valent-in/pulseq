@@ -13,9 +13,8 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 	let table = document.createElement("TABLE");
 	table.addEventListener("click", arrangeEventListener);
 
-	let btnAddPattern = document.getElementById("button-add-pattern");
-	btnAddPattern.addEventListener("click", () => {
-		let defaultName = "ptrn" + (songObj.patterns.length + 1);
+	document.getElementById("button-add-pattern").onclick = () => {
+		let defaultName = songObj.generatePatternName();
 		g_showPrompt("Enter pattern name", (result) => {
 
 			if (!result) {
@@ -27,18 +26,11 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 			addRow(result);
 			showPattern(rowCount - 1);
 		}, defaultName);
-	});
+	};
 
 	this.build = function () {
 		let arrange = document.getElementById("arrange-main");
 		arrange.appendChild(table);
-
-		buildGridHeader();
-		addRow("ptrn1");
-
-		for (let i = 0; i < columnCount; i++)
-			if (!songObj.song[i])
-				songObj.song[i] = [];
 	}
 
 	this.setMarker = function (index) {
@@ -51,9 +43,40 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 		}
 	}
 
+	this.fillSongView = function () {
+		clearSongView();
+
+		let newSongLen = songObj.song.length;
+		console.log("import length: " + newSongLen);
+
+		for (let i = 0; i < songObj.patterns.length; i++)
+			addRow(songObj.patterns[i].name);
+
+		if (newSongLen > columnCount) {
+			for (let i = columnCount; i < newSongLen; i++) {
+				addColumn();
+			}
+		}
+
+		for (let i = songObj.song.length; i < columnCount; i++) {
+			songObj.song.push([]);
+		}
+
+		for (let i = 0; i < songObj.song.length; i++) {
+			for (let j = 0; j < songObj.song[i].length; j++) {
+				if (songObj.song[i][j]) {
+					drawBlock(i, j, true)
+				}
+			}
+		}
+
+		markDisabledCells(0, songObj.song.length - 1);
+	}
+
+
 	function maxPatternBars() {
 		return Math.ceil(64 / songObj.barSteps);
-	};
+	}
 
 	function buildGridHeader() {
 		let th = document.createElement("TR");
@@ -102,18 +125,26 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 	}
 
 	function setArrangeBlock(col, row, targetCell) {
+		let startPoint = col;
+
 		if (songObj.song[col][row]) {
 			songObj.song[col][row] = false;
 			drawBlock(col, row, false);
 		} else {
 			if (targetCell.classList.contains("js-fill-tail")) {
-				let startPoint = col;
+
 				while (!songObj.song[startPoint][row])
 					startPoint--;
 
 				songObj.song[startPoint][row] = false;
 				drawBlock(startPoint, row, false);
 			} else {
+
+				if (songObj.checkSynthConflict(row, col)) {
+					console.log("Pattern with same synt present in this bar");
+					return;
+				}
+
 				let len = Math.ceil(songObj.patterns[row].length / songObj.barSteps);
 				for (let i = col; i < Math.min(col + len, songObj.song.length); i++) {
 					if (songObj.song[i][row]) {
@@ -130,6 +161,9 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 				drawBlock(col, row, true);
 			}
 		}
+
+		let addBars = Math.ceil(songObj.patterns[row].length / songObj.barSteps) - 1;
+		markDisabledCells(startPoint, startPoint + addBars);
 	}
 
 	function drawBlock(col, row, isDraw) {
@@ -197,6 +231,10 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 
 			tr.appendChild(td);
 		}
+
+		if (songObj.patterns[rowCount])
+			tr.classList.add("color-index-" + songObj.patterns[rowCount].colorIndex);
+
 		table.appendChild(tr);
 		rowCount++;
 	}
@@ -250,29 +288,16 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 		buildGridHeader();
 	}
 
-	this.fillSongView = function () {
-		clearSongView();
+	function markDisabledCells(startPoint, endPoint) {
+		songObj.calculateSynthFill();
+		for (let i = startPoint; i <= endPoint; i++) {
+			for (let j = 0; j < songObj.patterns.length; j++) {
+				let cell = document.getElementById("arr_col-" + i + "_row-" + j);
 
-		let newSongLen = songObj.song.length;
-		console.log("import length: " + newSongLen);
-
-		for (let i = 0; i < songObj.patterns.length; i++)
-			addRow(songObj.patterns[i].name);
-
-		if (newSongLen > columnCount) {
-			for (let i = columnCount; i < newSongLen; i++) {
-				addColumn();
-			}
-		}
-
-		for (let i = songObj.song.length; i < columnCount; i++) {
-			songObj.song.push([]);
-		}
-
-		for (let i = 0; i < songObj.song.length; i++) {
-			for (let j = 0; j < songObj.song[i].length; j++) {
-				if (songObj.song[i][j]) {
-					drawBlock(i, j, true)
+				if (!songObj.isArrangeCellFree(i, j)) {
+					cell.classList.add("non-free-cell");
+				} else {
+					cell.classList.remove("non-free-cell");
 				}
 			}
 		}

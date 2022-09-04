@@ -87,7 +87,7 @@ function Synth(outputNode, transportBPM) {
 			} else {
 				lastVolumeMod = volumeMod;
 				// Reduce volume before triggerAttack
-				this.ampout.gain.exponentialRampTo(this.calculateVolume(), 0.01, time - 0.011);
+				this.ampout.gain.linearRampTo(this.calculateVolume(), 0.01, time - 0.011);
 			}
 		}
 
@@ -354,7 +354,7 @@ function Synth(outputNode, transportBPM) {
 				break;
 
 			case "phaser":
-				this.FX = new Tone.Phaser({ baseFrequency: 1000 });
+				this.FX = new Tone.Phaser({ baseFrequency: 440 });
 				break;
 
 			case "tremolo":
@@ -440,10 +440,13 @@ function Synth(outputNode, transportBPM) {
 				break;
 
 			case "chorus":
-				this.FX.delayTime = this.values.FXRateValue * 22 - 2;
+				this.FX.delayTime = this.values.FXRateValue * 18 + 2;
 				break;
 
 			case "phaser":
+				this.FX.frequency.value = this.values.FXRateValue * 20;
+				break;
+
 			case "tremolo":
 			case "vibrato":
 				this.FX.frequency.value = this.values.FXRateValue * 50;
