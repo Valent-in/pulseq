@@ -3,7 +3,7 @@
 const DEFAULT_PARAMS = {};
 
 DEFAULT_PARAMS.synthState = {
-	"synth-amplifier-gain": 0.9,
+	"synth-amplifier-gain": 1,
 	"synth-amplifier-mod-input": "[none]",
 	"synth-amplifier-mod-value": 0,
 	"synth-envelope-attack": 0.2,
@@ -39,7 +39,7 @@ DEFAULT_PARAMS.synthState = {
 	"synth-osc1-mod-input": "[none]",
 	"synth-osc1-mod-value": 0,
 	"synth-osc1-octave": 0,
-	"synth-osc1-type": "sine",
+	"synth-osc1-type": "triangle",
 	"synth-osc2-detune": 0,
 	"synth-osc2-level": 0,
 	"synth-osc2-mod-input": "[none]",

@@ -25,10 +25,10 @@
     </rdf:RDF>
   </metadata>
   <rect
-     style="opacity:1;fill:#bbbbbb;fill-opacity:1;stroke:none;stroke-width:0.26499999;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+     style="opacity:1;fill:#bbbbbb;fill-opacity:1;stroke:none;stroke-width:0.25;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
      id="rect833"
-     width="10.002974"
-     height="9.9857273"
-     x="0.017246507"
-     y="0.014272799" />
+     width="10"
+     height="10"
+     x="0"
+     y="0" />
 </svg>

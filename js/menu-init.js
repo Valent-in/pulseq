@@ -1,6 +1,6 @@
 "use strict"
 
-function menuInit(songObj, onSongChangeCallback, loadSynthCallback, showSequenceCallback, renderCallback) {
+function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallback) {
 
 	let isCreateNewLayer = false;
 	document.getElementById("button-add-pattern-layer").onclick = () => {
@@ -18,6 +18,8 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, showSequence
 		} else {
 			console.log("Web audio context is already running");
 		}
+
+		document.body.style.overflowY = "visible";
 	}
 
 	document.getElementById("button-new-track").onclick = () => {
@@ -26,7 +28,8 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, showSequence
 		document.getElementById("startup-modal-menu").classList.add("nodisplay");
 	}
 
-	document.getElementById("input-import-track").onchange = (e) => {
+	let importTrackInput = document.getElementById("input-import-track");
+	importTrackInput.onchange = (e) => {
 		let file = e.target.files[0];
 		if (!file)
 			return;
@@ -34,11 +37,22 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, showSequence
 		let reader = new FileReader();
 		reader.onload = function (ev) {
 			let songStr = ev.target.result;
-			importSong(songStr);
-
-			document.getElementById("startup-modal-menu").classList.add("nodisplay");
+			if (importSong(songStr))
+				document.getElementById("startup-modal-menu").classList.add("nodisplay");
 		};
 		reader.readAsText(file);
+	}
+
+	importTrackInput.ondragenter = () => {
+		importTrackInput.classList.add("dragover");
+	}
+
+	importTrackInput.ondragleave = () => {
+		importTrackInput.classList.remove("dragover");
+	}
+
+	importTrackInput.ondrop = () => {
+		importTrackInput.classList.remove("dragover");
 	}
 
 	document.getElementById("button-demo-track").onclick = () => {
@@ -112,8 +126,22 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, showSequence
 	};
 
 	document.getElementById("button-bpm-set").onclick = () => {
-		let bpmValue = document.getElementById("input-bpm-value").value;
-		songObj.bpm = Number(bpmValue);
+		let bpmInput = document.getElementById("input-bpm-value");
+		let bpmValue = Number(bpmInput.value);
+
+		if (bpmValue < 4) {
+			showAlert("Minimum 4 BPM");
+			bpmValue = 4;
+		}
+
+		if (bpmValue > 1000) {
+			showAlert("Maximum 1000 BPM");
+			bpmValue = 1000;
+		}
+
+		bpmInput.value = bpmValue;
+
+		songObj.bpm = bpmValue;
 		Tone.Transport.bpm.value = songObj.bpm;
 		songObj.synths.forEach(e => e.setBpm(songObj.bpm));
 	};
@@ -128,20 +156,20 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, showSequence
 		if (songObj.isSongEmpty())
 			setBarLength();
 		else
-			g_showConfirm("This will delete all patterns! Proceed?", isOk => {
+			showConfirm("This will delete all patterns! Proceed?", isOk => {
 				if (isOk)
 					setBarLength();
 			});
 
 		function setBarLength() {
 			if (stepsValue > 32) {
-				g_showAlert("Maximum bar length is 32 steps");
+				showAlert("Maximum bar length is 32 steps");
 				stepsValue = 32;
 				stepsInput.value = 32;
 			}
 
 			if (stepsValue < 4) {
-				g_showAlert("Minimum bar length is 4 steps");
+				showAlert("Minimum bar length is 4 steps");
 				stepsValue = 4;
 				stepsInput.value = 4;
 			}
@@ -173,7 +201,6 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, showSequence
 	document.getElementById("button-export-menu-open").onclick = () => {
 		let menu = document.getElementById("export-modal-menu");
 		menu.classList.remove("nodisplay");
-		songObj.getSongDuration();
 		document.getElementById("input-render-length").value = songObj.getSongDuration();
 	};
 
@@ -186,9 +213,25 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, showSequence
 	 * Export modal menu
 	 */
 	document.getElementById("button-render").onclick = () => {
-		let renderLength = Number(document.getElementById("input-render-length").value) || 5;
+		let exportResult = document.getElementById("export-menu-result-container");
+		exportResult.style.display = "none";
 
-		document.getElementById("export-menu-result-container").style.display = "block";
+		let renderLengthInput = document.getElementById("input-render-length");
+		let renderLength = Number(renderLengthInput.value);
+
+		if (renderLength <= 0) {
+			showAlert("Duration should be greater than 0.")
+			renderLengthInput.value = songObj.getSongDuration();
+			return;
+		}
+
+		if (renderLength > songObj.getSongDuration() + 30) {
+			showAlert("Duration should not exceed track length by more than 30 sec.")
+			renderLengthInput.value = songObj.getSongDuration();
+			return;
+		}
+
+		exportResult.style.display = "block";
 		updateUiOnExport(true);
 
 		let downloadLink = document.getElementById("link-wav-download");
@@ -267,11 +310,12 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, showSequence
 	document.getElementById("button-pattern-length-set").onclick = () => {
 		let lenInput = document.getElementById("input-pattern-length");
 		let len = Number(lenInput.value);
+		let currentLen = songObj.currentPattern.length;
 		let valueAccepted = true;
 		let maxPatternLength = Math.floor(64 / songObj.barSteps) * songObj.barSteps;
 
 		if (len > maxPatternLength) {
-			g_showAlert("Maximum pattern length is " + maxPatternLength + " steps");
+			showAlert("Maximum pattern length is " + maxPatternLength + " steps");
 			len = maxPatternLength;
 			lenInput.value = maxPatternLength;
 			valueAccepted = false;
@@ -280,21 +324,24 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, showSequence
 		if (len <= 0) {
 			len = songObj.barSteps;
 			lenInput.value = len;
-			g_showAlert("Minimum pattern length is " + len + "steps");
+			showAlert("Minimum pattern length is " + len + " steps");
 			valueAccepted = false;
 		}
 
 		if (len % songObj.barSteps != 0) {
 			len = Math.ceil(len / songObj.barSteps) * songObj.barSteps;
 			lenInput.value = len;
-			g_showAlert("Pattern length rounded to " + len);
+			showAlert("Pattern length rounded to " + len);
 			valueAccepted = false;
 		}
 
 		if (songObj.setCurrentPatternLength(len)) {
-			onSongChangeCallback(false);
+			if (len >= currentLen)
+				onSongChangeCallback(false);
+			else
+				onSongChangeCallback(false, "release");
 		} else {
-			g_showAlert("Can not extend pattern");
+			showAlert("Can not extend pattern");
 			lenInput.value = songObj.currentPattern.length;
 			valueAccepted = false;
 		}
@@ -318,16 +365,16 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, showSequence
 
 	document.getElementById("button-delete-pattern").onclick = () => {
 		if (songObj.patterns.length == 1) {
-			g_showAlert("Can not delete last pattern");
+			showAlert("Can not delete last pattern");
 			return;
 		}
 
-		g_showConfirm("Delete current pattern?", (isOk) => {
+		showConfirm("Delete current pattern?", (isOk) => {
 			if (!isOk)
 				return;
 
 			songObj.deleteCurrentPattern();
-			onSongChangeCallback(false);
+			onSongChangeCallback(false, "stop");
 			document.getElementById("pattern-modal-menu").classList.add("nodisplay");
 			g_switchTab("arrange");
 		});
@@ -335,16 +382,22 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, showSequence
 
 	document.getElementById("button-delete-layer").onclick = () => {
 		if (songObj.currentPattern.patternData.length == 1) {
-			g_showAlert("Can not delete last layer");
+			showAlert("Can not delete last layer");
 			return;
 		}
 
-		g_showConfirm("Delete current layer?", (isOk) => {
+		showConfirm("Delete current layer?", (isOk) => {
 			if (!isOk)
 				return;
 
+			let isEmpty = songObj.getCurrentLayerSynthIndex() === null;
 			songObj.currentPattern.deleteActiveLayer();
-			onSongChangeCallback(false);
+
+			if (isEmpty)
+				onSongChangeCallback(false);
+			else
+				onSongChangeCallback(false, "release");
+
 			document.getElementById("pattern-modal-menu").classList.add("nodisplay");
 		});
 	};
@@ -353,7 +406,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, showSequence
 		let name = songObj.currentPattern.name;
 		let defaultName = songObj.generatePatternName(name.split("-")[0] + "-", 2);
 
-		g_showPrompt("Copy pattern \"" + name + "\" to", (result) => {
+		showPrompt("Copy pattern \"" + name + "\" to", (result) => {
 			if (result === null)
 				return;
 
@@ -402,9 +455,11 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, showSequence
 		if (!event.target.classList.contains("js-synth-list-entry"))
 			return;
 
+		let isEmpty = songObj.getCurrentLayerSynthIndex() === null;
+
 		let index = Number(event.target.dataset.index);
 		if (songObj.isSynthInCurrentPattern(index)) {
-			g_showAlert("Synth is already in this pattern");
+			showAlert("Synth is already in this pattern");
 		} else {
 			let synthIndex = index >= 0 ? index : null;
 
@@ -414,18 +469,22 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, showSequence
 
 				songObj.setCurrentLayerSynthIndex(synthIndex);
 			} else {
-				g_showAlert("Collision with another pattern in track");
+				showAlert("Collision with another pattern in track");
 			}
 		}
-
-		isCreateNewLayer = false;
 
 		let synthName = songObj.getCurrentLayerSynthName() || "[none]";
 		let synthSelect = document.getElementById("button-synth-select");
 		synthSelect.innerHTML = "";
 		synthSelect.appendChild(document.createTextNode(synthName));
 
-		onSongChangeCallback(false);
+		if (isCreateNewLayer || isEmpty)
+			onSongChangeCallback(false);
+		else
+			onSongChangeCallback(false, "release");
+
+		isCreateNewLayer = false;
+
 		document.getElementById("synth-select-modal-menu").classList.add("nodisplay");
 	};
 
@@ -434,57 +493,32 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, showSequence
 	};
 
 	/*
-	 * Settings (temporal) modal menu
+	 * Settings modal menu
 	 */
 	document.getElementById("button-settings-open").onclick = () => {
 		document.getElementById("settings-modal-menu").classList.remove("nodisplay");
 	};
 
-	document.getElementById("button-export-song").onclick = () => {
-		let outText = document.getElementById("text-export-data");
-		outText.value = exportSong();
-	};
+	document.getElementById("button-reset-app").onclick = () => {
+		showConfirm("Application restart. All unsaved data will be lost!\nContinue?", (isOk) => {
+			if (!isOk)
+				return;
 
-	document.getElementById("button-import-song").onclick = () => {
-		let outText = document.getElementById("text-export-data");
-		importSong(outText.value);
-	};
-
-	document.getElementById("button-export-pattern").onclick = () => {
-		let text = document.getElementById("text-export-data");
-		let expObj = {
-			notes: songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].notes,
-			lengths: songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].lengths,
-			volumes: songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].volumes
-		};
-		text.value = JSON.stringify(expObj, null, 1);
-	};
-
-	document.getElementById("button-import-pattern").onclick = () => {
-		let text = document.getElementById("text-export-data");
-		let data = JSON.parse(text.value);
-
-		songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].notes = data.notes;
-		songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].lengths = data.lengths;
-		songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].volumes = data.volumes;
-		showSequenceCallback(songObj.currentPattern);
-	};
-
-	document.getElementById("button-export-full-pattern").onclick = () => {
-		let text = document.getElementById("text-export-data");
-		text.value = JSON.stringify(songObj.currentPattern.patternData, null, 1);
-	};
-
-	document.getElementById("button-import-full-pattern").onclick = () => {
-		let text = document.getElementById("text-export-data");
-		let data = JSON.parse(text.value);
-
-		songObj.currentPattern.patternData = data;
+			console.log("bye!");
+			window.onbeforeunload = null;
+			document.location.reload();
+		});
 	};
 
 	document.getElementById("button-context-resume").onclick = () => {
-		if (Tone.context.state != "running")
+		showAlert("Unmute your device if silent mode is turned on");
+
+		if (Tone.context.state == "running") {
+			showToast("Web audio context is already running");
+		} else {
 			Tone.context.resume();
+			showToast("Web audio context resumed");
+		}
 	};
 
 	document.getElementById("button-settings-close").onclick = () => {
@@ -505,13 +539,13 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, showSequence
 		try {
 			expObj = JSON.parse(songStr);
 		} catch {
-			g_showAlert("JSON parsing error");
-			return;
+			showAlert("JSON parsing error");
+			return false;
 		}
 
 		if (!expObj.songFormatVersion) {
-			g_showAlert("Can not load data");
-			return;
+			showAlert("Can not load data");
+			return false;
 		}
 
 		songObj.title = expObj.title || "";
@@ -559,7 +593,9 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, showSequence
 		showSongTitle();
 
 		if (songObj.calculateSynthFill() > 0)
-			g_showAlert("WARNING: Patterns overlap in imported file!");
+			showAlert("WARNING: Patterns overlap in imported file!");
+
+		return true;
 	}
 
 	function exportSong() {
@@ -652,6 +688,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, showSequence
 	}
 
 	function bufferToWave(abuffer, len) {
+		// https://www.russellgood.com/how-to-convert-audiobuffer-to-audio-file/
 		var numOfChan = abuffer.numberOfChannels,
 			length = len * numOfChan * 2 + 44,
 			buffer = new ArrayBuffer(length),
@@ -660,38 +697,35 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, showSequence
 			offset = 0,
 			pos = 0;
 
-		// write WAVE header
-		setUint32(0x46464952);                         // "RIFF"
-		setUint32(length - 8);                         // file length - 8
-		setUint32(0x45564157);                         // "WAVE"
+		setUint32(0x46464952);
+		setUint32(length - 8);
+		setUint32(0x45564157);
 
-		setUint32(0x20746d66);                         // "fmt " chunk
-		setUint32(16);                                 // length = 16
-		setUint16(1);                                  // PCM (uncompressed)
+		setUint32(0x20746d66);
+		setUint32(16);
+		setUint16(1);
 		setUint16(numOfChan);
 		setUint32(abuffer.sampleRate);
-		setUint32(abuffer.sampleRate * 2 * numOfChan); // avg. bytes/sec
-		setUint16(numOfChan * 2);                      // block-align
-		setUint16(16);                                 // 16-bit (hardcoded in this demo)
+		setUint32(abuffer.sampleRate * 2 * numOfChan);
+		setUint16(numOfChan * 2);
+		setUint16(16);
 
-		setUint32(0x61746164);                         // "data" - chunk
-		setUint32(length - pos - 4);                   // chunk length
+		setUint32(0x61746164);
+		setUint32(length - pos - 4);
 
-		// write interleaved data
 		for (i = 0; i < abuffer.numberOfChannels; i++)
 			channels.push(abuffer.getChannelData(i));
 
 		while (pos < length) {
-			for (i = 0; i < numOfChan; i++) {             // interleave channels
-				sample = Math.max(-1, Math.min(1, channels[i][offset])); // clamp
-				sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0; // scale to 16-bit signed int
-				view.setInt16(pos, sample, true);          // write 16-bit sample
+			for (i = 0; i < numOfChan; i++) {
+				sample = Math.max(-1, Math.min(1, channels[i][offset]));
+				sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
+				view.setInt16(pos, sample, true);
 				pos += 2;
 			}
-			offset++                                     // next source sample
+			offset++
 		}
 
-		// create Blob
 		return new Blob([buffer], { type: "audio/wav" });
 
 		function setUint16(data) {

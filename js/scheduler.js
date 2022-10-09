@@ -6,29 +6,10 @@ function Scheduler(songObj, barCallback, stepCallback) {
 	let isPlaying = false;
 	let isPatternPlaying = false;
 	let onInnerStopCallback = null;
-
 	let schedulerId = null;
 
-	function stop() {
-		if (!isPlaying)
-			return;
-
-		if (schedulerId !== null) {
-			Tone.Transport.clear(schedulerId);
-			schedulerId = null;
-		}
-		Tone.Transport.cancel();
-		Tone.Transport.stop();
-
-		isPlaying = false;
-		isPatternPlaying = false;
-		console.log("STOP Playback");
-
-		scheduleCall(stepCallback, -1, Tone.now());
-		scheduleCall(barCallback, -1, Tone.now());
-
-		for (let i = 0; i < songObj.synths.length; i++)
-			songObj.synths[i].triggerRelease();
+	this.stop = () => {
+		stop();
 	}
 
 	this.playSong = () => {
@@ -51,12 +32,14 @@ function Scheduler(songObj, barCallback, stepCallback) {
 		console.log("Play PATTERN");
 	}
 
-	this.releasePattern = () => {
-		if (!isPatternPlaying)
-			return;
-
+	this.release = () => {
 		for (let i = 0; i < songObj.synths.length; i++)
 			songObj.synths[i].triggerRelease();
+	}
+
+	this.releasePattern = () => {
+		if (isPatternPlaying)
+			this.release();
 	}
 
 	this.playStopSong = (callback) => {
@@ -123,6 +106,28 @@ function Scheduler(songObj, barCallback, stepCallback) {
 
 		}, renderLength);
 	};
+
+	function stop() {
+		if (!isPlaying)
+			return;
+
+		if (schedulerId !== null) {
+			Tone.Transport.clear(schedulerId);
+			schedulerId = null;
+		}
+		Tone.Transport.cancel();
+		Tone.Transport.stop();
+
+		isPlaying = false;
+		isPatternPlaying = false;
+		console.log("STOP Playback");
+
+		scheduleCall(stepCallback, -1, Tone.now());
+		scheduleCall(barCallback, -1, Tone.now());
+
+		for (let i = 0; i < songObj.synths.length; i++)
+			songObj.synths[i].triggerRelease();
+	}
 
 	function syncLfos(synths, time) {
 		for (let i = 0; i < synths.length; i++) {

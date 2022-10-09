@@ -4,7 +4,8 @@ html, body {
 
 body {
 	background-color: #111;
-	overflow-y: visible;
+	/*set to "visible" after click*/
+	overflow-y: hidden;
 }
 
 a {
@@ -13,6 +14,7 @@ a {
 
 #app-icons {
 	float: right;
+	margin-left: 10px;
 }
 
 #app-icons>div {
@@ -46,8 +48,7 @@ a {
 	display: flex;
 	border-bottom: 2px solid #696969;
 	overflow-x: auto;
-	padding-left: 4vw;
-	padding-right: 4vw;
+	padding: 1px 4vw;
 	background-color: #111;
 	-webkit-user-select: none;
 	user-select: none;
@@ -143,7 +144,7 @@ a {
 
 .footer {
 	border-top: 2px solid #696969;
-	padding: 0 4vw 0 4vw;
+	padding: 1px 4vw;
 	position: fixed;
 	bottom: 0;
 	width: 100%;
@@ -175,6 +176,9 @@ a {
 #pattern-name-area, #song-title-area, #synth-name-area {
 	color: orange;
 	padding: 2px 8px;
+	max-width: 50vw;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 #arrange-main {
@@ -186,7 +190,7 @@ a {
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
-	margin-bottom: calc(1rem + 15px);
+	margin-bottom: calc(1rem + 16px);
 }
 
 #button-add-pattern {
@@ -200,7 +204,7 @@ a {
 	display: flex;
 	justify-content: center;
 	overflow: hidden;
-	margin-bottom: calc(1rem + 15px);
+	margin-bottom: calc(1rem + 16px);
 }
 
 #pattern-main {
@@ -230,7 +234,8 @@ a {
 	justify-content: center;
 	height: 95vh;
 	overflow-y: auto;
-	margin-bottom: calc(1rem + 15px + 60px);
+	margin-bottom: calc(1rem + 16px + 60px);
+	padding: 4px 0;
 }
 
 #synth-main>div {
@@ -240,11 +245,15 @@ a {
 	flex-grow: 1;
 	width: 100%;
 	min-width: 40vw;
-	max-width: 80vh;
+	max-width: 55vh;
 	padding: 10px 15px;
 	margin: 4px;
 	-webkit-user-select: none;
 	user-select: none;
+	overflow: hidden;
+	background-position: bottom 15px right 30px;
+	background-repeat: no-repeat;
+	background-size: 84px 42px;
 }
 
 #synth-main .block-spacer {
@@ -256,6 +265,62 @@ a {
 	text-align: center;
 	color: #aaa;
 	font-weight: bold;
+	align-self: flex-end;
+}
+
+@media (min-width: 1280px) {
+	#synth-main>div {
+		max-width: 27vh;
+		min-width: 21vw;
+	}
+	#synth-main .fx-spacer {
+		min-width: 21vw;
+		padding: 14px 15px;
+		box-sizing: content-box;
+		text-align: right;
+		align-self: flex-start;
+	}
+}
+
+#synth-main>div>div:last-child {
+	background-color: #191919;
+	height: 100%;
+}
+
+.bg-oscillator {
+	background-image: url('../img/oscillator.svg');
+}
+
+.bg-lfo {
+	background-image: url('../img/lfo.svg');
+}
+
+.bg-filter {
+	background-image: url('../img/filter.svg');
+}
+
+.bg-noise {
+	background-image: url('../img/noise.svg');
+}
+
+.bg-adsr {
+	background-image: url('../img/adsr.svg');
+}
+
+.bg-modulation-osc {
+	background-image: url('../img/modulation-osc.svg');
+}
+
+.bg-modulation-filt {
+	background-image: url('../img/modulation-filt.svg');
+}
+
+.bg-modulation-amp {
+	background-image: url('../img/modulation-amp.svg');
+}
+
+.bg-effect {
+	background-image: url('../img/effect.svg');
 }
 
 #synth-mod-envelope-state, #synth-envelope-type {
@@ -267,6 +332,10 @@ a {
 	float: right;
 	padding: 0 4px;
 	font-weight: bold;
+	max-width: 50%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 input[type=range] {
@@ -275,18 +344,6 @@ input[type=range] {
 	background-position: center center;
 	background-repeat: no-repeat no-repeat;
 	background-size: calc(102% - 18px) 30px;
-}
-
-.slider-drag-only-area input[type=range] {
-	pointer-events: none;
-}
-
-input[type=range]::-webkit-slider-thumb {
-	pointer-events: auto;
-}
-
-input[type=range]::-moz-range-thumb {
-	pointer-events: auto;
 }
 
 input[type=range].range--3-marks {
@@ -324,7 +381,8 @@ input[type=range].range--volume {
 }
 
 #synth-footer-controls {
-	padding: 0 4vw;
+	padding: 1px 4vw;
+	overflow: hidden;
 }
 
 #synth-footer-controls>div, #synth-footer-controls>button {
@@ -348,12 +406,8 @@ input[type=range].range--volume {
 	min-width: 0;
 }
 
-#synth-view.synth-footer-shrink #piano-container-outer {
+#piano-container.piano--hidden {
 	display: none;
-}
-
-#synth-view.synth-footer-shrink #synth-main {
-	margin-bottom: calc(1rem + 15px);
 }
 
 .piano-key-white {
@@ -438,7 +492,7 @@ input[type=range].range--volume {
 .js-synth-entry-menu {
 	float: right;
 	padding: 8px;
-	margin: -8px 0
+	margin: -8px 0;
 }
 
 .js-synth-entry-menu:hover {
@@ -448,7 +502,7 @@ input[type=range].range--volume {
 #synth-list-main {
 	flex-grow: 1;
 	overflow-y: auto;
-	margin-bottom: calc(1rem + 15px);
+	margin-bottom: calc(1rem + 16px);
 }
 
 #button-add-synth {
@@ -695,7 +749,7 @@ button.button--shadowed:active {
 	background-color: #191919;
 }
 
-.startup-menu-entry input[type=file], button input[type=file] {
+.startup-menu-entry input[type=file], .button input[type=file] {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -704,10 +758,62 @@ button.button--shadowed:active {
 	font-size: 50px;
 }
 
+input[type=file]:focus+span {
+	color: #eee;
+}
+
+.dragshade {
+	pointer-events: none;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+}
+
+.dragover~.dragshade {
+	background-color: rgba(100, 100, 0, 0.4);
+}
+
 #button-import-synth {
 	position: relative;
 	overflow: hidden;
 	margin-right: 4px;
+	margin-bottom: 4px;
+	vertical-align: middle;
+}
+
+.toast-container {
+	position: fixed;
+	bottom: 80px;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	z-index: 12;
+	pointer-events: none;
+}
+
+#toast-box {
+	border: 1px solid #444;
+	border-radius: 3px;
+	padding: 6px 24px;
+	background-color: #222;
+	color: #ccc;
+	box-sizing: border-box;
+	max-width: 80vw;
+	text-align: center;
+	box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.39);
+	-webkit-user-select: none;
+	user-select: none;
+	pointer-events: auto;
+}
+
+#toast-box:hover {
+	border: 1px solid #606060;
+}
+
+.disabled {
+	opacity: 0.4;
 }
 
 .nodisplay {

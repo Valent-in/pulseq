@@ -1,4 +1,4 @@
-button {
+button, .button {
 	background-color: #333;
 	color: #bbb;
 	text-align: center;
@@ -8,6 +8,9 @@ button {
 	font-size: 1rem;
 	min-width: 1rem;
 	box-sizing: content-box;
+	-webkit-user-select: none;
+	user-select: none;
+	display: inline-block;
 }
 
 button::-moz-focus-inner {
@@ -21,15 +24,15 @@ button.button--small {
 	margin: 2px;
 }
 
-button:hover {
+button:hover, .button:hover {
 	background-color: #3c3c3c;
 }
 
-button:active {
+button:active, .button:active {
 	background-color: #282828;
 }
 
-button:focus {
+button:focus, .button:focus {
 	border-color: #606060;
 	outline: none;
 }

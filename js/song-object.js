@@ -146,6 +146,15 @@ function SongObject() {
 		this.currentPattern.length = len;
 
 		let collisions = this.calculateSynthFill();
+
+		let ptrnBars = Math.ceil(len / this.barSteps);
+		for (let i = 0; i <= this.song.length - ptrnBars; i++) {
+			if (this.song[i][this.currentPatternIndex])
+				for (let j = 1; j < ptrnBars; j++)
+					if (this.song[i + j][this.currentPatternIndex])
+						collisions++;
+		}
+
 		if (len >= tmpLen && collisions > 0) {
 			this.currentPattern.length = tmpLen;
 			this.calculateSynthFill();
@@ -208,8 +217,8 @@ function SongObject() {
 		if (this.barSteps == steps)
 			return;
 
-		this.barSteps = steps;
-		this.patterns.length = [];
+		this.barSteps = Math.floor(steps);
+		this.patterns = [];
 		this.patterns.push(new Pattern("ptrn1", this.barSteps));
 		this.setCurrentPattern(0);
 

@@ -58,104 +58,36 @@
 }
 
 {
-	// showAlert/showConfirm/showPrompt to replace alert/confirm/prompt with custom dialogs
+	let patternFooter = document.getElementById("pattern-footer");
+	let patternContainer = document.getElementById("pattern-container");
+	createHeightObserver(patternFooter, (h) => {
+		patternContainer.style.marginBottom = h + "px";
+	});
 
-	let alertDialog = document.getElementById("modal-alert");
-	let alertMessageSpan = document.getElementById("modal-alert-message");
-	let okButton = document.getElementById("button-alert-ok");
-	let cancelButton = document.getElementById("button-alert-cancel");
-	let textField = document.getElementById("input-modal-alert");
-	let textFieldArea = document.getElementById("input-area-modal-alert");
+	let arrangeFooter = document.getElementById("arrange-footer");
+	let arrangeContainer = document.getElementById("arrange-container");
+	createHeightObserver(arrangeFooter, (h) => {
+		arrangeContainer.style.marginBottom = h + "px";
+	});
 
-	let dialogTypes = [];
-	let messages = [];
-	let defaults = [];
-	let callbacks = [];
+	let synthFooter = document.getElementById("synth-footer");
+	let synthContainer = document.getElementById("synth-main");
+	createHeightObserver(synthFooter, (h) => {
+		synthContainer.style.marginBottom = h + "px";
+	});
 
-	let dialogType = "alert";
-	let callbackFunc = null;
-
-	let isShow = false;
-
-	okButton.onclick = () => {
-		if (dialogType == "confirm" && typeof callbackFunc == "function")
-			callbackFunc(true);
-
-		if (dialogType == "prompt" && typeof callbackFunc == "function")
-			callbackFunc(textField.value);
-
-		hideDialog();
-	};
-
-	cancelButton.onclick = () => {
-		if (dialogType == "confirm" && typeof callbackFunc == "function")
-			callbackFunc(false);
-
-		if (dialogType == "prompt" && typeof callbackFunc == "function")
-			callbackFunc(null);
-
-		hideDialog();
-	};
-
-	window.g_showAlert = function (messageText) {
-		showDialog("alert", messageText, null, null);
-	}
-
-	window.g_showConfirm = function (messageText, callback) {
-		showDialog("confirm", messageText, callback, null);
-	}
-
-	window.g_showPrompt = function (messageText, callback, inputText) {
-		showDialog("prompt", messageText, callback, inputText);
-	}
-
-	function showDialog(type, alertText, callback, inputText) {
-		if (isShow) {
-			messages.push(alertText);
-			callbacks.push(callback);
-			defaults.push(inputText);
-			dialogTypes.push(type);
-		} else {
-			showFieldsByType(type);
-			setDialogText(alertText || "", inputText || "");
-			callbackFunc = callback;
-			dialogType = type;
-			alertDialog.classList.remove("nodisplay");
-			isShow = true;
+	function createHeightObserver(target, callback) {
+		if (!window.ResizeObserver) {
+			console.log("ResizeObserver not supported");
+			return;
 		}
-	}
 
-	function showFieldsByType(type) {
-		switch (type) {
-			case "alert":
-				cancelButton.classList.add("nodisplay");
-				textFieldArea.classList.add("nodisplay");
-				break;
+		let observer = new ResizeObserver((list) => {
+			for (let item of list) {
+				callback(item.target.offsetHeight);
+			}
+		});
 
-			case "confirm":
-				cancelButton.classList.remove("nodisplay");
-				textFieldArea.classList.add("nodisplay");
-				break;
-
-			case "prompt":
-				cancelButton.classList.remove("nodisplay");
-				textFieldArea.classList.remove("nodisplay");
-				break;
-		}
-	}
-
-	function setDialogText(messageText, inputText) {
-		alertMessageSpan.innerHTML = "";
-		alertMessageSpan.appendChild(document.createTextNode(messageText));
-		textField.value = inputText;
-	}
-
-	function hideDialog() {
-		alertDialog.classList.add("nodisplay");
-		isShow = false;
-
-		if (messages.length > 0) {
-			showDialog(dialogTypes.shift(), messages.shift(), callbacks.shift(), defaults.shift());
-		}
+		observer.observe(target);
 	}
 }

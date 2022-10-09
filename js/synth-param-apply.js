@@ -26,7 +26,6 @@ function synthParamApply(paramId, controlValue, synth) {
 			paramId = "synth-osc1-detune"
 			if (synth.osc1)
 				synth.osc1.detune.value = synth.values.osc1octaveValue + synth.values.osc1detuneValue;
-			document.getElementById("synth-osc1-detune").value = 0;
 			break;
 
 		case "synth-osc1-level":
@@ -64,7 +63,6 @@ function synthParamApply(paramId, controlValue, synth) {
 			paramId = "synth-osc2-detune"
 			if (synth.osc2)
 				synth.osc2.detune.value = synth.values.osc2octaveValue + synth.values.osc2detuneValue;
-			document.getElementById("synth-osc2-detune").value = 0;
 			break;
 
 		case "synth-osc2-level":
@@ -102,7 +100,6 @@ function synthParamApply(paramId, controlValue, synth) {
 			paramId = "synth-osc3-detune"
 			if (synth.osc3)
 				synth.osc3.detune.value = synth.values.osc3octaveValue + synth.values.osc3detuneValue;
-			document.getElementById("synth-osc3-detune").value = 0;
 			break;
 
 		case "synth-osc3-level":
@@ -131,6 +128,7 @@ function synthParamApply(paramId, controlValue, synth) {
 				synth.noise.type = value;
 			}
 			break;
+
 		case "synth-noise-level":
 			synth.values.noiseValue = value;
 			if (synth.noisegain)
@@ -212,8 +210,6 @@ function synthParamApply(paramId, controlValue, synth) {
 			synth.values.panValue = 0;
 			if (synth.pan)
 				synth.pan.pan.value = 0;
-
-			document.getElementById("synth-pan").value = 0;
 			break;
 
 		//LFO1

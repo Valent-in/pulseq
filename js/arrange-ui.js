@@ -10,12 +10,28 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 	let playbackMarkers = [];
 	let previousMarker = 0;
 
+	let pressTimeout = null;
+	let cancelClick = false;
+
 	let table = document.createElement("TABLE");
+
+	table.oncontextmenu = () => false;
 	table.addEventListener("click", arrangeEventListener);
+	table.addEventListener("pointerdown", pointerdownListener);
+
+	table.addEventListener("pointerup", pointerEndListener);
+	table.addEventListener("pointercancel", pointerEndListener);
+	table.addEventListener("pointerleave", pointerEndListener);
+	table.addEventListener("touchend", pointerEndListener);
+
+	function pointerEndListener() {
+		clearTimeout(pressTimeout);
+		pressTimeout = null;
+	}
 
 	document.getElementById("button-add-pattern").onclick = () => {
 		let defaultName = songObj.generatePatternName();
-		g_showPrompt("Enter pattern name", (result) => {
+		showPrompt("Enter pattern name", (result) => {
 
 			if (!result) {
 				console.log("Pattern NOT created");
@@ -28,9 +44,65 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 		}, defaultName);
 	};
 
+	const insertColumns = (startPoint, length) => {
+		let ins = [];
+		for (let i = 0; i < length; i++)
+			ins.push([]);
+
+		songObj.song.splice(startPoint, 0, ...ins);
+		this.fillSongView();
+	}
+
+	const spliceColumns = (startPoint, length) => {
+		for (let i = 0; i < songObj.patterns.length; i++) {
+			let patternBars = Math.ceil(songObj.patterns[i].length / songObj.barSteps);
+
+			for (let j = startPoint; j >= Math.max(0, startPoint - patternBars + 1); j--)
+				if (songObj.song[j][i])
+					songObj.song[j][i] = false;
+		}
+
+		songObj.song.splice(startPoint, length);
+		this.fillSongView();
+	}
+
 	this.build = function () {
 		let arrange = document.getElementById("arrange-main");
 		arrange.appendChild(table);
+
+		document.getElementById("button-column-menu-close").onclick = () => {
+			document.getElementById("column-modal-menu").classList.add("nodisplay");
+		}
+
+		document.getElementById("button-insert-columns").onclick = () => {
+			document.getElementById("column-modal-menu").classList.add("nodisplay");
+
+			showPrompt("Insert columns:", result => {
+				if (result === null || result === 0)
+					return;
+
+				let length = Math.floor(result);
+				if (length > 0 && length < 100)
+					insertColumns(songObj.arrangeStartPoint, length)
+				else
+					showAlert("Can not insert columns");
+			}, 1, "number");
+		}
+
+		document.getElementById("button-remove-columns").onclick = () => {
+			document.getElementById("column-modal-menu").classList.add("nodisplay");
+
+			showPrompt("Delete columns:", result => {
+				if (result === null || result === 0)
+					return;
+
+				let length = Math.floor(result);
+				if (length > 0 && length < 100)
+					spliceColumns(songObj.arrangeStartPoint, length)
+				else
+					showAlert("Can not delete columns");
+			}, 1, "number");
+		}
 	}
 
 	this.setMarker = function (index) {
@@ -47,7 +119,7 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 		clearSongView();
 
 		let newSongLen = songObj.song.length;
-		console.log("import length: " + newSongLen);
+		console.log("Track length: " + newSongLen + " bars");
 
 		for (let i = 0; i < songObj.patterns.length; i++)
 			addRow(songObj.patterns[i].name);
@@ -70,6 +142,7 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 			}
 		}
 
+		fitGridLength();
 		markDisabledCells(0, songObj.song.length - 1);
 	}
 
@@ -91,6 +164,9 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 	}
 
 	function arrangeEventListener(event) {
+		if (cancelClick)
+			return;
+
 		let tgt = event.target;
 		if (tgt.nodeName != "TD")
 			return;
@@ -103,13 +179,7 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 		let row = Number(idParts[2].split("-")[1]);
 
 		if (tgt.id.includes("header")) {
-			let prev = document.getElementById("arr_col-" + songObj.arrangeStartPoint + "_header");
-			if (prev)
-				prev.classList.remove("play-start-point");
-
-			songObj.arrangeStartPoint = col;
-			let next = document.getElementById("arr_col-" + col + "_header");
-			next.classList.add("play-start-point");
+			setArrangeStartPoint(col);
 			return;
 		}
 
@@ -122,6 +192,33 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 
 		if (col >= songObj.song.length - aheadSpace - maxPatternBars())
 			fitGridLength();
+	}
+
+	function pointerdownListener(event) {
+		cancelClick = false;
+		let tgtId = event.target.id;
+		if (!tgtId.includes("header"))
+			return;
+
+		pressTimeout = setTimeout(() => {
+			cancelClick = true;
+
+			let idParts = tgtId.split("_");
+			let col = Number(idParts[1].split("-")[1]);
+			setArrangeStartPoint(col);
+
+			document.getElementById("column-modal-menu").classList.remove("nodisplay");
+		}, 400)
+	}
+
+	function setArrangeStartPoint(col) {
+		let prev = document.getElementById("arr_col-" + songObj.arrangeStartPoint + "_header");
+		if (prev)
+			prev.classList.remove("play-start-point");
+
+		songObj.arrangeStartPoint = col;
+		let next = document.getElementById("arr_col-" + col + "_header");
+		next.classList.add("play-start-point");
 	}
 
 	function setArrangeBlock(col, row, targetCell) {
@@ -148,10 +245,15 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 				let len = Math.ceil(songObj.patterns[row].length / songObj.barSteps);
 				for (let i = col; i < Math.min(col + len, songObj.song.length); i++) {
 					if (songObj.song[i][row]) {
-						//TODO: notify!
-						console.log("Can not insert block - no room");
+						showToast("Can not insert block - no room");
 						return;
 					}
+				}
+
+				if (songObj.checkSynthConflict(row, col)) {
+					console.log("Pattern with same synth present in this bar.");
+					showToast("Can not insert block - conflict with other cells");
+					return;
 				}
 
 				songObj.song[col][row] = true;
@@ -205,6 +307,9 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 				songObj.song.pop();
 			}
 		}
+
+		if (songObj.arrangeStartPoint >= songObj.song.length)
+			setArrangeStartPoint(0);
 	}
 
 	function showPattern(index) {

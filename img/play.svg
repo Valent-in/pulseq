@@ -24,12 +24,10 @@
       </cc:Work>
     </rdf:RDF>
   </metadata>
-  <g
-     id="layer1"
-     transform="translate(0,-287)">
+  <g>
     <path
-       style="fill:#fe7c08;fill-opacity:1;stroke:none;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 0.02362351,297.02362 -7.7792183e-4,287.0067 10.012514,291.64909 Z"
+       style="fill:#fe7c08;fill-opacity:1;stroke:none;stroke-width:0.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 0,10 0,0 10,5 Z"
        id="path815" />
   </g>
 </svg>

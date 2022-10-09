@@ -7,7 +7,7 @@ function SynthList(songObj, synthUi, rebuildPatternSynthListCallback) {
 	let addSynth = document.getElementById("button-add-synth");
 	addSynth.addEventListener("click", () => {
 		let defaultName = songObj.generateSynthName();
-		g_showPrompt("Enter synth name", (result) => {
+		showPrompt("Enter synth name", (result) => {
 			if (!result) {
 				console.log("Synth NOT created");
 				return;
@@ -45,11 +45,11 @@ function SynthList(songObj, synthUi, rebuildPatternSynthListCallback) {
 
 	document.getElementById("button-delete-synth").onclick = () => {
 		if (songObj.synths.length == 1) {
-			g_showAlert("Can not delete last synth");
+			showAlert("Can not delete last synth");
 			return;
 		}
 
-		g_showConfirm("Delete current synth?", (isOk) => {
+		showConfirm("Delete current synth?", (isOk) => {
 			if (!isOk)
 				return;
 
@@ -64,7 +64,7 @@ function SynthList(songObj, synthUi, rebuildPatternSynthListCallback) {
 	};
 
 	let resetSynthButton = document.getElementById("button-reset-synth");
-	resetSynthButton.addEventListener("click", () => g_showConfirm("Reset synth?", (isOk) => {
+	resetSynthButton.addEventListener("click", () => showConfirm("Reset synth?", (isOk) => {
 		if (!isOk)
 			return;
 
@@ -86,7 +86,7 @@ function SynthList(songObj, synthUi, rebuildPatternSynthListCallback) {
 		let name = songObj.synthNames[selectedSynthIndex];
 		let defaultName = songObj.generateSynthName(name.split("-")[0] + "-", 2);
 
-		g_showPrompt("Copy synth \"" + name + "\" to", (result) => {
+		showPrompt("Copy synth \"" + name + "\" to", (result) => {
 			if (result === null)
 				return;
 
@@ -100,7 +100,7 @@ function SynthList(songObj, synthUi, rebuildPatternSynthListCallback) {
 				sameCount + " synths with name '" + result + "' already exist. Overwrite?";
 
 			if (sameCount > 0) {
-				g_showConfirm(confirmMsg, (isOk) => {
+				showConfirm(confirmMsg, (isOk) => {
 					document.getElementById("synth-modal-menu").classList.add("nodisplay");
 					if (!isOk)
 						return;
@@ -135,7 +135,8 @@ function SynthList(songObj, synthUi, rebuildPatternSynthListCallback) {
 		}, defaultName);
 	};
 
-	document.getElementById("input-import-synth").onchange = (e) => {
+	let importSynthInput = document.getElementById("input-import-synth");
+	importSynthInput.onchange = (e) => {
 		let file = e.target.files[0];
 		if (!file)
 			return;
@@ -148,22 +149,35 @@ function SynthList(songObj, synthUi, rebuildPatternSynthListCallback) {
 			try {
 				params = JSON.parse(synthStr);
 			} catch {
-				g_showAlert("JSON parsing error");
+				showAlert("JSON parsing error");
 				return;
 			}
 
 			let synth = songObj.synths[selectedSynthIndex];
+			let synthParams = songObj.synthParams[selectedSynthIndex];
 			let newParams = that.loadSynth(params, synth);
 			for (let key in newParams)
-				songObj.synthParams[selectedSynthIndex][key] = newParams[key];
+				synthParams[key] = newParams[key];
 
 			if (selectedSynthIndex == songObj.currentSynthIndex)
-				synthUi.assignSynth(newParams, synth, songObj.synthNames[selectedSynthIndex]);
+				synthUi.assignSynth(synthParams, synth, songObj.synthNames[selectedSynthIndex]);
 
 			document.getElementById("synth-modal-menu").classList.add("nodisplay");
 		};
 		reader.readAsText(file);
 	};
+
+	importSynthInput.ondragenter = () => {
+		importSynthInput.classList.add("dragover");
+	}
+
+	importSynthInput.ondragleave = () => {
+		importSynthInput.classList.remove("dragover");
+	}
+
+	importSynthInput.ondrop = () => {
+		importSynthInput.classList.remove("dragover");
+	}
 
 	document.getElementById("link-synth-export").onclick = (e) => {
 		let expString = JSON.stringify(songObj.synthParams[selectedSynthIndex], null, 1);
@@ -235,15 +249,21 @@ function SynthList(songObj, synthUi, rebuildPatternSynthListCallback) {
 
 	this.loadSynth = function (synthParams, targetSynth) {
 		let newParams = {};
+		let paramCount = 0;
 
 		for (let key in DEFAULT_PARAMS.synthState) {
-			if (key in synthParams)
+			if (key in synthParams) {
 				newParams[key] = synthParams[key];
-			else
+				paramCount++;
+			} else {
 				newParams[key] = DEFAULT_PARAMS.synthState[key];
+			}
 
 			synthParamApply(key, newParams[key], targetSynth);
 		}
+
+		if (paramCount == 0)
+			showToast("Invalid synth config");
 
 		return newParams;
 	}

@@ -1,12 +1,12 @@
 "use strict"
 
 function SynthUi() {
-	document.getElementById("button-piano-show").onclick = () => {
-		document.getElementById("synth-view").classList.toggle("synth-footer-shrink");
-	}
-
 	let pianoContainer = document.getElementById("piano-container");
 	pianoContainer.oncontextmenu = () => false;
+
+	document.getElementById("button-piano-show").onclick = () => {
+		pianoContainer.classList.toggle("piano--hidden");
+	}
 
 	for (let i = 0; i < DEFAULT_PARAMS.noteSet.length; i++) {
 		let key = document.createElement("DIV");
@@ -43,19 +43,37 @@ function SynthUi() {
 	}
 
 	if ("ontouchstart" in window) {
-		document.getElementById("synth-main").classList.add("slider-drag-only-area");
+		let rangeInputs = document.querySelectorAll("#synth-main input[type=range]");
+		rangeInputs.forEach((e) => {
+			e.addEventListener("pointercancel", (el) => {
+				el.target.value = el.target.dataset.value;
+				universalSynthListener(el);
+			});
+
+			e.addEventListener("change", (el) => {
+				el.target.dataset.value = el.target.value;
+			});
+		});
 	}
 
 	const universalSynthListener = (e) => {
-		//console.log("synth listener :", e.target.id, e.target.value)
 		let idValue;
 		if (e.target.type == "checkbox")
 			idValue = synthParamApply(e.target.id, e.target.checked, this.currentSynth);
 		else
 			idValue = synthParamApply(e.target.id, e.target.value, this.currentSynth);
 
-		if (idValue)
+		if (idValue) {
 			this.curSynthParamObj[idValue.id] = idValue.value;
+
+			if (e.target.id != idValue.id) {
+				let newTgt = document.getElementById(idValue.id);
+				newTgt.value = idValue.value;
+				newTgt.dataset.value = idValue.value;
+			}
+		}
+
+		setBlockState(e.target);
 	}
 
 	let controls = document.querySelectorAll("#synth-main input, #synth-main select, #synth-main button");
@@ -81,17 +99,57 @@ function SynthUi() {
 
 		for (let key in params) {
 			let input = document.getElementById(key);
-			if (input)
-				if (input.type == "checkbox")
+			if (input) {
+				if (input.type == "checkbox") {
 					input.checked = params[key];
-				else
+				} else {
 					input.value = params[key];
+					input.dataset.value = params[key];
+				}
+
+				setBlockState(input);
+			}
 		}
 
 		if (name) {
 			let synthTab = document.getElementById("synth-name-area");
 			synthTab.innerHTML = "";
 			synthTab.appendChild(document.createTextNode(name));
+		}
+	}
+
+	function setBlockState(selector) {
+		if (selector.id == "synth-fx-type") {
+			let range = document.getElementById("synth-fx-rate");
+			let span = document.getElementById("synth-fx-rate-span");
+			let checkbox = document.getElementById("synth-fx-sync");
+			let label = document.getElementById("synth-fx-sync-label");
+
+			if ("stereo distort reverb".includes(selector.value)) {
+				range.disabled = true;
+				span.classList.add("disabled")
+			} else {
+				range.disabled = false;
+				span.classList.remove("disabled")
+			}
+
+			if ("delay pingpong".includes(selector.value)) {
+				checkbox.style.visibility = "visible";
+				label.style.visibility = "visible";
+			} else {
+				checkbox.style.visibility = "hidden";
+				label.style.visibility = "hidden";
+			}
+		}
+
+		if (selector.dataset.block) {
+			let blocks = document.getElementsByClassName(selector.dataset.block);
+			for (let el of blocks) {
+				if (selector.value == "[none]" || selector.value == "disabled" || selector.value == "lock")
+					el.style.visibility = "hidden";
+				else
+					el.style.visibility = "visible";
+			}
 		}
 	}
 

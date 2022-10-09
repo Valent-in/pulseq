@@ -1,7 +1,12 @@
 "use strict"
 
+console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v0.8 (beta) ",
+	"color:#1ff", "color:#f81", "color:#bbb", "background-color: #000;color:#fff");
+
 {
 	Tone.context.lookAhead = 0.15;
+
+	window.onbeforeunload = function () { return "Leave App?" };
 
 	window.g_markCurrentSynth = function () {
 		let previous = document.querySelectorAll("#synth-list-main > .synth-list-entry--current");
@@ -53,22 +58,31 @@
 	arrangeUi.build();
 
 	const scheduler = new Scheduler(songObject, arrangeUi.setMarker, patternUi.setMarker);
+	const schedulerUi = new SchedulerUi(scheduler);
 
-	schedulerUiInit(scheduler);
-	menuInit(songObject, onSongChange, synthList.loadSynth, patternUi.importSequence, scheduler.renderSong);
+	menuInit(songObject, onSongChange, synthList.loadSynth, scheduler.renderSong);
 
 	document.getElementById("startup-loading-title").style.display = "none";
 	document.getElementById("startup-menu").style.display = "block";
 
-	function onSongChange(isNewSong) {
+	function onSongChange(isNewSong, stopCommand) {
 		arrangeUi.fillSongView();
+		g_markCurrentPattern();
 		updPatternSynthList();
 		if (isNewSong) {
 			synthUi.assignSynth(songObject.synthParams[0], songObject.synths[0], songObject.synthNames[0]);
 			songObject.currentSynthIndex = 0;
 		}
 		synthList.rebuildSynthList();
-		g_markCurrentPattern();
+
+		switch (stopCommand) {
+			case "stop":
+				schedulerUi.stop();
+				break;
+			case "release":
+				scheduler.release();
+				break;
+		}
 	}
 
 	function updPatternSynthList() {

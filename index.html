@@ -2,7 +2,6 @@
 <html>
 
 <head>
-	<meta charset="UTF-8">
 	<title>PulseQueue</title>
 
 	<link rel="manifest" href="manifest.json">
@@ -11,8 +10,19 @@
 	<link rel="icon" type="image/png" href="img/icon.png">
 	<link rel="icon" type="image/svg+xml" href="img/icon.svg">
 
+	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no" />
 	<meta name="theme-color" content="#111111" />
+	<meta name="description"
+		content="Minimalistic web-application for creating electronic music. Boost your creativity!" />
+	<meta name="keywords" content="synthesizer sequencer daw music audio reverb web-audio tone.js" />
+
+	<meta property="og:title" content="PulseQueue" />
+	<meta property="og:type" content="website" />
+	<meta property="og:description"
+		content="Minimalistic web-application for creating electronic music. Boost your creativity!" />
+	<meta property="og:url" content="https://valent-in.github.io/pulseq/" />
+	<meta property="og:image" content="https://valent-in.github.io/pulseq/refcards/refcard-overview.png" />
 
 	<style>
 		* {
@@ -32,6 +42,29 @@
 	<link rel="stylesheet" href="css/style.css">
 	<link rel="stylesheet" href="css/table-arrange.css">
 	<link rel="stylesheet" href="css/table-pattern.css">
+
+	<script defer src="lib/Tone.js"></script>
+
+	<script defer src="js/defaults.js"></script>
+	<script defer src="js/alerts.js"></script>
+	<script defer src="js/misc.js"></script>
+
+	<script defer src="js/synth-param-apply.js"></script>
+	<script defer src="js/synth.js"></script>
+	<script defer src="js/synth-ui.js"></script>
+	<script defer src="js/synth-list.js"></script>
+
+	<script defer src="js/pattern.js"></script>
+	<script defer src="js/pattern-ui.js"></script>
+	<script defer src="js/arrange-ui.js"></script>
+
+	<script defer src="js/scheduler.js"></script>
+	<script defer src="js/scheduler-ui.js"></script>
+
+	<script defer src="js/song-object.js"></script>
+
+	<script defer src="js/menu-init.js"></script>
+	<script defer src="js/main.js"></script>
 </head>
 
 <body>
@@ -93,76 +126,79 @@
 				</div>
 			</div>
 
-			<div id="synth-view" class="js-view-container view-container view--hidden synth-footer-shrink">
+			<div id="synth-view" class="js-view-container view-container view--hidden">
 				<div id="synth-main">
-					<div>
+					<div class="bg-oscillator">
 						<span class="caption-text">Oscillator 1</span>
-						<select class="notranslate" translate="no" id="synth-osc1-type">
+						<select class="notranslate" translate="no" id="synth-osc1-type" data-block="js-osc1-block">
 							<option>[none]</option>
 							<option>sine</option>
 							<option>triangle</option>
 							<option>sawtooth</option>
 							<option>square</option>
 						</select>
-						<br>
-						<span>Octave</span>
-						<br>
-						<input type="range" id="synth-osc1-octave" min=-5 max=5 step=1 class="range--10-marks">
-						<br>
-						<span>Detune</span>
-						<button id="synth-osc1-reset-detune" class="button--small">Reset</button>
-						<br>
-						<input type="range" id="synth-osc1-detune" min=-600 max=600 step=10 class="range--12-marks">
-						<br>
-						<span>Level</span>
-						<br>
-						<input type="range" id="synth-osc1-level" min=0 max=1 step=0.01 class="range--4-marks">
+						<div class="js-osc1-block">
+							<span>Octave</span>
+							<br>
+							<input type="range" id="synth-osc1-octave" min=-5 max=5 step=1 class="range--10-marks">
+							<br>
+							<span>Detune</span>
+							<button id="synth-osc1-reset-detune" class="button--small">Reset</button>
+							<br>
+							<input type="range" id="synth-osc1-detune" min=-600 max=600 step=5 class="range--12-marks">
+							<br>
+							<span>Level</span>
+							<br>
+							<input type="range" id="synth-osc1-level" min=0 max=1 step=0.01 class="range--4-marks">
+						</div>
 					</div>
-					<div>
+					<div class="bg-oscillator">
 						<span class="caption-text">Oscillator 2</span>
-						<select class="notranslate" translate="no" id="synth-osc2-type">
+						<select class="notranslate" translate="no" id="synth-osc2-type" data-block="js-osc2-block">
 							<option>[none]</option>
 							<option>sine</option>
 							<option>triangle</option>
 							<option>sawtooth</option>
 							<option>square</option>
 						</select>
-						<br>
-						<span>Octave</span>
-						<br>
-						<input type="range" id="synth-osc2-octave" min=-5 max=5 step=1 class="range--10-marks">
-						<br>
-						<span>Detune</span>
-						<button id="synth-osc2-reset-detune" class="button--small">Reset</button>
-						<br>
-						<input type="range" id="synth-osc2-detune" min=-600 max=600 step=10 class="range--12-marks">
-						<br>
-						<span>Level</span>
-						<br>
-						<input type="range" id="synth-osc2-level" min=0 max=1 step=0.01 class="range--4-marks">
+						<div class="js-osc2-block">
+							<span>Octave</span>
+							<br>
+							<input type="range" id="synth-osc2-octave" min=-5 max=5 step=1 class="range--10-marks">
+							<br>
+							<span>Detune</span>
+							<button id="synth-osc2-reset-detune" class="button--small">Reset</button>
+							<br>
+							<input type="range" id="synth-osc2-detune" min=-600 max=600 step=5 class="range--12-marks">
+							<br>
+							<span>Level</span>
+							<br>
+							<input type="range" id="synth-osc2-level" min=0 max=1 step=0.01 class="range--4-marks">
+						</div>
 					</div>
-					<div>
+					<div class="bg-oscillator">
 						<span class="caption-text">Oscillator 3</span>
-						<select class="notranslate" translate="no" id="synth-osc3-type">
+						<select class="notranslate" translate="no" id="synth-osc3-type" data-block="js-osc3-block">
 							<option>[none]</option>
 							<option>sine</option>
 							<option>triangle</option>
 							<option>sawtooth</option>
 							<option>square</option>
 						</select>
-						<br>
-						<span>Octave</span>
-						<br>
-						<input type="range" id="synth-osc3-octave" min=-5 max=5 step=1 class="range--10-marks">
-						<br>
-						<span>Detune</span>
-						<button id="synth-osc3-reset-detune" class="button--small">Reset</button>
-						<br>
-						<input type="range" id="synth-osc3-detune" min=-600 max=600 step=10 class="range--12-marks">
-						<br>
-						<span>Level</span>
-						<br>
-						<input type="range" id="synth-osc3-level" min=0 max=1 step=0.01 class="range--4-marks">
+						<div class="js-osc3-block">
+							<span>Octave</span>
+							<br>
+							<input type="range" id="synth-osc3-octave" min=-5 max=5 step=1 class="range--10-marks">
+							<br>
+							<span>Detune</span>
+							<button id="synth-osc3-reset-detune" class="button--small">Reset</button>
+							<br>
+							<input type="range" id="synth-osc3-detune" min=-600 max=600 step=5 class="range--12-marks">
+							<br>
+							<span>Level</span>
+							<br>
+							<input type="range" id="synth-osc3-level" min=0 max=1 step=0.01 class="range--4-marks">
+						</div>
 					</div>
 					<div>
 						<select class="notranslate" translate="no" id="synth-envelope-type">
@@ -196,35 +232,38 @@
 						<br>
 						<input type="range" id="synth-pan" min=-1 max=1 step=0.01 class="range--10-marks">
 					</div>
-					<div>
+					<div class="bg-filter">
 						<span class="caption-text">Filter</span>
-						<select class="notranslate" translate="no" id="synth-filter-type">
+						<select class="notranslate" translate="no" id="synth-filter-type" data-block="js-filter-block">
 							<option>[none]</option>
 							<option>lowpass</option>
 							<option>highpass</option>
 							<option>bandpass</option>
 						</select>
-						<br>
-						<span>Frequency</span>
-						<br>
-						<input type="range" id="synth-filter-frequency" min=0 max=5 step=0.02 class="range--5-marks">
-						<br>
-						<span>Peak</span>
-						<br>
-						<input type="range" id="synth-filter-quality" min=0 max=50 step=0.1 class="range--4-marks">
+						<div class="js-filter-block">
+							<span>Frequency</span>
+							<br>
+							<input type="range" id="synth-filter-frequency" min=0 max=5 step=0.02
+								class="range--5-marks">
+							<br>
+							<span>Peak</span>
+							<br>
+							<input type="range" id="synth-filter-quality" min=0 max=50 step=0.1 class="range--4-marks">
+						</div>
 					</div>
-					<div>
+					<div class="bg-noise">
 						<span class="caption-text">Noise</span>
-						<select class="notranslate" translate="no" id="synth-noise-type">
+						<select class="notranslate" translate="no" id="synth-noise-type" data-block="js-noise-block">
 							<option>[none]</option>
 							<option>white</option>
 							<option>pink</option>
 							<option>brown</option>
 						</select>
-						<br>
-						<span>Level</span>
-						<br>
-						<input type="range" id="synth-noise-level" min=0 max=1 step=0.01 class="range--4-marks">
+						<div class="js-noise-block">
+							<span>Level</span>
+							<br>
+							<input type="range" id="synth-noise-level" min=0 max=1 step=0.01 class="range--4-marks">
+						</div>
 					</div>
 					<div>
 						<span class="caption-text">Amplifier</span>
@@ -238,131 +277,143 @@
 						Modulation
 					</div>
 
-					<div>
-						<span class="caption-text">LFO 1</span>
-						<select class="notranslate" translate="no" id="synth-lfo1-type">
+					<div class="bg-modulation-osc">
+						<span class="caption-text">OSC 1 mod. input</span>
+						<select class="notranslate" translate="no" id="synth-osc1-mod-input"
+							data-block="js-modosc1-block">
 							<option>[none]</option>
-							<option>sine</option>
-							<option>triangle</option>
-							<option>sawtooth</option>
-							<option>square</option>
+							<option>lfo1</option>
+							<option>lfo2</option>
+							<option>envelopeMod</option>
+							<option>envelopeModRev</option>
+							<option>osc2</option>
+							<option>osc3</option>
 						</select>
-						<label for="synth-lfo1-sync">BPM sync</label>
-						<input type="checkbox" id="synth-lfo1-sync">
-						<br>
-						<span>Frequency</span>
-						<br>
-						<input type="range" id="synth-lfo1-frequency" min=0 max=12 step=0.01 class="range--4-marks">
-						<br>
-						<span class="caption-text">LFO 2</span>
-						<select class="notranslate" translate="no" id="synth-lfo2-type">
-							<option>[none]</option>
-							<option>sine</option>
-							<option>triangle</option>
-							<option>sawtooth</option>
-							<option>square</option>
-						</select>
-						<br>
-						<span>Frequency</span>
-						<br>
-						<input type="range" id="synth-lfo2-frequency" min=0 max=12 step=0.01 class="range--4-marks">
+						<div class="js-modosc1-block">
+							<span>Intensity</span>
+							<br>
+							<input type="range" id="synth-osc1-mod-value" min=0 max=6 step=0.02 class="range--4-marks">
+						</div>
 					</div>
-					<div>
-						<select class="notranslate" translate="no" id="synth-mod-envelope-state">
+					<div class="bg-modulation-osc">
+						<span class="caption-text">OSC 2 mod. input</span>
+						<select class="notranslate" translate="no" id="synth-osc2-mod-input"
+							data-block="js-modosc2-block">
+							<option>[none]</option>
+							<option>lfo1</option>
+							<option>lfo2</option>
+							<option>envelopeMod</option>
+							<option>envelopeModRev</option>
+							<option>osc3</option>
+						</select>
+						<div class="js-modosc2-block">
+							<span>Intensity</span>
+							<br>
+							<input type="range" id="synth-osc2-mod-value" min=0 max=6 step=0.02 class="range--4-marks">
+						</div>
+					</div>
+					<div class="bg-modulation-filt">
+						<span class="caption-text">Filter mod. input</span>
+						<select class="notranslate" translate="no" id="synth-filter-mod-input"
+							data-block="js-modfilt-block">
+							<option>[none]</option>
+							<option>lfo1</option>
+							<option>lfo2</option>
+							<option>envelopeMod</option>
+							<option>envelopeModRev</option>
+						</select>
+						<div class="js-modfilt-block">
+							<span>Intensity</span>
+							<br>
+							<input type="range" id="synth-filter-mod-value" min=0 max=5 step=0.02
+								class="range--5-marks">
+						</div>
+					</div>
+					<div class="bg-modulation-amp">
+						<span class="caption-text">AMP mod. input</span>
+						<select class="notranslate" translate="no" id="synth-amplifier-mod-input"
+							data-block="js-modamp-block">
+							<option>[none]</option>
+							<option>lfo1</option>
+							<option>lfo2</option>
+							<option>envelopeModRev</option>
+							<option>osc1</option>
+							<option>osc2</option>
+						</select>
+						<div class="js-modamp-block">
+							<span>Intensity</span>
+							<br>
+							<input type="range" id="synth-amplifier-mod-value" min=0 max=1 step=0.01
+								class="range--4-marks">
+						</div>
+					</div>
+					<div class="bg-lfo">
+						<span class="caption-text">LFO 1</span>
+						<select class="notranslate" translate="no" id="synth-lfo1-type" data-block="js-lfo1-block">
+							<option>[none]</option>
+							<option>sine</option>
+							<option>triangle</option>
+							<option>sawtooth</option>
+							<option>square</option>
+						</select>
+						<label for="synth-lfo1-sync" class="js-lfo1-block">BPM sync</label>
+						<input type="checkbox" id="synth-lfo1-sync" class="js-lfo1-block">
+						<div class="js-lfo1-block">
+							<span>Frequency</span>
+							<br>
+							<input type="range" id="synth-lfo1-frequency" min=0 max=12 step=0.01 class="range--4-marks">
+						</div>
+						<span class="caption-text">LFO 2</span>
+						<select class="notranslate" translate="no" id="synth-lfo2-type" data-block="js-lfo2-block">
+							<option>[none]</option>
+							<option>sine</option>
+							<option>triangle</option>
+							<option>sawtooth</option>
+							<option>square</option>
+						</select>
+						<div class="js-lfo2-block">
+							<span>Frequency</span>
+							<br>
+							<input type="range" id="synth-lfo2-frequency" min=0 max=12 step=0.01 class="range--4-marks">
+						</div>
+					</div>
+					<div class="bg-adsr">
+						<select class="notranslate" translate="no" id="synth-mod-envelope-state"
+							data-block="js-modenv-block">
 							<option>disabled</option>
 							<option>enabled</option>
 							<option>lock</option>
 						</select>
 						<span class="envelope-caption" style="color:#b9f;">Modulation Envelope</span>
-						<span>Attack</span>
-						<br>
-						<input type="range" id="synth-mod-envelope-attack" min=0 max=12 step=0.02
-							class="range--4-marks">
-						<br>
-						<span>Decay</span>
-						<br>
-						<input type="range" id="synth-mod-envelope-decay" min=0 max=12 step=0.02 class="range--4-marks">
-						<br>
-						<span>Sustain</span>
-						<br>
-						<input type="range" id="synth-mod-envelope-sustain" min=0 max=1 step=0.01
-							class="range--4-marks">
-						<br>
-						<span>Release</span>
-						<br>
-						<input type="range" id="synth-mod-envelope-release" min=0 max=12 step=0.02
-							class="range--4-marks">
-					</div>
-					<div>
-						<span class="caption-text">OSC 1 mod. input</span>
-						<select class="notranslate" translate="no" id="synth-osc1-mod-input">
-							<option>[none]</option>
-							<option>lfo1</option>
-							<option>lfo2</option>
-							<option>envelopeMod</option>
-							<option>envelopeModRev</option>
-							<option>osc2</option>
-							<option>osc3</option>
-						</select>
-						<br>
-						<span>Intensity</span>
-						<br>
-						<input type="range" id="synth-osc1-mod-value" min=0 max=5 step=0.02 class="range--5-marks">
-					</div>
-					<div>
-						<span class="caption-text">OSC 2 mod. input</span>
-						<select class="notranslate" translate="no" id="synth-osc2-mod-input">
-							<option>[none]</option>
-							<option>lfo1</option>
-							<option>lfo2</option>
-							<option>envelopeMod</option>
-							<option>envelopeModRev</option>
-							<option>osc3</option>
-						</select>
-						<br>
-						<span>Intensity</span>
-						<br>
-						<input type="range" id="synth-osc2-mod-value" min=0 max=5 step=0.02 class="range--5-marks">
-					</div>
-					<div>
-						<span class="caption-text">Filter mod. input</span>
-						<select class="notranslate" translate="no" id="synth-filter-mod-input">
-							<option>[none]</option>
-							<option>lfo1</option>
-							<option>lfo2</option>
-							<option>envelopeMod</option>
-							<option>envelopeModRev</option>
-							<option>osc1</option>
-							<option>osc2</option>
-						</select>
-						<br>
-						<span>Intensity</span>
-						<br>
-						<input type="range" id="synth-filter-mod-value" min=0 max=4 step=0.02 class="range--4-marks">
-					</div>
-					<div>
-						<span class="caption-text">AMP mod. input</span>
-						<select class="notranslate" translate="no" id="synth-amplifier-mod-input">
-							<option>[none]</option>
-							<option>lfo1</option>
-							<option>lfo2</option>
-							<option>envelopeModRev</option>
-							<option>osc1</option>
-							<option>osc2</option>
-						</select>
-						<br>
-						<span>Intensity</span>
-						<br>
-						<input type="range" id="synth-amplifier-mod-value" min=0 max=1 step=0.01 class="range--4-marks">
+						<span class="js-modenv-block">Attack</span>
+						<div class="js-modenv-block">
+							<input type="range" id="synth-mod-envelope-attack" min=0 max=12 step=0.02
+								class="range--4-marks">
+							<br>
+							<span>Decay</span>
+							<br>
+							<input type="range" id="synth-mod-envelope-decay" min=0 max=12 step=0.02
+								class="range--4-marks">
+							<br>
+							<span>Sustain</span>
+							<br>
+							<input type="range" id="synth-mod-envelope-sustain" min=0 max=1 step=0.01
+								class="range--4-marks">
+							<br>
+							<span>Release</span>
+							<br>
+							<input type="range" id="synth-mod-envelope-release" min=0 max=12 step=0.02
+								class="range--4-marks">
+						</div>
 					</div>
 
-					<div class="block-spacer">
-						Effect
+					<div class="block-spacer fx-spacer">
+						FX
 					</div>
 
-					<div>
+					<div class="bg-effect">
 						<span class="caption-text">Effect</span>
-						<select class="notranslate" translate="no" id="synth-fx-type">
+						<select class="notranslate" translate="no" id="synth-fx-type" data-block="js-fx-block">
 							<option>[none]</option>
 							<option>chorus</option>
 							<option>delay</option>
@@ -374,19 +425,20 @@
 							<option>tremolo</option>
 							<option>vibrato</option>
 						</select>
-						<br>
-						<span>Amount (Depth)</span>
-						<br>
-						<input type="range" id="synth-fx-amount" min=0 max=1 step=0.002 class="range--4-marks">
-						<br>
-						<span>Delay (Speed)</span>
-						<input type="checkbox" id="synth-fx-sync">
-						<label for="synth-fx-sync">BPM sync</label>
-						<input type="range" id="synth-fx-rate" min=0 max=1 step=0.002 class="range--3-marks">
-						<br>
-						<span>Dry-Wet</span>
-						<br>
-						<input type="range" id="synth-fx-wet" min=0 max=1 step=0.002 class="range--4-marks">
+						<div class="js-fx-block">
+							<span>Amount (Depth)</span>
+							<br>
+							<input type="range" id="synth-fx-amount" min=0 max=1 step=0.002 class="range--4-marks">
+							<br>
+							<span id="synth-fx-rate-span">Delay (Speed)</span>
+							<input type="checkbox" id="synth-fx-sync">
+							<label id="synth-fx-sync-label" for="synth-fx-sync">BPM sync</label>
+							<input type="range" id="synth-fx-rate" min=0 max=1 step=0.002 class="range--3-marks">
+							<br>
+							<span>Dry-Wet</span>
+							<br>
+							<input type="range" id="synth-fx-wet" min=0 max=1 step=0.002 class="range--4-marks">
+						</div>
 					</div>
 				</div>
 
@@ -433,6 +485,7 @@
 					<div class="startup-menu-entry" id="button-import-track">
 						<input type="file" accept=".json" id="input-import-track">
 						<span>Import</span>
+						<div class="dragshade"></div>
 					</div>
 					<div class="startup-menu-entry" id="button-demo-track">Demo</div>
 				</div>
@@ -451,24 +504,24 @@
 
 		<div id="settings-modal-menu" class="modal-container nodisplay">
 			<div class="modal-box">
-				Menu
-				<div class="spacer"></div>
-				<textarea id="text-export-data" style="height:40vh; width: 90%; background-color:#444;"></textarea>
-
-				<div class="spacer"></div>
-				<button id="button-import-pattern">Import pattern</button>
-				<button id="button-export-pattern">Export pattern</button>
-
-				<button id="button-import-full-pattern">Import Full pattern</button>
-				<button id="button-export-full-pattern">Export Full pattern</button>
-
-				<div class="spacer"></div>
-				<button id="button-import-song">Import song</button>
-				<button id="button-export-song">Export song</button>
-				<div class="spacer"></div>
-				<button id="button-context-resume">Resume context</button>
-				<div class="spacer"></div>
-				<button id="button-settings-close" class="button-modal-bottom">Close</button>
+				<div class="modal-box-block">
+					<span style="font-weight:bold;color:#ddd;float:left;">PulseQ</span>
+					<span style="font-weight:bold;color:#555;float:left;">ueue</span>
+					<span style="margin-left:12px;color:#555;">music creation app</span>
+					<a href="https://github.com/valent-in/pulseq/#pulsequeue" target="_blank" rel="noopener"
+						title="GitHub" style="font-weight:bold;padding:0 6px;">?</a>
+				</div>
+				<div class="modal-box-block">
+					<input type="checkbox" id="input-more-velosteps" autocomplete="off">
+					<label for="input-more-velosteps">More velocity steps</label>
+				</div>
+				<div class="modal-box-block">
+					<button id="button-reset-app">Title&sol;Reset</button>
+				</div>
+				<div class="modal-box-block modal-box-footer">
+					<button id="button-context-resume">Sound Fix</button>
+					<button id="button-settings-close" class="button-modal-bottom">Close</button>
+				</div>
 			</div>
 		</div>
 
@@ -574,6 +627,18 @@
 			</div>
 		</div>
 
+		<div id="column-modal-menu" class="modal-container nodisplay">
+			<div class="modal-box">
+				<div class="modal-box-block">
+					<button id="button-insert-columns" style="margin-right: 4px; float:left;">Insert columns</button>
+					<button id="button-remove-columns" style="margin-left: 4px; float:right;">Delete columns</button>
+				</div>
+				<div class="modal-box-block modal-box-footer">
+					<button id="button-column-menu-close" class="button-modal-bottom">Close</button>
+				</div>
+			</div>
+		</div>
+
 		<div id="pattern-modal-menu" class="modal-container nodisplay">
 			<div class="modal-box">
 				<table>
@@ -664,10 +729,11 @@
 					<button id="button-delete-synth">Delete Synth</button>
 				</div>
 				<div class="modal-box-block">
-					<button id="button-import-synth">
-						<span>Import</span>
+					<div id="button-import-synth" class="button">
 						<input type="file" accept=".json" id="input-import-synth">
-					</button>
+						<span>Import</span>
+						<div class="dragshade"></div>
+					</div>
 					<a id="link-synth-export" href="">Export</a>
 				</div>
 				<div class="modal-box-block modal-box-footer">
@@ -678,8 +744,7 @@
 
 		<div id="modal-alert" class="modal-container nodisplay">
 			<div class="modal-box modal-alert-box">
-				<div class="modal-box-block">
-					<span id="modal-alert-message"></span>
+				<div class="modal-box-block" id="modal-alert-message">
 				</div>
 				<div class="modal-box-block" id="input-area-modal-alert">
 					<input type="text" id="input-modal-alert">
@@ -691,29 +756,11 @@
 			</div>
 		</div>
 
+		<div id="toast-alert" class="toast-container nodisplay">
+			<div id="toast-box"></div>
+		</div>
+
 	</div>
-
-	<script src="lib/Tone.js"></script>
-
-	<script src="js/defaults.js"></script>
-	<script src="js/misc.js"></script>
-
-	<script src="js/synth-param-apply.js"></script>
-	<script src="js/synth.js"></script>
-	<script src="js/synth-ui.js"></script>
-	<script src="js/synth-list.js"></script>
-
-	<script src="js/pattern.js"></script>
-	<script src="js/pattern-ui.js"></script>
-	<script src="js/arrange-ui.js"></script>
-
-	<script src="js/scheduler.js"></script>
-	<script src="js/scheduler-ui-init.js"></script>
-
-	<script src="js/song-object.js"></script>
-
-	<script src="js/menu-init.js"></script>
-	<script src="js/main.js"></script>
 
 </body>
 
