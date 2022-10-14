@@ -236,12 +236,6 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 				songObj.song[startPoint][row] = false;
 				drawBlock(startPoint, row, false);
 			} else {
-
-				if (songObj.checkSynthConflict(row, col)) {
-					console.log("Pattern with same synt present in this bar");
-					return;
-				}
-
 				let len = Math.ceil(songObj.patterns[row].length / songObj.barSteps);
 				for (let i = col; i < Math.min(col + len, songObj.song.length); i++) {
 					if (songObj.song[i][row]) {
