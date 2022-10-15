@@ -12,6 +12,18 @@ a {
 	color: #55f;
 }
 
+.app-title-pulseq {
+	font-weight: bold;
+	color: #ddd;
+	float: left;
+}
+
+.app-title-ueue {
+	font-weight: bold;
+	color: #555;
+	float: left;
+}
+
 #app-icons {
 	float: right;
 	margin-left: 10px;
@@ -331,11 +343,20 @@ a {
 .envelope-caption {
 	float: right;
 	padding: 0 4px;
-	font-weight: bold;
 	max-width: 50%;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+.highlight-cyan {
+	color: #7dd;
+	font-weight: bold;
+}
+
+.highlight-violet {
+	color: #b9f;
+	font-weight: bold;
 }
 
 input[type=range] {

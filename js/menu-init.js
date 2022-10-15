@@ -62,7 +62,6 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		container.innerHTML = "Loading...";
 
 		fetch("data/tracklist.json").then(response => response.json()).then(data => {
-			console.log(data);
 			container.innerHTML = "";
 			for (let i = 0; i < data.length; i++) {
 				let item = document.createElement("DIV");

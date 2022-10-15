@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
 	<title>PulseQueue</title>
@@ -11,18 +11,21 @@
 	<link rel="icon" type="image/svg+xml" href="img/icon.svg">
 
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, user-scalable=no" />
-	<meta name="theme-color" content="#111111" />
+	<meta name="viewport" content="width=device-width, user-scalable=no">
+	<meta name="theme-color" content="#111111">
 	<meta name="description"
-		content="Minimalistic web-application for creating electronic music. Boost your creativity!" />
-	<meta name="keywords" content="synthesizer sequencer daw music audio reverb web-audio tone.js" />
+		content="Minimalistic web-application for creating electronic music. Boost your creativity!">
+	<meta name="keywords" content="synthesizer sequencer daw music audio reverb web-audio tone.js">
 
-	<meta property="og:title" content="PulseQueue" />
-	<meta property="og:type" content="website" />
+	<meta property="og:title" content="PulseQueue - minimalistic web-app for creating electronic music">
+	<meta property="og:type" content="website">
 	<meta property="og:description"
-		content="Minimalistic web-application for creating electronic music. Boost your creativity!" />
-	<meta property="og:url" content="https://valent-in.github.io/pulseq/" />
-	<meta property="og:image" content="https://valent-in.github.io/pulseq/refcards/refcard-overview.png" />
+		content="Simple and easy to use application for creating electronic music. Boost your creativity!">
+	<meta property="og:url" content="https://valent-in.github.io/pulseq/">
+	<meta property="og:image" content="https://valent-in.github.io/pulseq/refcards/refcard-overview.png">
+	<meta property="og:image:type" content="image/png">
+	<meta property="og:image:width" content="1710">
+	<meta property="og:image:height" content="873">
 
 	<style>
 		* {
@@ -205,7 +208,7 @@
 							<option>exponential</option>
 							<option>linear</option>
 						</select>
-						<span class="envelope-caption" style="color:#7dd;">Amplitude Envelope</span>
+						<span class="envelope-caption highlight-cyan">Amplitude Envelope</span>
 						<span>Attack</span>
 						<br>
 						<input type="range" id="synth-envelope-attack" min=0 max=12 step=0.02 class="range--4-marks">
@@ -384,7 +387,7 @@
 							<option>enabled</option>
 							<option>lock</option>
 						</select>
-						<span class="envelope-caption" style="color:#b9f;">Modulation Envelope</span>
+						<span class="envelope-caption highlight-violet">Modulation Envelope</span>
 						<span class="js-modenv-block">Attack</span>
 						<div class="js-modenv-block">
 							<input type="range" id="synth-mod-envelope-attack" min=0 max=12 step=0.02
@@ -467,8 +470,8 @@
 		<div id="startup-modal-menu" class="modal-container">
 			<div class="modal-box" id="startup-menu-box">
 				<div class="modal-box-block">
-					<span style="font-weight:bold;color:#ddd;float:left;">PulseQ</span>
-					<span style="font-weight:bold;color:#555;float:left;">ueue</span>
+					<span class="app-title-pulseq">PulseQ</span>
+					<span class="app-title-ueue">ueue</span>
 					<div id="app-icons">
 						<div></div>
 						<div></div>
@@ -487,7 +490,7 @@
 						<span>Import</span>
 						<div class="dragshade"></div>
 					</div>
-					<div class="startup-menu-entry" id="button-demo-track">Demo</div>
+					<div class="startup-menu-entry highlight-violet" id="button-demo-track">Demo</div>
 				</div>
 			</div>
 		</div>
@@ -505,8 +508,8 @@
 		<div id="settings-modal-menu" class="modal-container nodisplay">
 			<div class="modal-box">
 				<div class="modal-box-block">
-					<span style="font-weight:bold;color:#ddd;float:left;">PulseQ</span>
-					<span style="font-weight:bold;color:#555;float:left;">ueue</span>
+					<span class="app-title-pulseq">PulseQ</span>
+					<span class="app-title-ueue">ueue</span>
 					<span style="margin-left:12px;color:#555;">music creation app</span>
 					<a href="https://github.com/valent-in/pulseq/#pulsequeue" target="_blank" rel="noopener"
 						title="GitHub" style="font-weight:bold;padding:0 6px;">?</a>
