@@ -13,9 +13,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no">
 	<meta name="theme-color" content="#111111">
-	<meta name="description"
-		content="Minimalistic web-application for creating electronic music. Boost your creativity!">
-	<meta name="keywords" content="synthesizer sequencer daw music audio reverb web-audio tone.js">
+	<meta name="description" content="Minimalistic application for creating electronic music. Boost your creativity!">
 
 	<meta property="og:title" content="PulseQueue - minimalistic web-app for creating electronic music">
 	<meta property="og:type" content="website">
@@ -47,6 +45,7 @@
 	<link rel="stylesheet" href="css/table-pattern.css">
 
 	<script defer src="lib/Tone.js"></script>
+	<script defer src="lib/bufferToWave.js"></script>
 
 	<script defer src="js/defaults.js"></script>
 	<script defer src="js/alerts.js"></script>
@@ -55,7 +54,8 @@
 	<script defer src="js/synth-param-apply.js"></script>
 	<script defer src="js/synth.js"></script>
 	<script defer src="js/synth-ui.js"></script>
-	<script defer src="js/synth-list.js"></script>
+	<script defer src="js/synth-presets.js"></script>
+	<script defer src="js/synth-helper.js"></script>
 
 	<script defer src="js/pattern.js"></script>
 	<script defer src="js/pattern-ui.js"></script>
@@ -72,7 +72,7 @@
 
 <body>
 	<div id="container">
-		<div id="header">
+		<div id="header" class="focus-lock-area">
 			<div id="header-tabs">
 				<div id="arrange-tab" class="js-tab tab tab--active">
 					Arrange
@@ -96,7 +96,7 @@
 			</div>
 		</div>
 		<div id="main">
-			<div id="arrange-view" class="js-view-container view-container">
+			<div id="arrange-view" class="js-view-container view-container focus-lock-area">
 				<div id="arrange-container">
 					<div class="notranslate" translate="no" id="arrange-main"></div>
 				</div>
@@ -111,7 +111,7 @@
 					</div>
 				</div>
 			</div>
-			<div id="pattern-view" class="js-view-container view-container view--hidden">
+			<div id="pattern-view" class="js-view-container view-container view--hidden focus-lock-area">
 
 				<div id="pattern-container">
 					<div class="notranslate" translate="no" id="pattern-main">
@@ -129,7 +129,7 @@
 				</div>
 			</div>
 
-			<div id="synth-view" class="js-view-container view-container view--hidden">
+			<div id="synth-view" class="js-view-container view-container view--hidden focus-lock-area">
 				<div id="synth-main">
 					<div class="bg-oscillator">
 						<span class="caption-text">Oscillator 1</span>
@@ -381,11 +381,11 @@
 						</div>
 					</div>
 					<div class="bg-adsr">
-						<select class="notranslate" translate="no" id="synth-mod-envelope-state"
+						<select class="notranslate" translate="no" id="synth-mod-envelope-type"
 							data-block="js-modenv-block">
-							<option>disabled</option>
-							<option>enabled</option>
-							<option>lock</option>
+							<option>[none]</option>
+							<option>exponential</option>
+							<option>linear</option>
 						</select>
 						<span class="envelope-caption highlight-violet">Modulation Envelope</span>
 						<span class="js-modenv-block">Attack</span>
@@ -457,7 +457,7 @@
 				</div>
 			</div>
 
-			<div id="synth-list-view" class="js-view-container view-container view--hidden">
+			<div id="synth-list-view" class="js-view-container view-container view--hidden focus-lock-area">
 				<div class="notranslate" translate="no" id="synth-list-main"></div>
 				<div class="footer">
 					<button id="button-add-synth">+</button>
@@ -467,7 +467,7 @@
 
 		</div>
 
-		<div id="startup-modal-menu" class="modal-container">
+		<div id="startup-modal-menu" class="modal-container js-noskip">
 			<div class="modal-box" id="startup-menu-box">
 				<div class="modal-box-block">
 					<span class="app-title-pulseq">PulseQ</span>
@@ -486,7 +486,7 @@
 				<div class="modal-box-block nodisplay" id="startup-menu">
 					<div class="startup-menu-entry" id="button-new-track">New Track</div>
 					<div class="startup-menu-entry" id="button-import-track">
-						<input type="file" accept=".json" id="input-import-track">
+						<input type="file" accept=".json" id="input-import-track" class="js-request-focus">
 						<span>Import</span>
 						<div class="dragshade"></div>
 					</div>
@@ -545,16 +545,16 @@
 						</td>
 						<td>
 							<input type="number" id="input-bpm-value">
-							<button id="button-bpm-set">Set</button>
+							<button id="button-bpm-set" tabindex="-1">Set</button>
 						</td>
 					</tr>
 					<tr>
 						<td>
-							Bar Steps
+							Bar steps
 						</td>
 						<td>
 							<input type="number" id="input-steps-value">
-							<button id="button-steps-set">Set</button>
+							<button id="button-steps-set" tabindex="-1">Set</button>
 						</td>
 					</tr>
 					<tr>
@@ -591,7 +591,7 @@
 					</tr>
 					<tr>
 						<td>
-							Project File:
+							Project file:
 						</td>
 						<td>
 							<a href="" id="link-song-download">Download JSON</a>
@@ -606,13 +606,13 @@
 			</div>
 		</div>
 
-		<div id="export-modal-menu" class="modal-container nodisplay">
+		<div id="export-modal-menu" class="modal-container nodisplay js-noskip">
 			<div class="modal-box">
 				<div class="modal-box-block">
-					<span>Export Audio</span>
+					<span>Export audio</span>
 					<input type="number" id="input-render-length" style="width: 70px;">
 					<span class="dim-text">sec.</span>
-					<button id="button-render">Start</button>
+					<button id="button-render" class="js-request-focus">Start</button>
 				</div>
 				<div class="modal-box-block nodisplay" id="export-menu-result-container">
 					<div id="export-ongoing-container">
@@ -670,7 +670,7 @@
 						</td>
 						<td>
 							<input type="number" id="input-pattern-length">
-							<button id="button-pattern-length-set">Set</button>
+							<button id="button-pattern-length-set" tabindex="-1">Set</button>
 						</td>
 					</tr>
 
@@ -727,8 +727,10 @@
 					<input type="text" id="input-synth-name">
 				</div>
 				<div class="modal-box-block">
+					<select id="selsct-synth-preset">
+						<option disabled hidden>Preset</option>
+					</select>
 					<button id="button-copy-synth">Copy Synth</button>
-					<button id="button-reset-synth">Reset Synth</button>
 					<button id="button-delete-synth">Delete Synth</button>
 				</div>
 				<div class="modal-box-block">
@@ -750,10 +752,10 @@
 				<div class="modal-box-block" id="modal-alert-message">
 				</div>
 				<div class="modal-box-block" id="input-area-modal-alert">
-					<input type="text" id="input-modal-alert">
+					<input type="text" id="input-modal-alert" class="js-request-focus">
 				</div>
 				<div class="modal-box-block modal-box-footer">
-					<button id="button-alert-ok" class="button-modal-bottom">OK</button>
+					<button id="button-alert-ok" class="button-modal-bottom js-request-focus">OK</button>
 					<button id="button-alert-cancel" class="button-modal-bottom">Cancel</button>
 				</div>
 			</div>

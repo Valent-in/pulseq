@@ -25,7 +25,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	document.getElementById("button-new-track").onclick = () => {
 		songObj.createEmptySong();
 		onSongChangeCallback(true);
-		document.getElementById("startup-modal-menu").classList.add("nodisplay");
+		hideModal("startup-modal-menu");
 	}
 
 	let importTrackInput = document.getElementById("input-import-track");
@@ -38,7 +38,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		reader.onload = function (ev) {
 			let songStr = ev.target.result;
 			if (importSong(songStr))
-				document.getElementById("startup-modal-menu").classList.add("nodisplay");
+				hideModal("startup-modal-menu");
 		};
 		reader.readAsText(file);
 	}
@@ -56,7 +56,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	}
 
 	document.getElementById("button-demo-track").onclick = () => {
-		document.getElementById("demo-modal-menu").classList.remove("nodisplay");
+		showModal("demo-modal-menu");
 
 		let container = document.getElementById("demo-list-container");
 		container.innerHTML = "Loading...";
@@ -92,8 +92,8 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		fetch("data/tracks/" + filename).then(response => response.json()).then(data => {
 			importSong(JSON.stringify(data));
 
-			document.getElementById("demo-modal-menu").classList.add("nodisplay");
-			document.getElementById("startup-modal-menu").classList.add("nodisplay");
+			hideModal("demo-modal-menu");
+			hideModal("startup-modal-menu");
 
 		}).catch(() => {
 			container.innerHTML = "Data loading error!";
@@ -101,31 +101,49 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	};
 
 	document.getElementById("button-demo-menu-close").onclick = () => {
-		document.getElementById("demo-modal-menu").classList.add("nodisplay");
+		hideModal("demo-modal-menu");
 	};
 
 	/*
 	 * Arrange modal menu
 	 */
+	let titleInput = document.getElementById("input-song-title");
 	document.getElementById("button-arrange-menu-open").onclick = () => {
-		let menu = document.getElementById("arrange-modal-menu");
-		menu.classList.remove("nodisplay");
+		showModal("arrange-modal-menu");
 
-		document.getElementById("input-song-title").value = songObj.title;
+		titleInput.value = songObj.title;
+		if (!songObj.title)
+			titleInput.focus();
+
 		document.getElementById("input-bpm-value").value = songObj.bpm;
 		document.getElementById("input-steps-value").value = songObj.barSteps;
 		document.getElementById("range-compressor-threshold").value = -songObj.compressorThreshold;
 		document.getElementById("range-compressor-ratio").value = songObj.compressorRatio;
 	};
 
-	document.getElementById("input-song-title").onchange = (event) => {
-		let value = event.target.value;
-		songObj.title = value;
+	titleInput.addEventListener("keydown", (event) => {
+		if (event.key == "Escape") {
+			titleInput.value = songObj.title;
+		}
+	});
+
+	titleInput.onchange = (event) => {
+		songObj.title = event.target.value;
 		showSongTitle();
 	};
 
+	let bpmInput = document.getElementById("input-bpm-value");
+	bpmInput.addEventListener("keyup", (event) => {
+		if (event.key == "Enter") {
+			applyBpm();
+		}
+	});
+
 	document.getElementById("button-bpm-set").onclick = () => {
-		let bpmInput = document.getElementById("input-bpm-value");
+		applyBpm();
+	};
+
+	function applyBpm() {
 		let bpmValue = Number(bpmInput.value);
 
 		if (bpmValue < 4) {
@@ -145,9 +163,19 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		songObj.synths.forEach(e => e.setBpm(songObj.bpm));
 	};
 
+	let barStepsInput = document.getElementById("input-steps-value");
+	barStepsInput.addEventListener("keyup", (event) => {
+		if (event.key == "Enter") {
+			applyBarSteps();
+		}
+	});
+
 	document.getElementById("button-steps-set").onclick = () => {
-		let stepsInput = document.getElementById("input-steps-value");
-		let stepsValue = stepsInput.value;
+		applyBarSteps()
+	};
+
+	function applyBarSteps() {
+		let stepsValue = barStepsInput.value;
 
 		if (stepsValue == songObj.barSteps)
 			return;
@@ -164,13 +192,13 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			if (stepsValue > 32) {
 				showAlert("Maximum bar length is 32 steps");
 				stepsValue = 32;
-				stepsInput.value = 32;
+				barStepsInput.value = 32;
 			}
 
 			if (stepsValue < 4) {
 				showAlert("Minimum bar length is 4 steps");
 				stepsValue = 4;
-				stepsInput.value = 4;
+				barStepsInput.value = 4;
 			}
 
 			songObj.setBarLength(Number(stepsValue));
@@ -198,14 +226,12 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	};
 
 	document.getElementById("button-export-menu-open").onclick = () => {
-		let menu = document.getElementById("export-modal-menu");
-		menu.classList.remove("nodisplay");
+		showModal("export-modal-menu");
 		document.getElementById("input-render-length").value = songObj.getSongDuration();
 	};
 
 	document.getElementById("button-arrange-menu-close").onclick = () => {
-		let menu = document.getElementById("arrange-modal-menu");
-		menu.classList.add("nodisplay");
+		hideModal("arrange-modal-menu");
 	};
 
 	/*
@@ -263,8 +289,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	};
 
 	document.getElementById("button-export-menu-close").onclick = () => {
-		let menu = document.getElementById("export-modal-menu");
-		menu.classList.add("nodisplay");
+		hideModal("export-modal-menu");
 
 		let downloadLink = document.getElementById("link-wav-download");
 		URL.revokeObjectURL(downloadLink.href);
@@ -277,8 +302,9 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	/*
 	 * Pattern modal menu
 	 */
+	let patternNameInput = document.getElementById("input-pattern-name");
 	document.getElementById("button-pattern-menu-open").onclick = () => {
-		document.getElementById("input-pattern-name").value = songObj.currentPattern.name;
+		patternNameInput.value = songObj.currentPattern.name;
 		document.getElementById("input-pattern-length").value = songObj.currentPattern.length;
 
 		let synthName = songObj.getCurrentLayerSynthName();
@@ -289,11 +315,16 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		document.getElementById("button-color-select").style.backgroundColor =
 			DEFAULT_PARAMS.colorSet[songObj.currentPattern.colorIndex];
 
-		let menu = document.getElementById("pattern-modal-menu");
-		menu.classList.remove("nodisplay");
+		showModal("pattern-modal-menu");
 	};
 
-	document.getElementById("input-pattern-name").onchange = (event) => {
+	patternNameInput.addEventListener("keydown", (event) => {
+		if (event.key == "Escape") {
+			patternNameInput.value = songObj.currentPattern.name;
+		}
+	});
+
+	patternNameInput.onchange = (event) => {
 		let value = event.target.value;
 
 		if (value) {
@@ -306,9 +337,19 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		}
 	};
 
+	let patternLengthInput = document.getElementById("input-pattern-length");
+	patternLengthInput.addEventListener("keyup", (event) => {
+		if (event.key == "Enter") {
+			applyPatternLength();
+		}
+	});
+
 	document.getElementById("button-pattern-length-set").onclick = () => {
-		let lenInput = document.getElementById("input-pattern-length");
-		let len = Number(lenInput.value);
+		applyPatternLength();
+	}
+
+	function applyPatternLength() {
+		let len = Number(patternLengthInput.value);
 		let currentLen = songObj.currentPattern.length;
 		let valueAccepted = true;
 		let maxPatternLength = Math.floor(64 / songObj.barSteps) * songObj.barSteps;
@@ -316,20 +357,20 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		if (len > maxPatternLength) {
 			showAlert("Maximum pattern length is " + maxPatternLength + " steps");
 			len = maxPatternLength;
-			lenInput.value = maxPatternLength;
+			patternLengthInput.value = maxPatternLength;
 			valueAccepted = false;
 		}
 
 		if (len <= 0) {
 			len = songObj.barSteps;
-			lenInput.value = len;
+			patternLengthInput.value = len;
 			showAlert("Minimum pattern length is " + len + " steps");
 			valueAccepted = false;
 		}
 
 		if (len % songObj.barSteps != 0) {
 			len = Math.ceil(len / songObj.barSteps) * songObj.barSteps;
-			lenInput.value = len;
+			patternLengthInput.value = len;
 			showAlert("Pattern length rounded to " + len);
 			valueAccepted = false;
 		}
@@ -341,12 +382,12 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 				onSongChangeCallback(false, "release");
 		} else {
 			showAlert("Can not extend pattern");
-			lenInput.value = songObj.currentPattern.length;
+			patternLengthInput.value = songObj.currentPattern.length;
 			valueAccepted = false;
 		}
 
 		if (valueAccepted)
-			document.getElementById("pattern-modal-menu").classList.add("nodisplay");
+			hideModal("pattern-modal-menu");
 	};
 
 	document.getElementById("button-synth-select").onclick = () => {
@@ -359,7 +400,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		colorButtons.forEach(e => { e.classList.remove("button--selected") });
 		document.getElementById("button-color-index" + songObj.currentPattern.colorIndex).classList.add("button--selected");
 
-		document.getElementById("color-select-modal-menu").classList.remove("nodisplay");
+		showModal("color-select-modal-menu");
 	};
 
 	document.getElementById("button-delete-pattern").onclick = () => {
@@ -374,7 +415,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 
 			songObj.deleteCurrentPattern();
 			onSongChangeCallback(false, "stop");
-			document.getElementById("pattern-modal-menu").classList.add("nodisplay");
+			hideModal("pattern-modal-menu");
 			g_switchTab("arrange");
 		});
 	};
@@ -397,7 +438,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			else
 				onSongChangeCallback(false, "release");
 
-			document.getElementById("pattern-modal-menu").classList.add("nodisplay");
+			hideModal("pattern-modal-menu");
 		});
 	};
 
@@ -413,12 +454,12 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			console.log("Pattern '" + name + "' copied to '" + result + "'");
 			onSongChangeCallback(false);
 			g_switchTab("arrange");
-			document.getElementById("pattern-modal-menu").classList.add("nodisplay");
+			hideModal("pattern-modal-menu");
 		}, defaultName);
 	};
 
 	document.getElementById("button-pattern-menu-close").onclick = () => {
-		document.getElementById("pattern-modal-menu").classList.add("nodisplay");
+		hideModal("pattern-modal-menu");
 	};
 
 	/*
@@ -437,14 +478,14 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			songObj.currentPattern.colorIndex = i;
 			onSongChangeCallback(false);
 			document.getElementById("button-color-select").style.backgroundColor = DEFAULT_PARAMS.colorSet[i];
-			document.getElementById("color-select-modal-menu").classList.add("nodisplay");
+			hideModal("color-select-modal-menu");
 		})
 
 		colorContainer.appendChild(btn);
 	}
 
 	document.getElementById("button-color-menu-close").onclick = () => {
-		document.getElementById("color-select-modal-menu").classList.add("nodisplay");
+		hideModal("color-select-modal-menu");
 	};
 
 	/*
@@ -453,6 +494,8 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	document.getElementById("menu-synth-list-container").onclick = (event) => {
 		if (!event.target.classList.contains("js-synth-list-entry"))
 			return;
+
+		hideModal("synth-select-modal-menu");
 
 		let isEmpty = songObj.getCurrentLayerSynthIndex() === null;
 
@@ -483,19 +526,17 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			onSongChangeCallback(false, "release");
 
 		isCreateNewLayer = false;
-
-		document.getElementById("synth-select-modal-menu").classList.add("nodisplay");
 	};
 
 	document.getElementById("button-synth-select-close").onclick = () => {
-		document.getElementById("synth-select-modal-menu").classList.add("nodisplay");
+		hideModal("synth-select-modal-menu");
 	};
 
 	/*
 	 * Settings modal menu
 	 */
 	document.getElementById("button-settings-open").onclick = () => {
-		document.getElementById("settings-modal-menu").classList.remove("nodisplay");
+		showModal("settings-modal-menu");
 	};
 
 	document.getElementById("button-reset-app").onclick = () => {
@@ -521,7 +562,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	};
 
 	document.getElementById("button-settings-close").onclick = () => {
-		document.getElementById("settings-modal-menu").classList.add("nodisplay");
+		hideModal("settings-modal-menu");
 	};
 
 	/*
@@ -600,7 +641,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	function exportSong() {
 		let expObj = {};
 
-		expObj.songFormatVersion = "1.1";
+		expObj.songFormatVersion = "1.2";
 		expObj.synthParams = songObj.synthParams;
 		expObj.synthNames = songObj.synthNames;
 		expObj.song = songObj.song;
@@ -649,7 +690,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	}
 
 	function showSynthSelectList() {
-		document.getElementById("synth-select-modal-menu").classList.remove("nodisplay");
+		showModal("synth-select-modal-menu");
 
 		let listContainer = document.getElementById("menu-synth-list-container");
 		listContainer.innerHTML = "";
@@ -683,58 +724,6 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			entry.dataset.index = i;
 			entry.appendChild(document.createTextNode(songObj.synthNames[i]));
 			listContainer.appendChild(entry);
-		}
-	}
-
-	function bufferToWave(abuffer, len) {
-		// https://www.russellgood.com/how-to-convert-audiobuffer-to-audio-file/
-		var numOfChan = abuffer.numberOfChannels,
-			length = len * numOfChan * 2 + 44,
-			buffer = new ArrayBuffer(length),
-			view = new DataView(buffer),
-			channels = [], i, sample,
-			offset = 0,
-			pos = 0;
-
-		setUint32(0x46464952);
-		setUint32(length - 8);
-		setUint32(0x45564157);
-
-		setUint32(0x20746d66);
-		setUint32(16);
-		setUint16(1);
-		setUint16(numOfChan);
-		setUint32(abuffer.sampleRate);
-		setUint32(abuffer.sampleRate * 2 * numOfChan);
-		setUint16(numOfChan * 2);
-		setUint16(16);
-
-		setUint32(0x61746164);
-		setUint32(length - pos - 4);
-
-		for (i = 0; i < abuffer.numberOfChannels; i++)
-			channels.push(abuffer.getChannelData(i));
-
-		while (pos < length) {
-			for (i = 0; i < numOfChan; i++) {
-				sample = Math.max(-1, Math.min(1, channels[i][offset]));
-				sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
-				view.setInt16(pos, sample, true);
-				pos += 2;
-			}
-			offset++
-		}
-
-		return new Blob([buffer], { type: "audio/wav" });
-
-		function setUint16(data) {
-			view.setUint16(pos, data, true);
-			pos += 2;
-		}
-
-		function setUint32(data) {
-			view.setUint32(pos, data, true);
-			pos += 4;
 		}
 	}
 }

@@ -79,6 +79,8 @@ function SongObject() {
 		for (let i = 0; i < this.patterns.length; i++) {
 			this.patterns[i].spliceSynth(index);
 		}
+
+		this.calculateSynthFill();
 	}
 
 	this.generateSynthName = function (prefix, startNumber) {

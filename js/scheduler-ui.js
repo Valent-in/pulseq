@@ -1,17 +1,20 @@
 function SchedulerUi(scheduler) {
-
 	let songPlayBtn = document.getElementById("button-arrange-play");
 	let patternPlayBtn = document.getElementById("button-pattern-play");
 
-	songPlayBtn.addEventListener("click", () => {
-		let state = scheduler.playStopSong(onForceStop);
-		updateButtons(false, state);
+	document.addEventListener("keydown", (event) => {
+		if (event.target.type == "text" || event.target.type == "number")
+			return;
+
+		if (event.code == "Backquote")
+			songPlayListener();
+
+		if (event.code == "Digit1")
+			patternPlayListener();
 	});
 
-	patternPlayBtn.addEventListener("click", () => {
-		let state = scheduler.playStopPattern(onForceStop);
-		updateButtons(state, false);
-	});
+	songPlayBtn.onclick = songPlayListener;
+	patternPlayBtn.onclick = patternPlayListener;
 
 	this.stop = function () {
 		scheduler.stop();
@@ -21,6 +24,16 @@ function SchedulerUi(scheduler) {
 	function onForceStop() {
 		updateButtons(false, false);
 	}
+
+	function songPlayListener() {
+		let state = scheduler.playStopSong(onForceStop);
+		updateButtons(false, state);
+	};
+
+	function patternPlayListener() {
+		let state = scheduler.playStopPattern(onForceStop);
+		updateButtons(state, false);
+	};
 
 	function updateButtons(patternState, songState) {
 		let playUrl = "url('img/play.svg')";

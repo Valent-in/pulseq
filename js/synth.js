@@ -61,7 +61,7 @@ function Synth(outputNode, transportBPM) {
 	};
 
 	this.bpm = transportBPM;
-	this.modEnvelopeState = "disabled";
+	this.modEnvelopeType = "[none]";
 	this.FXType = "[none]";
 	this.FXsync = false;
 	this.glide = 0;
@@ -400,7 +400,7 @@ function Synth(outputNode, transportBPM) {
 			case "reverb":
 				this.FX.ready.then(() => {
 					this.FX.decay = this.values.FXAmountValue * 4 + 0.001;
-				});
+				}).catch(() => console.log("async reverb deletion"));
 				break;
 
 			case "chorus":
@@ -555,8 +555,8 @@ function Synth(outputNode, transportBPM) {
 		}
 	}
 
-	this.addModEnvelope = function (state) {
-		if (state == "disabled") {
+	this.addModEnvelope = function (type) {
+		if (type == "[none]") {
 			if (!this.envelopeMod)
 				return
 
@@ -572,34 +572,29 @@ function Synth(outputNode, transportBPM) {
 		} else if (!this.envelopeMod) {
 			this.envelopeMod = new Tone.Envelope();
 			this.envelopeModRev = new Tone.Negate();
-
 			this.envelopeMod.connect(this.envelopeModRev);
 			console.log("add mod envelope");
 		}
 
-		if (this.modEnvelopeState == "disabled" && state != "disabled") {
+		if (this.modEnvelopeType == "[none]" && type != "[none]") {
 			this.restoreModulator("envelopeMod");
 			this.restoreModulator("envelopeModRev");
 		}
 
-		this.modEnvelopeState = state;
+		this.modEnvelopeType = type;
 	}
 
-	this.syncEnvelope = function () {
+	this.syncModEnvelope = function () {
 		if (!this.envelopeMod)
 			return;
 
-		if (this.modEnvelopeState == "lock") {
-			this.envelopeMod.attack = this.values.envAttackValue;
-			this.envelopeMod.decay = this.values.envDecayValue;
-			this.envelopeMod.sustain = this.values.envSustainValue;
-			this.envelopeMod.release = this.values.envReleaseValue;
-		} else {
-			this.envelopeMod.attack = this.values.envModAttackValue;
-			this.envelopeMod.decay = this.values.envModDecayValue;
-			this.envelopeMod.sustain = this.values.envModSustainValue;
-			this.envelopeMod.release = this.values.envModReleaseValue;
-		}
+		this.envelopeMod.decayCurve = this.modEnvelopeType;
+		this.envelopeMod.releaseCurve = this.modEnvelopeType;
+
+		this.envelopeMod.attack = this.values.envModAttackValue;
+		this.envelopeMod.decay = this.values.envModDecayValue;
+		this.envelopeMod.sustain = this.values.envModSustainValue;
+		this.envelopeMod.release = this.values.envModReleaseValue;
 
 		console.log("envelope sync");
 	}

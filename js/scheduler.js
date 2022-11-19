@@ -57,7 +57,7 @@ function Scheduler(songObj, barCallback, stepCallback) {
 	this.playStopPattern = (callback) => {
 		onInnerStopCallback = callback;
 
-		if (isPlaying) {
+		if (isPlaying || !songObj.currentPattern) {
 			stop();
 			return false;
 		} else {

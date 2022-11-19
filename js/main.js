@@ -1,12 +1,20 @@
 "use strict"
 
-console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v0.8.1 (beta) ",
+console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v0.9 ",
 	"color:#1ff", "color:#f81", "color:#bbb", "background-color: #000;color:#fff");
 
 {
 	Tone.context.lookAhead = 0.15;
 
 	window.onbeforeunload = function () { return "Leave App?" };
+
+	// Disable closing browser window with back button
+	if (history.length == 1) {
+		history.pushState(null, null, location.href);
+		window.onpopstate = function () {
+			history.go(1);
+		}
+	}
 
 	window.g_markCurrentSynth = function () {
 		let previous = document.querySelectorAll("#synth-list-main > .synth-list-entry--current");
@@ -52,7 +60,8 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v0.8.1 (beta) ",
 	const patternUi = new PatternUi(songObject, synthUi.assignSynth);
 	patternUi.build();
 
-	const synthList = new SynthList(songObject, synthUi, updPatternSynthList);
+	const synthHelper = new SynthHelper(songObject, synthUi, updPatternSynthList);
+	synthHelper.buildPresetList();
 
 	const arrangeUi = new ArrangeUi(songObject, onPatternSelect);
 	arrangeUi.build();
@@ -60,10 +69,11 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v0.8.1 (beta) ",
 	const scheduler = new Scheduler(songObject, arrangeUi.setMarker, patternUi.setMarker);
 	const schedulerUi = new SchedulerUi(scheduler);
 
-	menuInit(songObject, onSongChange, synthList.loadSynth, scheduler.renderSong);
+	menuInit(songObject, onSongChange, synthHelper.loadSynth, scheduler.renderSong);
 
 	document.getElementById("startup-loading-title").style.display = "none";
 	document.getElementById("startup-menu").style.display = "block";
+	document.getElementById("input-import-track").focus();
 
 	function onSongChange(isNewSong, stopCommand) {
 		arrangeUi.fillSongView();
@@ -73,7 +83,7 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v0.8.1 (beta) ",
 			synthUi.assignSynth(songObject.synthParams[0], songObject.synths[0], songObject.synthNames[0]);
 			songObject.currentSynthIndex = 0;
 		}
-		synthList.rebuildSynthList();
+		synthHelper.rebuildSynthList();
 
 		switch (stopCommand) {
 			case "stop":

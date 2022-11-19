@@ -1,6 +1,7 @@
 "use strict"
 
 {
+	// Switch tabs
 	let tabs = document.querySelectorAll(".js-tab");
 	let containers = document.querySelectorAll(".js-view-container");
 
@@ -32,6 +33,7 @@
 }
 
 {
+	// Fullscreen mode
 	document.getElementById("button-fullscreen").addEventListener("click", () => {
 		if (document.fullscreenElement ||
 			document.webkitFullscreenElement ||
@@ -58,6 +60,7 @@
 }
 
 {
+	// Fit footer height
 	let patternFooter = document.getElementById("pattern-footer");
 	let patternContainer = document.getElementById("pattern-container");
 	createHeightObserver(patternFooter, (h) => {
@@ -90,4 +93,44 @@
 
 		observer.observe(target);
 	}
+}
+
+{
+	// Tab-trap
+	let areas = document.querySelectorAll(".focus-lock-area, .modal-container");
+
+	areas.forEach((area) => {
+		let elements = area.querySelectorAll("input, button, a, textarea");
+
+		if (elements.length <= 0)
+			return;
+
+		let first = elements[0];
+		let last = elements[elements.length - 1];
+
+		let trap = document.createElement("DIV");
+		trap.setAttribute("tabindex", 0);
+		trap.classList.add("tab-trap");
+		area.before(trap);
+
+		trap.addEventListener("keydown", (event) => {
+			if (event.key == "Tab") {
+				event.preventDefault();
+			}
+		});
+
+		first.addEventListener("keydown", (event) => {
+			if (event.key == "Tab" && event.shiftKey) {
+				last.focus();
+				event.preventDefault();
+			}
+		});
+
+		last.addEventListener("keydown", (event) => {
+			if (event.key == "Tab" && !event.shiftKey) {
+				first.focus();
+				event.preventDefault();
+			}
+		});
+	});
 }

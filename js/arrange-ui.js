@@ -71,11 +71,11 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 		arrange.appendChild(table);
 
 		document.getElementById("button-column-menu-close").onclick = () => {
-			document.getElementById("column-modal-menu").classList.add("nodisplay");
+			hideModal("column-modal-menu");
 		}
 
 		document.getElementById("button-insert-columns").onclick = () => {
-			document.getElementById("column-modal-menu").classList.add("nodisplay");
+			hideModal("column-modal-menu");
 
 			showPrompt("Insert columns:", result => {
 				if (result === null || result === 0)
@@ -90,7 +90,7 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 		}
 
 		document.getElementById("button-remove-columns").onclick = () => {
-			document.getElementById("column-modal-menu").classList.add("nodisplay");
+			hideModal("column-modal-menu");
 
 			showPrompt("Delete columns:", result => {
 				if (result === null || result === 0)
@@ -207,7 +207,7 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 			let col = Number(idParts[1].split("-")[1]);
 			setArrangeStartPoint(col);
 
-			document.getElementById("column-modal-menu").classList.remove("nodisplay");
+			showModal("column-modal-menu");
 		}, 400)
 	}
 

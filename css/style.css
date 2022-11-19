@@ -191,6 +191,8 @@ a {
 	max-width: 50vw;
 	overflow: hidden;
 	text-overflow: ellipsis;
+	-webkit-user-select: none;
+	user-select: none;
 }
 
 #arrange-main {
@@ -335,7 +337,7 @@ a {
 	background-image: url('../img/effect.svg');
 }
 
-#synth-mod-envelope-state, #synth-envelope-type {
+#synth-mod-envelope-type, #synth-envelope-type {
 	margin: -4px -4px 4px 0;
 	float: right;
 }
@@ -427,6 +429,11 @@ input[type=range].range--volume {
 	min-width: 0;
 }
 
+#piano-container::before, #piano-container:after {
+	content: "";
+	min-width: 4px;
+}
+
 #piano-container.piano--hidden {
 	display: none;
 }
@@ -447,6 +454,15 @@ input[type=range].range--volume {
 	color: #b5b5b5;
 	pointer-events: none;
 	user-select: none;
+}
+
+.piano-key-white:first-child {
+	border-left: none;
+	border-bottom-left-radius: 3px;
+}
+
+.piano-key-white:last-child {
+	border-bottom-right-radius: 3px;
 }
 
 .piano-key-black {
@@ -534,6 +550,8 @@ input[type=range].range--volume {
 #synth-list-caption-area {
 	float: right;
 	padding: 4px;
+	-webkit-user-select: none;
+	user-select: none;
 }
 
 .caption-text {
@@ -804,6 +822,10 @@ input[type=file]:focus+span {
 	vertical-align: middle;
 }
 
+#selsct-synth-preset {
+	max-width: 5rem;
+}
+
 .toast-container {
 	position: fixed;
 	bottom: 80px;
@@ -839,4 +861,9 @@ input[type=file]:focus+span {
 
 .nodisplay {
 	display: none;
+}
+
+.tab-trap {
+	width: 0;
+	outline: none;
 }

@@ -145,7 +145,7 @@ function SynthUi() {
 		if (selector.dataset.block) {
 			let blocks = document.getElementsByClassName(selector.dataset.block);
 			for (let el of blocks) {
-				if (selector.value == "[none]" || selector.value == "disabled" || selector.value == "lock")
+				if (selector.value == "[none]")
 					el.style.visibility = "hidden";
 				else
 					el.style.visibility = "visible";

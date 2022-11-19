@@ -139,25 +139,21 @@ function synthParamApply(paramId, controlValue, synth) {
 		case "synth-envelope-attack":
 			synth.values.envAttackValue = envelopeExp(value);
 			synth.envelope.attack = synth.values.envAttackValue;
-			synth.syncEnvelope();
 			break;
 
 		case "synth-envelope-decay":
 			synth.values.envDecayValue = envelopeExp(value) + 0.001;
 			synth.envelope.decay = synth.values.envDecayValue;
-			synth.syncEnvelope();
 			break;
 
 		case "synth-envelope-sustain":
 			synth.values.envSustainValue = value;
-			synth.syncEnvelope();
 			synth.envelope.sustain = synth.values.envSustainValue;
 			break;
 
 		case "synth-envelope-release":
 			synth.values.envReleaseValue = envelopeExp(value) + 0.001;
 			synth.envelope.release = synth.values.envReleaseValue;
-			synth.syncEnvelope();
 			break;
 
 		case "synth-envelope-type":
@@ -251,30 +247,30 @@ function synthParamApply(paramId, controlValue, synth) {
 			break;
 
 		// Modulation envelope
-		case "synth-mod-envelope-state":
+		case "synth-mod-envelope-type":
 			value = controlValue;
 			synth.addModEnvelope(value);
-			synth.syncEnvelope();
+			synth.syncModEnvelope();
 			break;
 
 		case "synth-mod-envelope-attack":
 			synth.values.envModAttackValue = envelopeExp(value);
-			synth.syncEnvelope();
+			synth.syncModEnvelope();
 			break;
 
 		case "synth-mod-envelope-decay":
 			synth.values.envModDecayValue = envelopeExp(value) + 0.001;
-			synth.syncEnvelope();
+			synth.syncModEnvelope();
 			break;
 
 		case "synth-mod-envelope-sustain":
 			synth.values.envModSustainValue = value;
-			synth.syncEnvelope();
+			synth.syncModEnvelope();
 			break;
 
 		case "synth-mod-envelope-release":
 			synth.values.envModReleaseValue = envelopeExp(value) + 0.001;
-			synth.syncEnvelope();
+			synth.syncModEnvelope();
 			break;
 
 		// Modulators
