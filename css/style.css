@@ -424,7 +424,6 @@ input[type=range].range--volume {
 	height: 60px;
 	display: flex;
 	flex-wrap: nowrap;
-	user-select: none;
 	/*fix content cut*/
 	min-width: 0;
 }
@@ -445,7 +444,6 @@ input[type=range].range--volume {
 	border-left: 1px solid #111;
 	box-sizing: border-box;
 	z-index: 1;
-	user-select: none;
 }
 
 .piano-key-white span {
@@ -453,6 +451,7 @@ input[type=range].range--volume {
 	padding-top: 32px;
 	color: #b5b5b5;
 	pointer-events: none;
+	-webkit-user-select: none;
 	user-select: none;
 }
 
