@@ -17,6 +17,31 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		}, defaultName);
 	});
 
+	document.getElementById("button-synth-mute").onclick = () => {
+		selectedSynthIndex = songObj.currentSynthIndex;
+		let synth = songObj.synths[selectedSynthIndex];
+		synth.mute(!synth.isMuted);
+
+		synthUi.updateMuteControls(synth);
+		updateMuteMarkers();
+	};
+
+	function updateMuteMarkers() {
+		let isSomeMuted = false;
+		for (let s of songObj.synths)
+			if (s.isMuted)
+				isSomeMuted = true;
+
+		let listTab = document.getElementById("synth-list-tab");
+		if (isSomeMuted)
+			listTab.classList.add("muted-m-mark");
+		else
+			listTab.classList.remove("muted-m-mark");
+
+		that.rebuildSynthList();
+		rebuildPatternSynthListCallback(false);
+	};
+
 	document.getElementById("button-synth-menu-open").onclick = () => {
 		selectedSynthIndex = songObj.currentSynthIndex;
 		openSynthMenu();
@@ -33,7 +58,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		if (value) {
 			songObj.synthNames[selectedSynthIndex] = value;
 			that.rebuildSynthList();
-			rebuildPatternSynthListCallback();
+			rebuildPatternSynthListCallback(false);
 
 			if (selectedSynthIndex == songObj.currentSynthIndex) {
 				let synthName = document.getElementById("synth-name-area");
@@ -60,7 +85,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 				return;
 
 			songObj.deleteSynth(selectedSynthIndex);
-			rebuildPatternSynthListCallback();
+			rebuildPatternSynthListCallback(true);
 			synthUi.assignSynth(songObj.synthParams[0], songObj.synths[0], songObj.synthNames[0]);
 			songObj.currentSynthIndex = 0;
 			that.rebuildSynthList();
@@ -225,7 +250,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		container.innerHTML = "";
 
 		for (let i = 0; i < songObj.synthNames.length; i++) {
-			let entry = createSynthEntry(songObj.synthNames[i]);
+			let entry = createSynthEntry(songObj.synthNames[i], songObj.synths[i].isMuted);
 			entry.id = "synth-list-entry_" + i;
 			container.appendChild(entry);
 
@@ -246,7 +271,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 
 		g_markCurrentSynth();
 
-		function createSynthEntry(name) {
+		function createSynthEntry(name, isMuted) {
 			let entry = document.createElement("DIV");
 
 			let text = document.createTextNode(name);
@@ -260,6 +285,9 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			mdiv.classList.add("js-synth-entry-menu");
 			mdiv.appendChild(dots);
 			entry.appendChild(mdiv);
+
+			if (isMuted)
+				entry.classList.add("muted-mark");
 
 			entry.classList.add("synth-list-entry");
 			return entry;
@@ -305,5 +333,151 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 	function openSynthMenu() {
 		showModal("synth-modal-menu");
 		document.getElementById("input-synth-name").value = songObj.synthNames[selectedSynthIndex];
+	}
+
+	document.getElementById("button-mixer-menu-open").onclick = () => {
+		buildMixerList();
+		showModal("mixer-modal-menu");
+	};
+
+	document.getElementById("button-mixer-menu-close").onclick = () => {
+		let index = songObj.currentSynthIndex;
+		synthUi.assignSynth(songObj.synthParams[index], songObj.synths[index], songObj.synthNames[index]);
+
+		updateMuteMarkers();
+		hideModal("mixer-modal-menu");
+
+		let container = document.getElementById("mixer-list-container");
+		container.innerHTML = "";
+	};
+
+	document.getElementById("button-mute-all").onclick = () => {
+		muteAllSynths(true);
+	};
+
+	document.getElementById("button-unmute-all").onclick = () => {
+		muteAllSynths(false);
+	};
+
+	function muteAllSynths(isMute) {
+		songObj.synths.forEach(e => e.mute(isMute));
+		buildMixerList();
+	}
+
+	function buildMixerList() {
+		let container = document.getElementById("mixer-list-container");
+
+		container.innerHTML = "";
+
+		for (let i = 0; i < songObj.synths.length; i++) {
+			container.appendChild(createEntry(i));
+		}
+
+		function createEntry(index) {
+			let name = songObj.synthNames[index];
+			let synth = songObj.synths[index];
+			let params = songObj.synthParams[index];
+
+			let volValue = params["synth-amplifier-gain"];
+			let panValue = params["synth-pan"];
+
+			let entry = document.createElement("DIV");
+			entry.classList.add("mixer-entry");
+
+			let headerDiv = document.createElement("DIV");
+			headerDiv.classList.add("mixer-header-line");
+			let nameSpan = document.createElement("SPAN");
+			nameSpan.appendChild(document.createTextNode(name));
+			nameSpan.classList.add("caption-text");
+			let muteButton = document.createElement("BUTTON");
+			muteButton.classList.add("button--small");
+			muteButton.appendChild(document.createTextNode("Mute"));
+			if (synth.isMuted)
+				muteButton.classList.add("button--highlight-orange");
+
+			headerDiv.appendChild(nameSpan);
+			headerDiv.appendChild(muteButton);
+
+			let volumeDiv = document.createElement("DIV");
+			volumeDiv.classList.add("mixer-line");
+			let volSpan = document.createElement("SPAN");
+			volSpan.appendChild(document.createTextNode("Vol."));
+			volSpan.style["padding-right"] = "4px";
+			let volRange = document.createElement("INPUT");
+			volRange.type = "range";
+			volRange.classList.add("range--volume");
+			volRange.min = 0;
+			volRange.max = 1.2;
+			volRange.step = 0.01;
+			volRange.value = volValue;
+			volRange.dataset.value = volValue;
+
+			volumeDiv.appendChild(volSpan);
+			volumeDiv.appendChild(volRange);
+
+			let panDiv = document.createElement("DIV");
+			panDiv.classList.add("mixer-line");
+			panDiv.style["max-width"] = "80%";
+			let panRange = document.createElement("INPUT");
+			panRange.type = "range";
+			panRange.classList.add("range--10-marks");
+			panRange.min = -1;
+			panRange.max = 1;
+			panRange.step = 0.01;
+			panRange.value = panValue;
+			panRange.dataset.value = panValue;
+
+			let panSpan = document.createElement("SPAN");
+			panSpan.appendChild(document.createTextNode("Pan"));
+			panSpan.style["padding-left"] = "4px";
+
+			panDiv.appendChild(panRange);
+			panDiv.appendChild(panSpan);
+
+			muteButton.onclick = () => {
+				synth.mute(!synth.isMuted);
+				if (synth.isMuted)
+					muteButton.classList.add("button--highlight-orange");
+				else
+					muteButton.classList.remove("button--highlight-orange");
+			}
+
+			volRange.oninput = (e) => {
+				synthParamApply("synth-amplifier-gain", e.target.value, synth);
+				params["synth-amplifier-gain"] = e.target.value;
+			}
+
+			panRange.oninput = (e) => {
+				synthParamApply("synth-pan", e.target.value, synth);
+				params["synth-pan"] = e.target.value;
+			}
+
+			if ("ontouchstart" in window) {
+				volRange.addEventListener("pointercancel", (e) => {
+					e.target.value = e.target.dataset.value;
+					synthParamApply("synth-amplifier-gain", e.target.value, synth);
+					params["synth-amplifier-gain"] = e.target.value;
+				});
+
+				volRange.addEventListener("change", (e) => {
+					e.target.dataset.value = e.target.value;
+				});
+
+				panRange.addEventListener("pointercancel", (e) => {
+					e.target.value = e.target.dataset.value;
+					synthParamApply("synth-pan", e.target.value, synth);
+					params["synth-pan"] = e.target.value;
+				});
+
+				panRange.addEventListener("change", (e) => {
+					e.target.dataset.value = e.target.value;
+				});
+			}
+
+			entry.appendChild(headerDiv);
+			entry.appendChild(volumeDiv);
+			entry.appendChild(panDiv);
+			return entry;
+		}
 	}
 }

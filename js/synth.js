@@ -8,6 +8,8 @@ function Synth(outputNode, transportBPM) {
 	 * VCO1+VCO2+O3+Noise -> Mixer -> Envelope -> VC Filter -> VC Amplifier -> Pan -> Amplifier -> FX ->
 	 */
 
+	this.isMuted = false;
+
 	this.envelope = new Tone.AmplitudeEnvelope();
 	this.ampAM = new Tone.Gain(1);
 	this.ampout = new Tone.Gain(1);
@@ -126,6 +128,22 @@ function Synth(outputNode, transportBPM) {
 	this.setVolume = function (value) {
 		this.values.volumeValue = value
 		this.ampout.gain.value = this.calculateVolume();
+	}
+
+	this.mute = function (isMute) {
+		this.isMuted = isMute;
+
+		if (isMute) {
+			if (this.FX)
+				this.FX.disconnect();
+			else
+				this.ampout.disconnect();
+		} else {
+			if (this.FX)
+				this.FX.chain(outputNode);
+			else
+				this.ampout.chain(outputNode);
+		}
 	}
 
 	this.addOsc1 = function (isOsc) {
@@ -319,7 +337,10 @@ function Synth(outputNode, transportBPM) {
 			this.FX.disconnect();
 			this.FX.dispose();
 			this.FX = null;
-			this.ampout.chain(outputNode);
+
+			if (!this.isMuted)
+				this.ampout.chain(outputNode);
+
 			console.log("remove FX");
 		}
 
@@ -372,7 +393,9 @@ function Synth(outputNode, transportBPM) {
 
 		this.ampout.disconnect();
 		this.ampout.chain(this.FX);
-		this.FX.chain(outputNode);
+
+		if (!this.isMuted)
+			this.FX.chain(outputNode);
 
 		this.setFXValue();
 		this.setFXRate();
@@ -485,6 +508,10 @@ function Synth(outputNode, transportBPM) {
 				return;
 
 			this.lfo1 = new Tone.Oscillator(this.values.lfo1Value);
+
+			if (this.values.lfo1Value > 0)
+				this.setLfo1Frequency();
+
 			this.lfo1.start();
 			this.restoreModulator("lfo1");
 			console.log("add lfo1");

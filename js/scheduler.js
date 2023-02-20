@@ -86,6 +86,7 @@ function Scheduler(songObj, barCallback, stepCallback) {
 			for (let i = 0; i < songObj.synthParams.length; i++) {
 				console.log(" >> >> Offline synth " + i);
 				lSynths[i] = new Synth(compressor, songObj.bpm);
+				lSynths[i].mute(songObj.synths[i].isMuted);
 
 				for (let key in songObj.synthParams[i])
 					synthParamApply(key, songObj.synthParams[i][key], lSynths[i]);
@@ -130,10 +131,15 @@ function Scheduler(songObj, barCallback, stepCallback) {
 	}
 
 	function syncLfos(synths, time) {
-		for (let i = 0; i < synths.length; i++) {
-			if (synths[i].lfo1) {
-				synths[i].lfo1.stop(time);
-				synths[i].lfo1.start(time);
+		for (let synth of synths) {
+			if (synth.lfo1) {
+				synth.lfo1.stop(time);
+				synth.lfo1.start(time);
+			}
+
+			if (synth.lfo2) {
+				synth.lfo2.stop(time);
+				synth.lfo2.start(time);
 			}
 		}
 	}

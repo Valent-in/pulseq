@@ -75,6 +75,10 @@ a {
 	display: flex;
 }
 
+#header-tabs {
+	display: flex;
+}
+
 .tab {
 	min-width: 5vh;
 	text-align: center;
@@ -83,6 +87,19 @@ a {
 	margin: 2px;
 	border: 1px solid transparent;
 	border-radius: 3px;
+	position: relative;
+}
+
+.combined-tabs {
+	display: flex;
+	border-radius: 3px;
+	box-shadow: inset 0 0 0 1px #333;
+	background-color: #191919;
+	margin: 2px;
+}
+
+.combined-tabs .tab {
+	margin: 0;
 }
 
 .tab:hover {
@@ -97,6 +114,16 @@ a {
 
 #header-tabs .tab--active:hover {
 	color: #eee;
+}
+
+.muted-m-mark:after {
+	content: "M";
+	font-size: 0.6rem;
+	font-weight: bold;
+	color: orange;
+	position: absolute;
+	top: 0;
+	right: 2px;
 }
 
 #pattern-footer .tab--active {
@@ -172,8 +199,8 @@ a {
 
 .footer-menu>div, .footer-menu>button {
 	float: right;
-	padding: 2px 8px 2px 8px;
-	margin: 2px 5px 2px 0;
+	padding: 2px 8px;
+	margin: 2px;
 }
 
 .footer-menu>button.button--play {
@@ -205,6 +232,8 @@ a {
 	flex-direction: column;
 	overflow: hidden;
 	margin-bottom: calc(1rem + 16px);
+	-webkit-user-select: none;
+	user-select: none;
 }
 
 #button-add-pattern {
@@ -219,6 +248,8 @@ a {
 	justify-content: center;
 	overflow: hidden;
 	margin-bottom: calc(1rem + 16px);
+	-webkit-user-select: none;
+	user-select: none;
 }
 
 #pattern-main {
@@ -408,10 +439,14 @@ input[type=range].range--volume {
 	overflow: hidden;
 }
 
-#synth-footer-controls>div, #synth-footer-controls>button {
+#synth-name-area, #synth-footer-controls>button {
 	float: right;
-	padding: 2px 8px 2px 8px;
-	margin: 2px 5px 2px 0;
+	padding: 2px 8px;
+	margin: 2px;
+}
+
+.div-mute-controls {
+	float: left;
 }
 
 #piano-container-outer {
@@ -535,6 +570,14 @@ input[type=range].range--volume {
 	color: #eee;
 }
 
+.muted-mark:after {
+	content: "Muted";
+	font-size: 0.6rem;
+	color: orange;
+	float: right;
+	margin-top: -4px;
+}
+
 #synth-list-main {
 	flex-grow: 1;
 	overflow-y: auto;
@@ -544,6 +587,12 @@ input[type=range].range--volume {
 #button-add-synth {
 	font-weight: bold;
 	margin: 2px;
+	float: left;
+}
+
+#button-mixer-menu-open {
+	margin: 2px;
+	float: left;
 }
 
 #synth-list-caption-area {
@@ -701,6 +750,10 @@ button.button--shadowed:active {
 	min-width: 80px;
 }
 
+button.button--highlight-orange {
+	box-shadow: inset 0 0 0 2px orange;
+}
+
 #menu-synth-list-container {
 	max-width: 55vh;
 	width: 75vw;
@@ -823,6 +876,65 @@ input[type=file]:focus+span {
 
 #selsct-synth-preset {
 	max-width: 5rem;
+}
+
+.scrollable-modal {
+	max-height: 100%;
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	padding: 0;
+}
+
+.scrollable-modal .modal-box-footer {
+	flex-shrink: 0;
+	margin: 0 12px 12px 12px;
+}
+
+#mixer-list-container {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	padding: 8px 8px 4px 8px;
+	min-width: 80vw;
+}
+
+.mixer-entry {
+	border: 1px solid #444;
+	background-color: #222;
+	border-radius: 3px;
+	width: 85vw;
+	min-width: 35vw;
+	max-width: 55vh;
+	padding: 5px 1.5vw;
+	margin: 4px;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+.mixer-header-line {
+	overflow-y: hidden;
+}
+
+.mixer-header-line button {
+	float: right;
+}
+
+.mixer-line {
+	display: flex;
+	padding: 6px 4px 2px 4px;
+}
+
+.mixer-line input {
+	flex-grow: 1;
+}
+
+.div-mute-controls-modal {
+	float: left;
+}
+
+.div-mute-controls-modal button {
+	margin: 0;
 }
 
 .toast-container {

@@ -721,6 +721,9 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			if (isCreateNewLayer && songObj.isSynthInCurrentPattern(i))
 				entry.classList.add("synth-list-entry--disabled");
 
+			if (songObj.synths[i].isMuted)
+				entry.classList.add("muted-mark");
+
 			entry.dataset.index = i;
 			entry.appendChild(document.createTextNode(songObj.synthNames[i]));
 			listContainer.appendChild(entry);

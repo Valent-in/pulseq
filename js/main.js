@@ -1,7 +1,7 @@
 "use strict"
 
-console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v0.9.1 ",
-	"color:#1ff", "color:#f81", "color:#bbb", "background-color: #000;color:#fff");
+console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v0.9.2 ",
+	"color:#1ff", "color:#f81", "color:#bbb", "background-color:#000;color:#fff");
 
 {
 	Tone.context.lookAhead = 0.15;
@@ -9,7 +9,7 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v0.9.1 ",
 	window.onbeforeunload = function () { return "Leave App?" };
 
 	// Disable closing browser window with back button
-	if (history.length == 1) {
+	if (history.length == 1 || window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone) {
 		history.pushState(null, null, location.href);
 		window.onpopstate = function () {
 			history.go(1);
@@ -76,9 +76,7 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v0.9.1 ",
 	document.getElementById("input-import-track").focus();
 
 	function onSongChange(isNewSong, stopCommand) {
-		arrangeUi.fillSongView();
-		g_markCurrentPattern();
-		updPatternSynthList();
+		updPatternSynthList(true);
 		if (isNewSong) {
 			synthUi.assignSynth(songObject.synthParams[0], songObject.synths[0], songObject.synthNames[0]);
 			songObject.currentSynthIndex = 0;
@@ -95,7 +93,12 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v0.9.1 ",
 		}
 	}
 
-	function updPatternSynthList() {
+	function updPatternSynthList(updArrangeView) {
+		if (updArrangeView) {
+			arrangeUi.fillSongView();
+			g_markCurrentPattern();
+		}
+
 		patternUi.importSequence(songObject.currentPattern);
 		patternUi.rebuildPatternSynthList(songObject.currentPattern);
 	}

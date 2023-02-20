@@ -80,11 +80,14 @@
 				<div id="pattern-tab" class="js-tab tab">
 					Pattern
 				</div>
-				<div id="synth-tab" class="js-tab tab">
-					Synth
-				</div>
-				<div id="synth-list-tab" class="js-tab tab">
-					List
+
+				<div class="combined-tabs">
+					<div id="synth-tab" class="js-tab tab">
+						Synth
+					</div>
+					<div id="synth-list-tab" class="js-tab tab">
+						List
+					</div>
 				</div>
 			</div>
 
@@ -450,6 +453,9 @@
 						<div class="notranslate" translate="no" id="piano-container"></div>
 					</div>
 					<div id="synth-footer-controls">
+						<div class="div-mute-controls">
+							<button id="button-synth-mute" class="button--small">Mute</button>
+						</div>
 						<button id="button-piano-show">^</button>
 						<button id="button-synth-menu-open">•••</button>
 						<div class="notranslate" translate="no" id="synth-name-area"></div>
@@ -461,6 +467,7 @@
 				<div class="notranslate" translate="no" id="synth-list-main"></div>
 				<div class="footer">
 					<button id="button-add-synth">+</button>
+					<button id="button-mixer-menu-open">Mix</button>
 					<div id="synth-list-caption-area">Synth List</div>
 				</div>
 			</div>
@@ -743,6 +750,20 @@
 				</div>
 				<div class="modal-box-block modal-box-footer">
 					<button id="button-synth-menu-close" class="button-modal-bottom">Close</button>
+				</div>
+			</div>
+		</div>
+
+		<div id="mixer-modal-menu" class="modal-container nodisplay">
+			<div class="modal-box scrollable-modal">
+				<div class="modal-box-block" id="mixer-list-container">
+				</div>
+				<div class="modal-box-block modal-box-footer">
+					<div class="div-mute-controls-modal">
+						<button id="button-mute-all" class="button--small">Mute all</button>
+						<button id="button-unmute-all" class="button--small">Unmute</button>
+					</div>
+					<button id="button-mixer-menu-close" class="button-modal-bottom">Close</button>
 				</div>
 			</div>
 		</div>

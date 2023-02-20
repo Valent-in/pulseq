@@ -55,11 +55,15 @@
 
 #arrange-main tr:first-child td:first-child {
 	border-left: 1px solid #444;
-	z-index: 2;
+	z-index: 3;
 }
 
 #arrange-main tr td:nth-child(4n+2) {
 	border-left: 1px solid #6a6a6a;
+}
+
+#arrange-main tr:first-child td:nth-child(4n+2) {
+	z-index: 2;
 }
 
 #arrange-main tr:nth-child(4n+5) td {

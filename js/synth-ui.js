@@ -22,14 +22,8 @@ function SynthUi() {
 		}
 
 		key.addEventListener("pointerdown", () => {
-			//console.log(note);
-			if (this.currentSynth.lfo1) {
-				this.currentSynth.lfo1.stop();
-				this.currentSynth.lfo1.start();
-			}
-
 			this.currentSynth.triggerAttack(note, 0, Tone.now(), 0.5);
-		})
+		});
 
 		key.addEventListener("pointerup", () => {
 			this.currentSynth.triggerRelease();
@@ -116,6 +110,16 @@ function SynthUi() {
 			synthTab.innerHTML = "";
 			synthTab.appendChild(document.createTextNode(name));
 		}
+
+		this.updateMuteControls(targetSynth);
+	}
+
+	this.updateMuteControls = function (targetSynth) {
+		let muteButton = document.getElementById("button-synth-mute");
+		if (targetSynth.isMuted)
+			muteButton.classList.add("button--highlight-orange");
+		else
+			muteButton.classList.remove("button--highlight-orange");
 	}
 
 	function setBlockState(selector) {

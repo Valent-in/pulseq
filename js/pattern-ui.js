@@ -25,6 +25,8 @@ function PatternUi(songObj, assignSynthCallback) {
 	let playbackMarkers = [];
 	let previousMarker = 0;
 
+	let isSidekeyPalying = false;
+
 	let patternName = document.getElementById("pattern-name-area");
 	let pattern = document.getElementById("pattern-main");
 
@@ -35,8 +37,20 @@ function PatternUi(songObj, assignSynthCallback) {
 	table.oncontextmenu = () => false;
 
 	table.addEventListener("pointerdown", (e) => {
-		if (e.target.nodeName != "TD" || !e.target.id.includes("_row-") || e.which == 2)
+		if (e.target.nodeName != "TD" || e.which == 2)
 			return;
+
+		if (!e.target.id.includes("_row-")) {
+			if (e.target.dataset.note) {
+				let synth = getSynthFromLayer();
+				if (synth !== null) {
+					synth.triggerAttack(e.target.dataset.note, 0, Tone.now(), 0.5);
+					isSidekeyPalying = true;
+				}
+			}
+
+			return;
+		}
 
 		pointerPress = true;
 		cancelClick = false;
@@ -77,17 +91,18 @@ function PatternUi(songObj, assignSynthCallback) {
 		pressTimeout = null;
 
 		let { col } = getCellCoordinates(e.target);
-		redrawLine(col);
 
 		let startCol = Math.min(dragStartCol, col);
 		let endCol = Math.max(dragStartCol, col);
 		let fillBlock = dragStartCol > col ? lengthMod : 100;
 
+		clearLine(col);
 		for (let i = startCol; i <= endCol; i++) {
 			setNoteAtColumn(noteArr[dragStartRow], i);
 			setNoteLengthAtColumn(i == endCol ? lengthMod : fillBlock, i);
 			setNoteVolumeAtColumn(volumeMod, i);
 		}
+		redrawLine();
 
 		cancelClick = true;
 	});
@@ -101,6 +116,14 @@ function PatternUi(songObj, assignSynthCallback) {
 	function pointerEndListener() {
 		pointerPress = false;
 		clearTimeout(pressTimeout);
+
+		if (isSidekeyPalying) {
+			isSidekeyPalying = false;
+
+			let synth = getSynthFromLayer();
+			if (synth)
+				synth.triggerRelease();
+		}
 	}
 
 	function getCellCoordinates(cell) {
@@ -133,6 +156,13 @@ function PatternUi(songObj, assignSynthCallback) {
 
 	function setNoteVolumeAtColumn(length, col) {
 		songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].volumes[col] = length;
+	}
+
+	function getSynthFromLayer() {
+		let layerIndex = songObj.currentPattern.activeIndex;
+		let synthIndex = songObj.currentPattern.patternData[layerIndex].synthIndex;
+
+		return synthIndex === null ? null : songObj.synths[synthIndex];
 	}
 
 	function setCell(col, row, length, volume, cell) {
@@ -198,12 +228,15 @@ function PatternUi(songObj, assignSynthCallback) {
 				if (i == 0 && (j - 1) % 4 == 0 && j > 1)
 					td.appendChild(document.createTextNode(j));
 
-				if (i > 0 && j == 0)
+				if (i > 0 && j == 0) {
+					td.dataset.note = noteArr[i - 1];
+
 					if (noteArr[i - 1].includes("b")) {
 						td.classList.add("pattern-black-key");
 					} else {
 						td.appendChild(document.createTextNode(noteArr[i - 1]));
 					}
+				}
 
 				if (i > 0 && j > 0) {
 					td.id = "seq_col-" + (j - 1) + "_row-" + (i - 1);
@@ -287,12 +320,33 @@ function PatternUi(songObj, assignSynthCallback) {
 		dragStartCol = col;
 		col = tmp;
 
-		redrawLine(col);
+		clearLine(col);
 		for (let i = dragStartCol; i <= col; i++) {
 			setNoteAtColumn(snote, i);
 			setNoteLengthAtColumn(i == col ? lengthMod : 100, i);
-			setNoteVolumeAtColumn(volumeMod, i);
+			setNoteVolumeAtColumn(slopeVolume(dragStartCol, col, i), i);
 		}
+		redrawLine();
+	}
+
+	function slopeVolume(start, end, position) {
+		let startNote = getNoteVolumeByColumn(start);
+
+		if (position == end)
+			return volumeMod;
+
+		if (position == start)
+			return startNote;
+
+		let len = end - start;
+		if (len == 0)
+			return volumeMod;
+
+		let pos = position - start;
+		let progress = pos / len;
+		let volumeRange = volumeMod - startNote;
+
+		return Math.round(volumeRange * progress + startNote);
 	}
 
 	function clearLineOfNotes() {
@@ -313,23 +367,14 @@ function PatternUi(songObj, assignSynthCallback) {
 		}
 	}
 
-	function redrawLine(col) {
+	function redrawLine() {
 		for (let i = 0; i < sequencerLength; i++) {
 
 			let note = getNoteByColumn(i);
 			let row = findRowByNote(note);
 
-			let startCol = Math.min(dragStartCol, col);
-			let endCol = Math.max(dragStartCol, col);
-			let fillBlock = dragStartCol > col ? lengthMod : 100;
-
-			if (i >= startCol && i <= endCol) {
-				clearCell(i, row);
-				setCell(i, dragStartRow, i == endCol ? lengthMod : fillBlock, volumeMod);
-			} else {
-				clearCell(i, dragStartRow);
-				setCell(i, row, getNoteLengthByColumn(i), getNoteVolumeByColumn(i))
-			}
+			clearCell(i, dragStartRow);
+			setCell(i, row, getNoteLengthByColumn(i), getNoteVolumeByColumn(i))
 		}
 	}
 
@@ -471,8 +516,13 @@ function PatternUi(songObj, assignSynthCallback) {
 	const patternLayerTabListener = (event) => {
 		let index = Number(event.target.dataset.index);
 		let synthIndex = songObj.currentPattern.patternData[index].synthIndex;
-		if (synthIndex !== null && event.target.classList.contains("tab--active"))
+		if (synthIndex !== null && event.target.classList.contains("tab--active")) {
+			assignSynthCallback(songObj.synthParams[synthIndex], songObj.synths[synthIndex], songObj.synthNames[synthIndex]);
+			songObj.currentSynthIndex = synthIndex;
+			g_markCurrentSynth();
+
 			g_switchTab("synth");
+		}
 
 		let activeLayerTab = document.querySelectorAll(".js-pattern-layer-tab.tab--active")[0];
 		if (activeLayerTab)
@@ -482,12 +532,6 @@ function PatternUi(songObj, assignSynthCallback) {
 		songObj.currentPattern.activeIndex = index;
 
 		this.importSequence(songObj.currentPattern);
-
-		if (synthIndex !== null) {
-			assignSynthCallback(songObj.synthParams[synthIndex], songObj.synths[synthIndex], songObj.synthNames[synthIndex]);
-			songObj.currentSynthIndex = synthIndex;
-			g_markCurrentSynth();
-		}
 	}
 
 	this.rebuildPatternSynthList = function (pattern) {
@@ -507,6 +551,9 @@ function PatternUi(songObj, assignSynthCallback) {
 				name = "[none]";
 			else
 				name = songObj.synthNames[index];
+
+			if (index !== null && songObj.synths[index].isMuted)
+				tab.classList.add("muted-m-mark");
 
 			tab.appendChild(document.createTextNode(name));
 			tab.dataset.index = i;
