@@ -291,14 +291,13 @@
 							<option>lfo1</option>
 							<option>lfo2</option>
 							<option>envelopeMod</option>
-							<option>envelopeModRev</option>
 							<option>osc2</option>
 							<option>osc3</option>
 						</select>
 						<div class="js-modosc1-block">
 							<span>Intensity</span>
 							<br>
-							<input type="range" id="synth-osc1-mod-value" min=0 max=6 step=0.02 class="range--4-marks">
+							<input type="range" id="synth-osc1-mod-value" min=-6 max=6 step=0.02 class="range--8-marks">
 						</div>
 					</div>
 					<div class="bg-modulation-osc">
@@ -309,13 +308,12 @@
 							<option>lfo1</option>
 							<option>lfo2</option>
 							<option>envelopeMod</option>
-							<option>envelopeModRev</option>
 							<option>osc3</option>
 						</select>
 						<div class="js-modosc2-block">
 							<span>Intensity</span>
 							<br>
-							<input type="range" id="synth-osc2-mod-value" min=0 max=6 step=0.02 class="range--4-marks">
+							<input type="range" id="synth-osc2-mod-value" min=-6 max=6 step=0.02 class="range--8-marks">
 						</div>
 					</div>
 					<div class="bg-modulation-filt">
@@ -326,13 +324,12 @@
 							<option>lfo1</option>
 							<option>lfo2</option>
 							<option>envelopeMod</option>
-							<option>envelopeModRev</option>
 						</select>
 						<div class="js-modfilt-block">
 							<span>Intensity</span>
 							<br>
-							<input type="range" id="synth-filter-mod-value" min=0 max=5 step=0.02
-								class="range--5-marks">
+							<input type="range" id="synth-filter-mod-value" min=-5 max=5 step=0.02
+								class="range--10-marks">
 						</div>
 					</div>
 					<div class="bg-modulation-amp">
@@ -342,15 +339,15 @@
 							<option>[none]</option>
 							<option>lfo1</option>
 							<option>lfo2</option>
-							<option>envelopeModRev</option>
+							<option>envelopeMod</option>
 							<option>osc1</option>
 							<option>osc2</option>
 						</select>
 						<div class="js-modamp-block">
 							<span>Intensity</span>
 							<br>
-							<input type="range" id="synth-amplifier-mod-value" min=0 max=1 step=0.01
-								class="range--4-marks">
+							<input type="range" id="synth-amplifier-mod-value" min=-1 max=1 step=0.01
+								class="range--8-marks">
 						</div>
 					</div>
 					<div class="bg-lfo">
@@ -424,6 +421,7 @@
 							<option>chorus</option>
 							<option>delay</option>
 							<option>distort</option>
+							<option>panner</option>
 							<option>phaser</option>
 							<option>pingpong</option>
 							<option>reverb</option>
@@ -570,12 +568,12 @@
 						</td>
 					</tr>
 					<tr>
-						<td>
+						<td style="text-align:right">
 							Compressor
 						</td>
 					</tr>
 					<tr>
-						<td>
+						<td style="text-align:right">
 							Threshold
 						</td>
 						<td>
@@ -584,7 +582,7 @@
 						</td>
 					</tr>
 					<tr>
-						<td>
+						<td style="text-align:right">
 							Ratio
 						</td>
 						<td>
@@ -639,6 +637,8 @@
 
 		<div id="column-modal-menu" class="modal-container nodisplay">
 			<div class="modal-box">
+				<div id="timers-area" class="modal-box-block">
+				</div>
 				<div class="modal-box-block">
 					<button id="button-insert-columns" style="margin-right: 4px; float:left;">Insert columns</button>
 					<button id="button-remove-columns" style="margin-left: 4px; float:right;">Delete columns</button>
@@ -693,6 +693,8 @@
 				<div class="modal-box-block">
 					<button id="button-copy-pattern">Copy Pattern</button>
 					<button id="button-delete-pattern">Delete Pattern</button>
+
+					<button id="button-fade-layer" style="float:right">Fade</button>
 				</div>
 				<div class="modal-box-block modal-box-footer">
 					<button id="button-pattern-menu-close" class="button-modal-bottom">Close</button>
@@ -723,6 +725,27 @@
 				</div>
 				<div class="modal-box-block modal-box-footer">
 					<button id="button-color-menu-close" class="button-modal-bottom">Close</button>
+				</div>
+			</div>
+		</div>
+
+		<div id="fade-layer-modal-menu" class="modal-container nodisplay">
+			<div class="modal-box">
+				<div class="modal-box-block">
+					Modify layer volumes
+				</div>
+				<div class="modal-box-block">
+					<span>start</span>
+					<input type="number" id="input-fade-start" style="width:3rem">
+					<span class="dim-text">&percnt;</span>
+
+					<span style="margin-left:1.5rem">end</span>
+					<input type="number" id="input-fade-end" style="width:3rem">
+					<span class="dim-text">&percnt;</span>
+				</div>
+				<div class="modal-box-block modal-box-footer">
+					<button id="button-apply-fade" class="button-modal-bottom js-request-focus">OK</button>
+					<button id="button-fade-menu-close" class="button-modal-bottom">Cancel</button>
 				</div>
 			</div>
 		</div>

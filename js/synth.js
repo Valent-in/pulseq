@@ -361,6 +361,11 @@ function Synth(outputNode, transportBPM) {
 				this.FX = new Tone.PingPongDelay();
 				break;
 
+			case "panner":
+				this.FX = new Tone.AutoPanner();
+				this.FX.start();
+				break;
+
 			case "reverb":
 				this.FX = new Tone.Reverb();
 				break;
@@ -420,6 +425,10 @@ function Synth(outputNode, transportBPM) {
 				this.FX.feedback.value = this.values.FXAmountValue * 0.9;
 				break;
 
+			case "panner":
+				this.FX.depth.value = this.values.FXAmountValue;
+				break;
+
 			case "reverb":
 				this.FX.ready.then(() => {
 					this.FX.decay = this.values.FXAmountValue * 4 + 0.001;
@@ -460,6 +469,10 @@ function Synth(outputNode, transportBPM) {
 				} else {
 					this.FX.delayTime.value = this.values.FXRateValue;
 				}
+				break;
+
+			case "panner":
+				this.FX.frequency.value = this.values.FXRateValue * 12;
 				break;
 
 			case "chorus":
@@ -588,24 +601,17 @@ function Synth(outputNode, transportBPM) {
 				return
 
 			this.envelopeMod.disconnect();
-			this.envelopeModRev.disconnect();
-
 			this.envelopeMod.dispose();
-			this.envelopeModRev.dispose();
-
 			this.envelopeMod = null;
-			this.envelopeModRev = null;
+
 			console.log("remove mod envelope");
 		} else if (!this.envelopeMod) {
 			this.envelopeMod = new Tone.Envelope();
-			this.envelopeModRev = new Tone.Negate();
-			this.envelopeMod.connect(this.envelopeModRev);
 			console.log("add mod envelope");
 		}
 
 		if (this.modEnvelopeType == "[none]" && type != "[none]") {
 			this.restoreModulator("envelopeMod");
-			this.restoreModulator("envelopeModRev");
 		}
 
 		this.modEnvelopeType = type;

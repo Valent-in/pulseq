@@ -489,6 +489,80 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	};
 
 	/*
+	 * Layer fade menu
+	 */
+	document.getElementById("button-fade-layer").onclick = () => {
+		let pattern = songObj.currentPattern;
+		let index = pattern.activeIndex;
+		let layer = pattern.patternData[index];
+
+		let startVolume = 0, endVolume = 0, isEmpty = true;
+
+		for (let i = 0; i < pattern.length; i++) {
+			if (layer.notes[i]) {
+				isEmpty = false;
+				endVolume = 100 + layer.volumes[i];
+
+				if (startVolume == 0)
+					startVolume = 100 + layer.volumes[i];
+			}
+		}
+
+		if (isEmpty) {
+			showAlert("Layer is empty");
+			return;
+		}
+
+		document.getElementById("input-fade-start").value = startVolume;
+		document.getElementById("input-fade-end").value = endVolume;
+		showModal("fade-layer-modal-menu");
+	};
+
+	document.getElementById("button-apply-fade").onclick = () => {
+		let pattern = songObj.currentPattern;
+		let index = pattern.activeIndex;
+		let layer = pattern.patternData[index];
+
+		let startVolume = Number(document.getElementById("input-fade-start").value);
+		let endVolume = Number(document.getElementById("input-fade-end").value);
+
+		// actual limit is 100 - exceeding values will be capped
+		if (isNaN(startVolume) || startVolume < 1 || startVolume > 200 ||
+			isNaN(endVolume) || endVolume < 1 || endVolume > 200) {
+			showAlert("Volume values should be in range 1-100");
+			return;
+		}
+
+		let startIndex = -1, endIndex = 0;
+		for (let i = 0; i < pattern.length; i++) {
+			if (layer.notes[i]) {
+				endIndex = i;
+
+				if (startIndex < 0)
+					startIndex = i;
+			}
+		}
+
+		let lineLength = Math.max(1, endIndex - startIndex);
+		let step = (endVolume - startVolume) / lineLength;
+
+		for (let i = 0; i <= lineLength; i++) {
+			if (layer.notes[i + startIndex])
+				layer.volumes[i + startIndex] = Math.min(0, -100 + Math.round(startVolume + i * step));
+		}
+
+		console.log("volumes", layer.volumes);
+
+		onSongChangeCallback(false);
+		hideModal("pattern-modal-menu");
+		hideModal("fade-layer-modal-menu");
+	}
+
+	document.getElementById("button-fade-menu-close").onclick = () => {
+		hideModal("fade-layer-modal-menu");
+	};
+
+	/*
 	 * Synth modal menu
 	 */
 	document.getElementById("menu-synth-list-container").onclick = (event) => {
@@ -641,7 +715,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	function exportSong() {
 		let expObj = {};
 
-		expObj.songFormatVersion = "1.2";
+		expObj.songFormatVersion = "1.4";
 		expObj.synthParams = songObj.synthParams;
 		expObj.synthNames = songObj.synthNames;
 		expObj.song = songObj.song;

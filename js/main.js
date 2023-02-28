@@ -1,6 +1,6 @@
 "use strict"
 
-console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v0.9.2 ",
+console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v0.9.3 ",
 	"color:#1ff", "color:#f81", "color:#bbb", "background-color:#000;color:#fff");
 
 {

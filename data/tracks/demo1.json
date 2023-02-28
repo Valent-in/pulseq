@@ -1,5 +1,5 @@
 {
- "songFormatVersion": "1.2",
+ "songFormatVersion": "1.3",
  "synthParams": [
   {
    "synth-amplifier-gain": 1,
@@ -11,8 +11,8 @@
    "synth-envelope-sustain": 0.63,
    "synth-envelope-type": "exponential",
    "synth-filter-frequency": 1.64,
-   "synth-filter-mod-input": "envelopeModRev",
-   "synth-filter-mod-value": 0.26,
+   "synth-filter-mod-input": "envelopeMod",
+   "synth-filter-mod-value": -0.26,
    "synth-filter-quality": 0,
    "synth-filter-type": "lowpass",
    "synth-fx-amount": 0.5,
@@ -61,8 +61,8 @@
    "synth-envelope-sustain": 0.63,
    "synth-envelope-type": "exponential",
    "synth-filter-frequency": 2.04,
-   "synth-filter-mod-input": "envelopeModRev",
-   "synth-filter-mod-value": 0.26,
+   "synth-filter-mod-input": "envelopeMod",
+   "synth-filter-mod-value": -0.26,
    "synth-filter-quality": 4.4,
    "synth-filter-type": "lowpass",
    "synth-fx-amount": 0.5,

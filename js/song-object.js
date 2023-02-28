@@ -228,11 +228,24 @@ function SongObject() {
 		this.calculateSynthFill();
 	}
 
+	this.calculateDuration = function (bars) {
+		let beats = bars * this.barSteps / 4;
+		return beats * (60 / this.bpm);
+	}
+
 	this.getSongDuration = function () {
 		let totalBars = this.calcSongLength();
-		let totalBeats = Math.ceil((totalBars + 1) * this.barSteps / 4);
-		let totalTime = Math.ceil(totalBeats * (60 / this.bpm));
-		return totalTime;
+		return Math.ceil(this.calculateDuration(totalBars) + this.calculateDuration(1));
+	}
+
+	this.getStartPointTime = function () {
+		let time = this.calculateDuration(this.arrangeStartPoint);
+		return secondsToStr(time);
+	}
+
+	this.getEndPointTime = function () {
+		let time = this.calculateDuration(this.calcSongLength());
+		return secondsToStr(time);
 	}
 
 	this.copyPattern = function (copyFromPattern, name) {
@@ -333,5 +346,22 @@ function SongObject() {
 			name = String(prefix) + ++index;
 
 		return name;
+	}
+
+	function secondsToStr(time) {
+		let minutes = String(Math.floor(time / 60));
+		let seconds = String(Math.floor(time % 60));
+		let decimal = String(Math.floor((time - Math.floor(time)) * 100));
+
+		if (minutes.length == 1)
+			minutes = "0" + minutes;
+
+		if (seconds.length == 1)
+			seconds = "0" + seconds;
+
+		if (decimal.length == 1)
+			decimal = "0" + decimal;
+
+		return minutes + ":" + seconds + "." + decimal;
 	}
 }

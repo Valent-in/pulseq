@@ -82,7 +82,7 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 					return;
 
 				let length = Math.floor(result);
-				if (length > 0 && length < 100)
+				if (length > 0 && length < 500)
 					insertColumns(songObj.arrangeStartPoint, length)
 				else
 					showAlert("Can not insert columns");
@@ -97,7 +97,7 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 					return;
 
 				let length = Math.floor(result);
-				if (length > 0 && length < 100)
+				if (length > 0 && length < 500)
 					spliceColumns(songObj.arrangeStartPoint, length)
 				else
 					showAlert("Can not delete columns");
@@ -207,8 +207,19 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 			let col = Number(idParts[1].split("-")[1]);
 			setArrangeStartPoint(col);
 
+			updateTimerView();
 			showModal("column-modal-menu");
-		}, 400)
+		}, 400);
+	}
+
+	function updateTimerView() {
+		let timers = document.getElementById("timers-area");
+		timers.innerHTML = "";
+		let span = document.createElement("SPAN");
+		let timeString = songObj.getStartPointTime() + " / " + songObj.getEndPointTime();
+		span.appendChild(document.createTextNode(timeString));
+		span.classList.add("dim-text");
+		timers.appendChild(span);
 	}
 
 	function setArrangeStartPoint(col) {

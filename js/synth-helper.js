@@ -3,6 +3,7 @@
 function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 	let that = this;
 	let selectedSynthIndex = 0;
+	let mixerIsShown = false;
 
 	let addSynth = document.getElementById("button-add-synth");
 	addSynth.addEventListener("click", () => {
@@ -320,6 +321,15 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			newParams["synth-mod-envelope-sustain"] = newParams["synth-envelope-sustain"];
 		}
 
+		// Convert modulation intensity
+		for (let param in newParams) {
+			if (newParams[param] == "envelopeModRev") {
+				newParams[param] = "envelopeMod";
+				let valueKey = param.replace("-input", "-value");
+				newParams[valueKey] = -newParams[valueKey];
+			}
+		}
+
 		for (let key in newParams) {
 			synthParamApply(key, newParams[key], targetSynth);
 		}
@@ -338,18 +348,21 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 	document.getElementById("button-mixer-menu-open").onclick = () => {
 		buildMixerList();
 		showModal("mixer-modal-menu");
+		mixerIsShown = true;
 	};
 
 	document.getElementById("button-mixer-menu-close").onclick = () => {
-		let index = songObj.currentSynthIndex;
-		synthUi.assignSynth(songObj.synthParams[index], songObj.synths[index], songObj.synthNames[index]);
-
-		updateMuteMarkers();
-		hideModal("mixer-modal-menu");
-
-		let container = document.getElementById("mixer-list-container");
-		container.innerHTML = "";
+		closeMixer();
 	};
+
+	window.addEventListener("keyup", (event) => {
+		if (event.key != "Escape")
+			return;
+
+		let dialogs = document.querySelectorAll("#mixer-modal-menu");
+		if (dialogs.length > 0 && mixerIsShown)
+			closeMixer();
+	});
 
 	document.getElementById("button-mute-all").onclick = () => {
 		muteAllSynths(true);
@@ -358,6 +371,19 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 	document.getElementById("button-unmute-all").onclick = () => {
 		muteAllSynths(false);
 	};
+
+	function closeMixer() {
+		let index = songObj.currentSynthIndex;
+		synthUi.assignSynth(songObj.synthParams[index], songObj.synths[index], songObj.synthNames[index]);
+
+		updateMuteMarkers();
+		hideModal("mixer-modal-menu");
+
+		let container = document.getElementById("mixer-list-container");
+		container.innerHTML = "";
+
+		mixerIsShown = false;
+	}
 
 	function muteAllSynths(isMute) {
 		songObj.synths.forEach(e => e.mute(isMute));

@@ -397,7 +397,7 @@ input[type=range] {
 	margin: -6px 0 2px 0;
 	background-position: center center;
 	background-repeat: no-repeat no-repeat;
-	background-size: calc(102% - 18px) 30px;
+	background-size: calc(102% - 18px) 34px;
 }
 
 input[type=range].range--3-marks {
@@ -410,6 +410,10 @@ input[type=range].range--4-marks {
 
 input[type=range].range--5-marks {
 	background-image: url("../img/range5marks.svg");
+}
+
+input[type=range].range--8-marks {
+	background-image: url("../img/range8marks.svg");
 }
 
 input[type=range].range--10-marks {

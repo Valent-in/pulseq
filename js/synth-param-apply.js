@@ -2,9 +2,20 @@ function synthParamApply(paramId, controlValue, synth) {
 	let value = Number(controlValue);
 
 	const envelopeExp = (x) => (2 ** x - 1) / 255;
-	const freqModExp = (x) => (2 ** x - 1) * 20;
-	const filterExp = (x) => (2 ** x - 1) * 320;
+
 	const lfoExp = (x) => (2 ** x) / 32;
+
+	const freqModExp = (x) => {
+		let absX = Math.abs(x);
+		let mod = x > 0 ? 1 : -1;
+		return (2 ** absX - 1) * 20 * mod;
+	}
+
+	const filterExp = (x) => {
+		let absX = Math.abs(x);
+		let mod = x > 0 ? 1 : -1;
+		return (2 ** absX - 1) * 320 * mod;
+	};
 
 	switch (paramId) {
 		// Oscillator 1
