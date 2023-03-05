@@ -70,6 +70,8 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 		let arrange = document.getElementById("arrange-main");
 		arrange.appendChild(table);
 
+		document.getElementById("column-modal-menu").oncontextmenu = () => false;
+
 		document.getElementById("button-column-menu-close").onclick = () => {
 			hideModal("column-modal-menu");
 		}
@@ -218,7 +220,6 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 		let span = document.createElement("SPAN");
 		let timeString = songObj.getStartPointTime() + " / " + songObj.getEndPointTime();
 		span.appendChild(document.createTextNode(timeString));
-		span.classList.add("dim-text");
 		timers.appendChild(span);
 	}
 

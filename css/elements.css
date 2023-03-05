@@ -20,7 +20,7 @@ button::-moz-focus-inner {
 
 button.button--small {
 	font-size: 0.9rem;
-	padding: 1px 3px;
+	padding: 1px 4px;
 	margin: 2px;
 }
 

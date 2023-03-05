@@ -157,6 +157,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		}
 
 		bpmInput.value = bpmValue;
+		showToast("BPM: " + bpmValue);
 
 		songObj.bpm = bpmValue;
 		Tone.Transport.bpm.value = songObj.bpm;
@@ -186,6 +187,8 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			showConfirm("This will delete all patterns! Proceed?", isOk => {
 				if (isOk)
 					setBarLength();
+				else
+					barStepsInput.value = songObj.barSteps;
 			});
 
 		function setBarLength() {
@@ -203,6 +206,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 
 			songObj.setBarLength(Number(stepsValue));
 			onSongChangeCallback(false);
+			showToast("Steps in bar: " + stepsValue);
 		}
 	};
 
@@ -305,7 +309,9 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	let patternNameInput = document.getElementById("input-pattern-name");
 	document.getElementById("button-pattern-menu-open").onclick = () => {
 		patternNameInput.value = songObj.currentPattern.name;
-		document.getElementById("input-pattern-length").value = songObj.currentPattern.length;
+
+		let barsInPattern = Math.round(songObj.currentPattern.length / songObj.barSteps);
+		document.getElementById("input-pattern-length").value = barsInPattern;
 
 		let synthName = songObj.getCurrentLayerSynthName();
 		let synthSelect = document.getElementById("button-synth-select");
@@ -349,29 +355,33 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	}
 
 	function applyPatternLength() {
-		let len = Number(patternLengthInput.value);
+		let bars = Number(patternLengthInput.value);
+		let len = bars * songObj.barSteps;
+
 		let currentLen = songObj.currentPattern.length;
 		let valueAccepted = true;
 		let maxPatternLength = Math.floor(64 / songObj.barSteps) * songObj.barSteps;
+		let maxPatternBars = maxPatternLength / songObj.barSteps;
 
 		if (len > maxPatternLength) {
-			showAlert("Maximum pattern length is " + maxPatternLength + " steps");
+			showAlert("Maximum pattern length is " + maxPatternBars + " bars (" + maxPatternLength + " steps)");
 			len = maxPatternLength;
-			patternLengthInput.value = maxPatternLength;
+			patternLengthInput.value = maxPatternBars;
 			valueAccepted = false;
 		}
 
-		if (len <= 0) {
+		if (bars < 1) {
 			len = songObj.barSteps;
-			patternLengthInput.value = len;
-			showAlert("Minimum pattern length is " + len + " steps");
+			patternLengthInput.value = 1;
+			showAlert("Minimum pattern length is 1 bar (" + songObj.barSteps + " steps)");
 			valueAccepted = false;
 		}
 
 		if (len % songObj.barSteps != 0) {
 			len = Math.ceil(len / songObj.barSteps) * songObj.barSteps;
-			patternLengthInput.value = len;
-			showAlert("Pattern length rounded to " + len);
+			let calcBars = Math.round(len / songObj.barSteps);
+			patternLengthInput.value = calcBars;
+			showAlert("Pattern length rounded to " + calcBars + " bars (" + len + " steps)");
 			valueAccepted = false;
 		}
 
@@ -382,12 +392,14 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 				onSongChangeCallback(false, "release");
 		} else {
 			showAlert("Can not extend pattern");
-			patternLengthInput.value = songObj.currentPattern.length;
+			patternLengthInput.value = Math.round(songObj.currentPattern.length / songObj.barSteps);
 			valueAccepted = false;
 		}
 
-		if (valueAccepted)
-			hideModal("pattern-modal-menu");
+		if (valueAccepted) {
+			let bstr = bars > 1 ? " bars (" : " bar (";
+			showToast("Pattern length: " + bars + bstr + songObj.currentPattern.length + " steps)");
+		}
 	};
 
 	document.getElementById("button-synth-select").onclick = () => {

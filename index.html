@@ -106,7 +106,7 @@
 				<div id="arrange-footer" class="footer">
 					<button id="button-add-pattern">+</button>
 					<div class="footer-menu">
-						<button id="button-arrange-play" class="button--play">&gt;&gt;</button>
+						<button id="button-arrange-play" class="button--play">O</button>
 						<button id="button-arrange-menu-open">•••</button>
 						<div class="notranslate" translate="no" id="song-title-area">
 							[untitled]
@@ -125,7 +125,7 @@
 					<button id="button-add-pattern-layer">+</button>
 
 					<div class="footer-menu">
-						<button id="button-pattern-play" class="button--play">&gt;&gt;</button>
+						<button id="button-pattern-play" class="button--play">P</button>
 						<button id="button-pattern-menu-open">•••</button>
 						<div class="notranslate" translate="no" id="pattern-name-area"></div>
 					</div>
@@ -555,7 +555,7 @@
 					</tr>
 					<tr>
 						<td>
-							Bar steps
+							Steps in bar
 						</td>
 						<td>
 							<input type="number" id="input-steps-value">
@@ -643,6 +643,11 @@
 					<button id="button-insert-columns" style="margin-right: 4px; float:left;">Insert columns</button>
 					<button id="button-remove-columns" style="margin-left: 4px; float:right;">Delete columns</button>
 				</div>
+				<div class="modal-box-block">
+					<input type=number id="input-loop-bars" style="width:2rem" autocomplete="off" value="1">
+					<span>bar loop</span>
+					<button id="button-loop-play">Play</button>
+				</div>
 				<div class="modal-box-block modal-box-footer">
 					<button id="button-column-menu-close" class="button-modal-bottom">Close</button>
 				</div>
@@ -673,7 +678,7 @@
 
 					<tr>
 						<td>
-							Steps
+							Length (bars)
 						</td>
 						<td>
 							<input type="number" id="input-pattern-length">

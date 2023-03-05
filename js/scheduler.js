@@ -22,6 +22,20 @@ function Scheduler(songObj, barCallback, stepCallback) {
 		console.log("Play SONG");
 	}
 
+	this.playLoop = (callback, barsInLoop) => {
+		stop();
+
+		onInnerStopCallback = callback;
+
+		isPlaying = true;
+		isPatternPlaying = false;
+		scheduleLoop(barsInLoop * songObj.barSteps);
+		Tone.Transport.start();
+		console.log("Play LOOP");
+
+		return songObj.arrangeStartPoint;
+	}
+
 	this.playPattern = () => {
 		stop();
 
@@ -180,6 +194,33 @@ function Scheduler(songObj, barCallback, stepCallback) {
 			if (!synced) {
 				syncLfos(songObj.synths, time);
 				synced = true;
+			}
+
+			performSchedulerStep(schedulerData, songObj.synths, time, barCallback);
+		}, "16n");
+	}
+
+	function scheduleLoop(steps) {
+		let startPoint = songObj.arrangeStartPoint;
+		let schedulerData = {
+			stepIndex: 0,
+			barIndex: startPoint,
+			queue: []
+		};
+		let synced = false;
+
+		schedulerId = Tone.Transport.scheduleRepeat(function (time) {
+			if (!synced) {
+				syncLfos(songObj.synths, time);
+				synced = true;
+			}
+
+			if (schedulerData.stepIndex >= steps) {
+				schedulerData.stepIndex = 0;
+				schedulerData.barIndex = startPoint;
+				schedulerData.queue = [];
+				for (let i = 0; i < songObj.synths.length; i++)
+					songObj.synths[i].triggerRelease(time);
 			}
 
 			performSchedulerStep(schedulerData, songObj.synths, time, barCallback);

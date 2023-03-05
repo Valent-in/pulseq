@@ -80,9 +80,9 @@ a {
 }
 
 .tab {
-	min-width: 5vh;
+	min-width: 2.4rem;
 	text-align: center;
-	padding: 2px 6px 2px 6px;
+	padding: 2px 6px;
 	color: #777;
 	margin: 2px;
 	border: 1px solid transparent;
@@ -197,13 +197,18 @@ a {
 	overflow: hidden;
 }
 
-.footer-menu>div, .footer-menu>button {
+.footer-menu>div {
+	float: right;
+	margin: 2px;
+}
+
+.footer-menu>button {
 	float: right;
 	padding: 2px 8px;
 	margin: 2px;
 }
 
-.footer-menu>button.button--play {
+button.button--play {
 	background-position: center center;
 	background-repeat: no-repeat;
 	background-size: 1.1rem 1.1rem;
@@ -212,12 +217,17 @@ a {
 	background-image: url("../img/play.svg");
 }
 
+button.button--play.button--play-loop {
+	color: #333;
+}
+
 #pattern-name-area, #song-title-area, #synth-name-area {
 	color: orange;
 	padding: 2px 8px;
-	max-width: 50vw;
+	max-width: 40vw;
 	overflow: hidden;
 	text-overflow: ellipsis;
+	white-space: nowrap;
 	-webkit-user-select: none;
 	user-select: none;
 }
@@ -324,6 +334,10 @@ a {
 		box-sizing: content-box;
 		text-align: right;
 		align-self: flex-start;
+	}
+	#synth-main select {
+		max-width: 30%;
+		text-overflow: ellipsis;
 	}
 }
 
@@ -941,6 +955,12 @@ input[type=file]:focus+span {
 	margin: 0;
 }
 
+#timers-area span {
+	color: #555;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
 .toast-container {
 	position: fixed;
 	bottom: 80px;
@@ -963,7 +983,6 @@ input[type=file]:focus+span {
 	box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.39);
 	-webkit-user-select: none;
 	user-select: none;
-	pointer-events: auto;
 }
 
 #toast-box:hover {
@@ -981,4 +1000,28 @@ input[type=file]:focus+span {
 .tab-trap {
 	width: 0;
 	outline: none;
+}
+
+@media (min-width: 1400px) {
+	button, .button {
+		padding: 4px 12px;
+	}
+	button.button--small {
+		padding: 2px 6px;
+	}
+	select {
+		padding: 4px 2rem 4px 8px;
+	}
+	input[type=text], input[type=number] {
+		padding: 4px 8px;
+	}
+	.tab {
+		padding: 4px 12px;
+	}
+	#synth-footer-controls>button, .footer-menu>button {
+		padding: 4px 14px;
+	}
+	#pattern-name-area, #song-title-area, #synth-name-area, #synth-list-caption-area {
+		padding: 4px 16px;
+	}
 }

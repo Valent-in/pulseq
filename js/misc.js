@@ -4,23 +4,29 @@
 	// Switch tabs
 	let tabs = document.querySelectorAll(".js-tab");
 	let containers = document.querySelectorAll(".js-view-container");
+	window.g_activeTab = "arrange";
 
 	window.g_switchTab = function (tabName) {
 		let tabId = tabName + "-tab";
 		let viewId = tabName + "-view";
 
+		let cTab = document.getElementById(tabId);
+		let cView = document.getElementById(viewId);
+
+		if (!cTab || !cView)
+			return;
+
+		window.g_activeTab = tabName;
+
 		containers.forEach(e => {
 			e.classList.add("view--hidden")
-		})
+		});
 
 		tabs.forEach(e => {
 			e.classList.remove("tab--active")
-		})
+		});
 
-		let cTab = document.getElementById(tabId);
 		cTab.classList.add("tab--active");
-
-		let cView = document.getElementById(viewId);
 		cView.classList.remove("view--hidden");
 	}
 

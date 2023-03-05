@@ -201,10 +201,6 @@
 	let toastBox = document.getElementById("toast-box");
 	let timeout = null
 
-	toastBox.addEventListener("click", () => {
-		toastAlert.classList.add("nodisplay");
-	});
-
 	window.showToast = function (text) {
 		toastBox.innerHTML = "";
 		toastBox.appendChild(document.createTextNode(text));

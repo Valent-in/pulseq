@@ -29,6 +29,18 @@
 	background-image: radial-gradient(circle, #eee 0%, #eee 10%, #444 20%, transparent 35%);
 }
 
+#arrange-main .arrange-header.loop-start-point {
+	box-shadow: inset 2px 0 0 0 #ccc;
+}
+
+#arrange-main .arrange-header.loop-end-point {
+	box-shadow: inset -2px 0 0 0 #ccc;
+}
+
+#arrange-main .arrange-header.loop-start-point.loop-end-point {
+	box-shadow: inset 2px 0 0 0 #ccc, inset -2px 0 0 0 #ccc;
+}
+
 #arrange-main td:first-child {
 	min-width: 55px;
 	max-width: 55px;
