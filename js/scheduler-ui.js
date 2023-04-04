@@ -7,7 +7,7 @@ function SchedulerUi(scheduler) {
 	let playStartPoint = null;
 
 	document.addEventListener("keydown", (event) => {
-		if (event.target.tagName == "INPUT")
+		if (event.target.type == "number" || event.target.type == "text")
 			return;
 
 		if (event.code == "Backquote")
@@ -17,6 +17,9 @@ function SchedulerUi(scheduler) {
 			patternPlayListener();
 
 		if (event.code == "Space") {
+			if (event.target.type == "checkbox")
+				return;
+
 			event.preventDefault();
 
 			switch (window.g_activeTab) {

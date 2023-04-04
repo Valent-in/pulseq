@@ -282,7 +282,9 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 
 			// check convert time
 			let convertTime = Date.now() - timer - renderTime;
-			console.log("render time: " + (renderTime / 1000).toFixed(2) + "  convert time: " + (convertTime / 1000).toFixed(2) + "  total: " + ((Date.now() - timer) / 1000).toFixed(2));
+			console.log("render time: " + (renderTime / 1000).toFixed(2)
+				+ "  convert time: " + (convertTime / 1000).toFixed(2)
+				+ "  total: " + ((Date.now() - timer) / 1000).toFixed(2));
 
 			let newFile = URL.createObjectURL(expData);
 			downloadLink.href = newFile;
@@ -530,7 +532,14 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		showModal("fade-layer-modal-menu");
 	};
 
-	document.getElementById("button-apply-fade").onclick = () => {
+	document.getElementById("button-apply-fade").onclick = applyFade;
+
+	document.getElementById("input-fade-end").addEventListener("keyup", (event) => {
+		if (event.key == "Enter")
+			applyFade();
+	});
+
+	function applyFade() {
 		let pattern = songObj.currentPattern;
 		let index = pattern.activeIndex;
 		let layer = pattern.patternData[index];
@@ -568,7 +577,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		onSongChangeCallback(false);
 		hideModal("pattern-modal-menu");
 		hideModal("fade-layer-modal-menu");
-	}
+	};
 
 	document.getElementById("button-fade-menu-close").onclick = () => {
 		hideModal("fade-layer-modal-menu");
@@ -657,7 +666,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	function showSongTitle() {
 		let songTitle = document.getElementById("song-title-area");
 		songTitle.innerHTML = "";
-		songTitle.appendChild(document.createTextNode(songObj.title));
+		songTitle.appendChild(document.createTextNode(songObj.title || "[untitled]"));
 	}
 
 	function importSong(songStr) {

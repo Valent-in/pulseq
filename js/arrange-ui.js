@@ -146,6 +146,7 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 
 		fitGridLength();
 		markDisabledCells(0, songObj.song.length - 1);
+		g_markCurrentPattern();
 	}
 
 

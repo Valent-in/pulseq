@@ -406,6 +406,11 @@ button.button--play.button--play-loop {
 	font-weight: bold;
 }
 
+.highlight-pink {
+	color: #e88;
+	font-weight: bold;
+}
+
 input[type=range] {
 	width: 99%;
 	margin: -6px 0 2px 0;
@@ -711,6 +716,14 @@ input[type=range].range--volume {
 	float: right;
 	margin-left: 5px;
 	min-width: 80px;
+}
+
+.modal-box-inline {
+	display: inline-block;
+	background-color: #161616;
+	padding: 3px;
+	border: 1px solid #333;
+	border-radius: 5px;
 }
 
 #synth-select-modal-menu .modal-box-footer {

@@ -205,6 +205,8 @@ function PatternUi(songObj, assignSynthCallback) {
 				velocityStep = 6;
 			else
 				velocityStep = 12;
+
+			showToast((8 * 12 / velocityStep) + " levels for note volume control")
 		}
 
 		for (let i = 0; i <= DEFAULT_PARAMS.noteSet.length; i++) {

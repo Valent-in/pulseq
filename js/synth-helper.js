@@ -469,20 +469,20 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			}
 
 			volRange.oninput = (e) => {
-				synthParamApply("synth-amplifier-gain", e.target.value, synth);
-				params["synth-amplifier-gain"] = e.target.value;
+				let idValue = synthParamApply("synth-amplifier-gain", e.target.value, synth);
+				params[idValue.id] = idValue.value;
 			}
 
 			panRange.oninput = (e) => {
-				synthParamApply("synth-pan", e.target.value, synth);
-				params["synth-pan"] = e.target.value;
+				let idValue = synthParamApply("synth-pan", e.target.value, synth);
+				params[idValue.id] = idValue.value;
 			}
 
 			if ("ontouchstart" in window) {
 				volRange.addEventListener("pointercancel", (e) => {
 					e.target.value = e.target.dataset.value;
-					synthParamApply("synth-amplifier-gain", e.target.value, synth);
-					params["synth-amplifier-gain"] = e.target.value;
+					let idValue = synthParamApply("synth-amplifier-gain", e.target.value, synth);
+					params[idValue.id] = idValue.value;
 				});
 
 				volRange.addEventListener("change", (e) => {
@@ -491,8 +491,8 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 
 				panRange.addEventListener("pointercancel", (e) => {
 					e.target.value = e.target.dataset.value;
-					synthParamApply("synth-pan", e.target.value, synth);
-					params["synth-pan"] = e.target.value;
+					let idValue = synthParamApply("synth-pan", e.target.value, synth);
+					params[idValue.id] = idValue.value;
 				});
 
 				panRange.addEventListener("change", (e) => {

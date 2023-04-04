@@ -435,7 +435,7 @@
 							<input type="range" id="synth-fx-amount" min=0 max=1 step=0.002 class="range--4-marks">
 							<br>
 							<span id="synth-fx-rate-span">Delay (Speed)</span>
-							<input type="checkbox" id="synth-fx-sync">
+							<input type="checkbox" id="synth-fx-sync" style="position:relative">
 							<label id="synth-fx-sync-label" for="synth-fx-sync">BPM sync</label>
 							<input type="range" id="synth-fx-rate" min=0 max=1 step=0.002 class="range--3-marks">
 							<br>
@@ -524,10 +524,10 @@
 					<label for="input-more-velosteps">More velocity steps</label>
 				</div>
 				<div class="modal-box-block">
-					<button id="button-reset-app">Title&sol;Reset</button>
+					<button id="button-context-resume">Sound Fix</button>
 				</div>
 				<div class="modal-box-block modal-box-footer">
-					<button id="button-context-resume">Sound Fix</button>
+					<button id="button-reset-app" class="highlight-pink">Title&sol;Reset</button>
 					<button id="button-settings-close" class="button-modal-bottom">Close</button>
 				</div>
 			</div>
@@ -644,9 +644,11 @@
 					<button id="button-remove-columns" style="margin-left: 4px; float:right;">Delete columns</button>
 				</div>
 				<div class="modal-box-block">
-					<input type=number id="input-loop-bars" style="width:2rem" autocomplete="off" value="1">
-					<span>bar loop</span>
-					<button id="button-loop-play">Play</button>
+					<div class="modal-box-inline">
+						<input type=number id="input-loop-bars" style="width:2rem" autocomplete="off" value="1">
+						<span>bar loop</span>
+						<button id="button-loop-play">Play</button>
+					</div>
 				</div>
 				<div class="modal-box-block modal-box-footer">
 					<button id="button-column-menu-close" class="button-modal-bottom">Close</button>
@@ -741,7 +743,7 @@
 				</div>
 				<div class="modal-box-block">
 					<span>start</span>
-					<input type="number" id="input-fade-start" style="width:3rem">
+					<input type="number" id="input-fade-start" class="js-request-focus" style="width:3rem">
 					<span class="dim-text">&percnt;</span>
 
 					<span style="margin-left:1.5rem">end</span>
