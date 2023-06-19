@@ -18,8 +18,6 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		} else {
 			console.log("Web audio context is already running");
 		}
-
-		document.body.style.overflowY = "visible";
 	}
 
 	document.getElementById("button-new-track").onclick = () => {
@@ -117,8 +115,6 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 
 		document.getElementById("input-bpm-value").value = songObj.bpm;
 		document.getElementById("input-steps-value").value = songObj.barSteps;
-		document.getElementById("range-compressor-threshold").value = -songObj.compressorThreshold;
-		document.getElementById("range-compressor-ratio").value = songObj.compressorRatio;
 	};
 
 	titleInput.addEventListener("keydown", (event) => {
@@ -210,16 +206,11 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		}
 	};
 
-	document.getElementById("range-compressor-threshold").onchange = (event) => {
-		let value = -event.target.value;
-		songObj.compressorThreshold = value;
-		songObj.compressor.threshold.value = value;
-	};
-
-	document.getElementById("range-compressor-ratio").onchange = (event) => {
-		let value = +event.target.value;
-		songObj.compressorRatio = value;
-		songObj.compressor.ratio.value = value;
+	document.getElementById("button-compressor-menu-open").onclick = () => {
+		showModal("compressor-modal-menu");
+		document.getElementById("range-compressor-threshold").value = -songObj.compressorThreshold;
+		document.getElementById("range-compressor-ratio").value = songObj.compressorRatio;
+		fillCompressorValues();
 	};
 
 	document.getElementById("link-song-download").onclick = (event) => {
@@ -304,6 +295,41 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		document.getElementById("export-menu-result-container").style.display = "none";
 		document.getElementById("wav-link-container").style.display = "none";
 	};
+
+	/*
+	 * Compressor  modal menu
+	 */
+	let compressorThresholdInput = document.getElementById("range-compressor-threshold");
+	compressorThresholdInput.onchange = (event) => {
+		let value = -event.target.value;
+		songObj.compressorThreshold = value;
+		songObj.compressor.threshold.value = value;
+		fillCompressorValues();
+	};
+
+	let compressorRatioInput = document.getElementById("range-compressor-ratio");
+	compressorRatioInput.onchange = (event) => {
+		let value = +event.target.value;
+		songObj.compressorRatio = value;
+		songObj.compressor.ratio.value = value;
+		fillCompressorValues();
+	};
+
+	document.getElementById("button-reset-compressor").onclick = () => {
+		songObj.compressorThreshold = -30;
+		songObj.compressor.threshold.value = -30;
+		compressorThresholdInput.value = +30;
+
+		songObj.compressorRatio = 3;
+		songObj.compressor.ratio.value = 3;
+		compressorRatioInput.value = 3;
+
+		fillCompressorValues();
+	}
+
+	document.getElementById("button-compressor-menu-close").onclick = () => {
+		hideModal("compressor-modal-menu");
+	}
 
 	/*
 	 * Pattern modal menu
@@ -669,6 +695,13 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		songTitle.appendChild(document.createTextNode(songObj.title || "[untitled]"));
 	}
 
+	function fillCompressorValues() {
+		let cell = document.getElementById("compressor-values-cell");
+		cell.innerHTML = "";
+		let text = "T:" + songObj.compressorThreshold + "dB / R:" + songObj.compressorRatio;
+		cell.appendChild(document.createTextNode(text));
+	}
+
 	function importSong(songStr) {
 		let expObj;
 		try {
@@ -736,7 +769,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	function exportSong() {
 		let expObj = {};
 
-		expObj.songFormatVersion = "1.4";
+		expObj.songFormatVersion = "1.5";
 		expObj.synthParams = songObj.synthParams;
 		expObj.synthNames = songObj.synthNames;
 		expObj.song = songObj.song;

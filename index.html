@@ -293,6 +293,7 @@
 							<option>envelopeMod</option>
 							<option>osc2</option>
 							<option>osc3</option>
+							<option>noise</option>
 						</select>
 						<div class="js-modosc1-block">
 							<span>Intensity</span>
@@ -309,6 +310,7 @@
 							<option>lfo2</option>
 							<option>envelopeMod</option>
 							<option>osc3</option>
+							<option>noise</option>
 						</select>
 						<div class="js-modosc2-block">
 							<span>Intensity</span>
@@ -342,6 +344,7 @@
 							<option>envelopeMod</option>
 							<option>osc1</option>
 							<option>osc2</option>
+							<option>noise</option>
 						</select>
 						<div class="js-modamp-block">
 							<span>Intensity</span>
@@ -463,7 +466,7 @@
 
 			<div id="synth-list-view" class="js-view-container view-container view--hidden focus-lock-area">
 				<div class="notranslate" translate="no" id="synth-list-main"></div>
-				<div class="footer">
+				<div id="synth-list-footer" class="footer">
 					<button id="button-add-synth">+</button>
 					<button id="button-mixer-menu-open">Mix</button>
 					<div id="synth-list-caption-area">Synth List</div>
@@ -492,7 +495,7 @@
 					<div class="startup-menu-entry" id="button-new-track">New Track</div>
 					<div class="startup-menu-entry" id="button-import-track">
 						<input type="file" accept=".json" id="input-import-track" class="js-request-focus">
-						<span>Import</span>
+						<span>Open</span>
 						<div class="dragshade"></div>
 					</div>
 					<div class="startup-menu-entry highlight-violet" id="button-demo-track">Demo</div>
@@ -518,6 +521,10 @@
 					<span style="margin-left:12px;color:#555;">music creation app</span>
 					<a href="https://github.com/valent-in/pulseq/#pulsequeue" target="_blank" rel="noopener"
 						title="GitHub" style="font-weight:bold;padding:0 6px;">?</a>
+				</div>
+				<div class="modal-box-block">
+					<input type="checkbox" id="input-fullscreen-padding" autocomplete="off">
+					<label for="input-fullscreen-padding">Fullscreen + spacing</label>
 				</div>
 				<div class="modal-box-block">
 					<input type="checkbox" id="input-more-velosteps" autocomplete="off">
@@ -564,29 +571,10 @@
 					</tr>
 					<tr>
 						<td>
-							<!--spacer-->
-						</td>
-					</tr>
-					<tr>
-						<td style="text-align:right">
 							Compressor
 						</td>
-					</tr>
-					<tr>
-						<td style="text-align:right">
-							Threshold
-						</td>
 						<td>
-							<input id="range-compressor-threshold" type="range" min=0 max=100 step=1
-								class="range--4-marks">
-						</td>
-					</tr>
-					<tr>
-						<td style="text-align:right">
-							Ratio
-						</td>
-						<td>
-							<input id="range-compressor-ratio" type="range" min=1 max=20 step=1 class="range--4-marks">
+							<button id="button-compressor-menu-open">Edit</button>
 						</td>
 					</tr>
 					<tr>
@@ -631,6 +619,42 @@
 				</div>
 				<div class="modal-box-block modal-box-footer" id="export-menu-close-container">
 					<button id="button-export-menu-close" class="button-modal-bottom">Close</button>
+				</div>
+			</div>
+		</div>
+
+		<div id="compressor-modal-menu" class="modal-container nodisplay">
+			<div class="modal-box">
+				<table id="compressor-table">
+					<tr>
+						<td>
+							Compressor
+						</td>
+						<td id="compressor-values-cell">
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Threshold
+						</td>
+						<td>
+							<input id="range-compressor-threshold" type="range" min=0 max=100 step=1
+								class="range--4-marks">
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Ratio
+						</td>
+						<td>
+							<input id="range-compressor-ratio" type="range" min=1 max=19 step=1 class="range--3-marks">
+						</td>
+					</tr>
+				</table>
+
+				<div class="modal-box-block modal-box-footer">
+					<button id="button-reset-compressor" class="button--small">Reset</button>
+					<button id="button-compressor-menu-close" class="button-modal-bottom">Close</button>
 				</div>
 			</div>
 		</div>

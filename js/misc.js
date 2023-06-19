@@ -40,50 +40,95 @@
 
 {
 	// Fullscreen mode
-	document.getElementById("button-fullscreen").addEventListener("click", () => {
+	let fullBtn = document.getElementById("button-fullscreen");
+	let fullCheck = document.getElementById("input-fullscreen-padding");
+	let container = document.getElementById("container");
+
+	fullBtn.onclick = () => {
 		if (document.fullscreenElement ||
 			document.webkitFullscreenElement ||
-			document.msFullscreenElement) {
+			document.msFullscreenElement)
+			exitFullscrn();
+		else
+			enterFullScrn();
+	};
 
-			if (document.exitFullscreen)
-				document.exitFullscreen();
-			else if (document.webkitExitFullscreen)
-				document.webkitExitFullscreen();
-			else if (document.msExitFullscreen)
-				document.msExitFullscreen();
+	fullCheck.onchange = () => {
+		if (fullCheck.checked)
+			enterFullScrn();
+		else
+			exitFullscrn();
 
-		} else {
-			let elem = document.documentElement;
+		g_triggerResize();
+	};
 
-			if (elem.requestFullscreen)
-				elem.requestFullscreen();
-			else if (elem.webkitRequestFullscreen)
-				elem.webkitRequestFullscreen();
-			else if (elem.msRequestFullscreen)
-				elem.msRequestFullscreen();
+	document.addEventListener("fullscreenchange", () => {
+		if (!document.fullscreenElement &&
+			!document.webkitFullscreenElement &&
+			!document.msFullscreenElement) {
+			container.classList.remove("fullscreen-padding");
+			fullCheck.checked = false;
 		}
+
+		g_triggerResize();
 	});
+
+	function exitFullscrn() {
+		if (document.exitFullscreen)
+			document.exitFullscreen();
+		else if (document.webkitExitFullscreen)
+			document.webkitExitFullscreen();
+		else if (document.msExitFullscreen)
+			document.msExitFullscreen();
+	};
+
+	function enterFullScrn() {
+		if (fullCheck.checked)
+			container.classList.add("fullscreen-padding");
+
+		let elem = document.documentElement;
+		if (elem.requestFullscreen)
+			elem.requestFullscreen();
+		else if (elem.webkitRequestFullscreen)
+			elem.webkitRequestFullscreen();
+		else if (elem.msRequestFullscreen)
+			elem.msRequestFullscreen();
+	}
 }
 
 {
 	// Fit footer height
 	let patternFooter = document.getElementById("pattern-footer");
 	let patternContainer = document.getElementById("pattern-container");
-	createHeightObserver(patternFooter, (h) => {
+	createHeightObserver(patternFooter, patternObserverCallback);
+
+	function patternObserverCallback(h) {
 		patternContainer.style.marginBottom = h + "px";
-	});
+	}
 
 	let arrangeFooter = document.getElementById("arrange-footer");
 	let arrangeContainer = document.getElementById("arrange-container");
-	createHeightObserver(arrangeFooter, (h) => {
+	createHeightObserver(arrangeFooter, arrangeObserverCallback);
+
+	function arrangeObserverCallback(h) {
 		arrangeContainer.style.marginBottom = h + "px";
-	});
+	}
 
 	let synthFooter = document.getElementById("synth-footer");
 	let synthContainer = document.getElementById("synth-main");
-	createHeightObserver(synthFooter, (h) => {
+	createHeightObserver(synthFooter, synthObserverCallback);
+
+	function synthObserverCallback(h) {
 		synthContainer.style.marginBottom = h + "px";
-	});
+	}
+
+	let synthListFooter = document.getElementById("synth-list-footer");
+	let synthListContainer = document.getElementById("synth-list-main");
+	createHeightObserver(synthListFooter, listObserverCallback);
+
+	function listObserverCallback(h) {
+		synthListContainer.style.marginBottom = h + "px";
+	}
 
 	function createHeightObserver(target, callback) {
 		if (!window.ResizeObserver) {
@@ -98,6 +143,13 @@
 		});
 
 		observer.observe(target);
+	}
+
+	window.g_triggerResize = function () {
+		patternObserverCallback(patternFooter.offsetHeight);
+		arrangeObserverCallback(arrangeFooter.offsetHeight);
+		synthObserverCallback(synthFooter.offsetHeight);
+		listObserverCallback(synthListFooter.offsetHeight);
 	}
 }
 

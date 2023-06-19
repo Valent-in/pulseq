@@ -1,10 +1,11 @@
-html, body {
+html,
+body {
 	overscroll-behavior-y: contain;
+	height: 100%;
 }
 
 body {
 	background-color: #111;
-	/*set to "visible" after click*/
 	overflow-y: hidden;
 }
 
@@ -29,7 +30,7 @@ a {
 	margin-left: 10px;
 }
 
-#app-icons>div {
+#app-icons > div {
 	width: 20px;
 	height: 20px;
 	float: left;
@@ -38,22 +39,27 @@ a {
 	border-radius: 4px;
 }
 
-#app-icons> :nth-child(1) {
+#app-icons > :nth-child(1) {
 	background-image: url("../img/stop.svg");
 }
 
-#app-icons> :nth-child(2) {
+#app-icons > :nth-child(2) {
 	background-image: url("../img/icon.svg");
 }
 
-#app-icons> :nth-child(3) {
+#app-icons > :nth-child(3) {
 	background-image: url("../img/stopg.svg");
 }
 
 #container {
-	height: 100vh;
+	height: 100%;
 	display: flex;
 	flex-direction: column;
+	box-sizing: border-box;
+}
+
+#container.fullscreen-padding {
+	padding-top: 16px;
 }
 
 #header {
@@ -140,7 +146,7 @@ a {
 	display: flex;
 }
 
-#header-controls>button {
+#header-controls > button {
 	margin: 2px;
 	color: transparent;
 	background-size: 1.1rem 1.1rem;
@@ -157,7 +163,7 @@ a {
 }
 
 @media (max-width:500px) {
-	#header-controls>button:not(#button-settings-open) {
+	#header-controls > button:not(#button-settings-open) {
 		display: none;
 	}
 }
@@ -192,17 +198,21 @@ a {
 	background-color: #111;
 }
 
+.fullscreen-padding .footer {
+	padding-bottom: 16px;
+}
+
 .footer-menu {
 	float: right;
 	overflow: hidden;
 }
 
-.footer-menu>div {
+.footer-menu > div {
 	float: right;
 	margin: 2px;
 }
 
-.footer-menu>button {
+.footer-menu > button {
 	float: right;
 	padding: 2px 8px;
 	margin: 2px;
@@ -221,7 +231,9 @@ button.button--play.button--play-loop {
 	color: #333;
 }
 
-#pattern-name-area, #song-title-area, #synth-name-area {
+#pattern-name-area,
+#song-title-area,
+#synth-name-area {
 	color: orange;
 	padding: 2px 8px;
 	max-width: 40vw;
@@ -267,7 +279,8 @@ button.button--play.button--play-loop {
 	overflow-x: auto;
 }
 
-#pattern-footer>button, #pattern-footer>.tab {
+#pattern-footer > button,
+#pattern-footer > .tab {
 	float: left;
 	-webkit-user-select: none;
 	user-select: none;
@@ -293,7 +306,7 @@ button.button--play.button--play-loop {
 	padding: 4px 0;
 }
 
-#synth-main>div {
+#synth-main > div {
 	border: 1px solid #444;
 	background-color: #191919;
 	border-radius: 3px;
@@ -324,10 +337,11 @@ button.button--play.button--play-loop {
 }
 
 @media (min-width: 1280px) {
-	#synth-main>div {
+	#synth-main > div {
 		max-width: 27vh;
 		min-width: 21vw;
 	}
+
 	#synth-main .fx-spacer {
 		min-width: 21vw;
 		padding: 14px 15px;
@@ -335,13 +349,14 @@ button.button--play.button--play-loop {
 		text-align: right;
 		align-self: flex-start;
 	}
+
 	#synth-main select {
 		max-width: 30%;
 		text-overflow: ellipsis;
 	}
 }
 
-#synth-main>div>div:last-child {
+#synth-main > div > div:last-child {
 	background-color: #191919;
 	height: 100%;
 }
@@ -382,7 +397,8 @@ button.button--play.button--play-loop {
 	background-image: url('../img/effect.svg');
 }
 
-#synth-mod-envelope-type, #synth-envelope-type {
+#synth-mod-envelope-type,
+#synth-envelope-type {
 	margin: -4px -4px 4px 0;
 	float: right;
 }
@@ -457,12 +473,17 @@ input[type=range].range--volume {
 	background-color: #111;
 }
 
+.fullscreen-padding #synth-footer {
+	padding-bottom: 15px;
+}
+
 #synth-footer-controls {
 	padding: 1px 4vw;
 	overflow: hidden;
 }
 
-#synth-name-area, #synth-footer-controls>button {
+#synth-name-area,
+#synth-footer-controls > button {
 	float: right;
 	padding: 2px 8px;
 	margin: 2px;
@@ -486,7 +507,8 @@ input[type=range].range--volume {
 	min-width: 0;
 }
 
-#piano-container::before, #piano-container:after {
+#piano-container::before,
+#piano-container:after {
 	content: "";
 	min-width: 4px;
 }
@@ -682,7 +704,8 @@ input[type=range].range--volume {
 	margin-top: 4px;
 }
 
-.modal-box-block>button, .modal-box-block>*:last-child {
+.modal-box-block > button,
+.modal-box-block > *:last-child {
 	margin-bottom: 4px;
 }
 
@@ -777,7 +800,8 @@ button.button--shadowed:active {
 	box-shadow: inset 0 0 0 2px #282828, inset -15px 0px 0 0 rgba(0, 0, 0, 0.39);
 }
 
-#button-export-menu-open, #button-render {
+#button-export-menu-open,
+#button-render {
 	min-width: 80px;
 }
 
@@ -823,9 +847,11 @@ button.button--highlight-orange {
 	0% {
 		transform: translateX(0);
 	}
+
 	50% {
 		transform: translateX(300%);
 	}
+
 	100% {
 		transform: translateX(0);
 	}
@@ -871,7 +897,8 @@ button.button--highlight-orange {
 	background-color: #191919;
 }
 
-.startup-menu-entry input[type=file], .button input[type=file] {
+.startup-menu-entry input[type=file],
+.button input[type=file] {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -880,7 +907,7 @@ button.button--highlight-orange {
 	font-size: 50px;
 }
 
-input[type=file]:focus+span {
+input[type=file]:focus + span {
 	color: #eee;
 }
 
@@ -893,7 +920,7 @@ input[type=file]:focus+span {
 	bottom: 0;
 }
 
-.dragover~.dragshade {
+.dragover ~ .dragshade {
 	background-color: rgba(100, 100, 0, 0.4);
 }
 
@@ -951,9 +978,24 @@ input[type=file]:focus+span {
 	float: right;
 }
 
+.mixer-header-line input[type=checkbox] {
+	float: right;
+	margin-top: 0.1rem;
+}
+
+.mixer-header-line label {
+	float: right;
+	margin-left: 4px;
+	margin-right: 12px;
+}
+
 .mixer-line {
 	display: flex;
 	padding: 6px 4px 2px 4px;
+}
+
+.mixer-line :first-child {
+	margin-right: 4px;
 }
 
 .mixer-line input {
@@ -972,6 +1014,21 @@ input[type=file]:focus+span {
 	color: #555;
 	-webkit-user-select: none;
 	user-select: none;
+}
+
+#compressor-table {
+	width: 360px;
+	max-width: 85vw;
+}
+
+#compressor-table td:first-child {
+	text-align: right;
+}
+
+#compressor-values-cell {
+	width: 100%;
+	color: #555;
+	text-align: right;
 }
 
 .toast-container {
@@ -1016,25 +1073,38 @@ input[type=file]:focus+span {
 }
 
 @media (min-width: 1400px) {
-	button, .button {
+
+	button,
+	.button {
 		padding: 4px 12px;
 	}
+
 	button.button--small {
 		padding: 2px 6px;
 	}
+
 	select {
 		padding: 4px 2rem 4px 8px;
 	}
-	input[type=text], input[type=number] {
+
+	input[type=text],
+	input[type=number] {
 		padding: 4px 8px;
 	}
+
 	.tab {
 		padding: 4px 12px;
 	}
-	#synth-footer-controls>button, .footer-menu>button {
+
+	#synth-footer-controls > button,
+	.footer-menu > button {
 		padding: 4px 14px;
 	}
-	#pattern-name-area, #song-title-area, #synth-name-area, #synth-list-caption-area {
+
+	#pattern-name-area,
+	#song-title-area,
+	#synth-name-area,
+	#synth-list-caption-area {
 		padding: 4px 16px;
 	}
 }

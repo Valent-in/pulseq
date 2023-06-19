@@ -224,7 +224,7 @@
 	border-right: none;
 }
 
-.fill-100+td::before {
+.fill-100 + td::before {
 	border-left: none;
 }
 

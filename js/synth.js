@@ -65,6 +65,7 @@ function Synth(outputNode, transportBPM) {
 	this.bpm = transportBPM;
 	this.modEnvelopeType = "[none]";
 	this.FXType = "[none]";
+	this.lastFXType = null;
 	this.FXsync = false;
 	this.glide = 0;
 	this.lfo1sync = false;
@@ -280,6 +281,7 @@ function Synth(outputNode, transportBPM) {
 			this.noise.chain(this.noisegain);
 			this.noisegain.chain(this.envelope);
 			this.noise.start();
+			this.restoreModulator("noise");
 			console.log("add noise");
 		} else {
 			if (!this.noise)
@@ -347,6 +349,8 @@ function Synth(outputNode, transportBPM) {
 		this.FXType = type;
 		if (type == "[none]")
 			return
+
+		this.lastFXType = type;
 
 		switch (type) {
 			case "distort":

@@ -1,5 +1,5 @@
 {
- "songFormatVersion": "1.3",
+ "songFormatVersion": "1.5",
  "synthParams": [
   {
    "synth-amplifier-gain": 1,
@@ -249,16 +249,16 @@
    "synth-osc3-level": 0,
    "synth-osc3-octave": 0,
    "synth-osc3-type": "[none]",
-   "synth-pan": -0.36
+   "synth-pan": -0.15
   },
   {
    "synth-amplifier-gain": 1,
    "synth-amplifier-mod-input": "lfo1",
    "synth-amplifier-mod-value": 0.19,
    "synth-envelope-attack": 5.64,
-   "synth-envelope-decay": 3.01,
+   "synth-envelope-decay": 5.72,
    "synth-envelope-release": 11.06,
-   "synth-envelope-sustain": 0.65,
+   "synth-envelope-sustain": 0.36,
    "synth-envelope-type": "exponential",
    "synth-filter-frequency": 0,
    "synth-filter-mod-input": "[none]",
@@ -284,7 +284,7 @@
    "synth-noise-level": 0,
    "synth-noise-type": "[none]",
    "synth-osc1-detune": 0,
-   "synth-osc1-level": 0.71,
+   "synth-osc1-level": 0.63,
    "synth-osc1-mod-input": "[none]",
    "synth-osc1-mod-value": 0,
    "synth-osc1-octave": -1,

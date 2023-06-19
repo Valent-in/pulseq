@@ -90,6 +90,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			synthUi.assignSynth(songObj.synthParams[0], songObj.synths[0], songObj.synthNames[0]);
 			songObj.currentSynthIndex = 0;
 			that.rebuildSynthList();
+			updateMuteMarkers();
 			g_switchTab("synth-list");
 			hideModal("synth-modal-menu");
 		});
@@ -406,6 +407,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 
 			let volValue = params["synth-amplifier-gain"];
 			let panValue = params["synth-pan"];
+			let fxValue = params["synth-fx-type"] == "[none]" ? false : true;
 
 			let entry = document.createElement("DIV");
 			entry.classList.add("mixer-entry");
@@ -415,6 +417,20 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			let nameSpan = document.createElement("SPAN");
 			nameSpan.appendChild(document.createTextNode(name));
 			nameSpan.classList.add("caption-text");
+
+			let fxCheckbox = document.createElement("INPUT");
+			fxCheckbox.type = "checkbox";
+			fxCheckbox.id = "mixer-fx-chk-" + index;
+			fxCheckbox.checked = fxValue;
+			let fxLabel = document.createElement("LABEL");
+			fxLabel.appendChild(document.createTextNode("FX"));
+			fxLabel.htmlFor = fxCheckbox.id;
+
+			if (!synth.lastFXType) {
+				fxCheckbox.disabled = true;
+				fxLabel.classList.add("disabled");
+			}
+
 			let muteButton = document.createElement("BUTTON");
 			muteButton.classList.add("button--small");
 			muteButton.appendChild(document.createTextNode("Mute"));
@@ -423,12 +439,13 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 
 			headerDiv.appendChild(nameSpan);
 			headerDiv.appendChild(muteButton);
+			headerDiv.appendChild(fxLabel);
+			headerDiv.appendChild(fxCheckbox);
 
 			let volumeDiv = document.createElement("DIV");
 			volumeDiv.classList.add("mixer-line");
 			let volSpan = document.createElement("SPAN");
 			volSpan.appendChild(document.createTextNode("Vol."));
-			volSpan.style["padding-right"] = "4px";
 			let volRange = document.createElement("INPUT");
 			volRange.type = "range";
 			volRange.classList.add("range--volume");
@@ -455,10 +472,19 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 
 			let panSpan = document.createElement("SPAN");
 			panSpan.appendChild(document.createTextNode("Pan"));
-			panSpan.style["padding-left"] = "4px";
 
 			panDiv.appendChild(panRange);
 			panDiv.appendChild(panSpan);
+
+			fxCheckbox.onchange = () => {
+				if (fxCheckbox.checked) {
+					let idValue = synthParamApply("synth-fx-type", synth.lastFXType || "[none]", synth);
+					params[idValue.id] = idValue.value;
+				} else {
+					let idValue = synthParamApply("synth-fx-type", "[none]", synth);
+					params[idValue.id] = idValue.value;
+				}
+			}
 
 			muteButton.onclick = () => {
 				synth.mute(!synth.isMuted);
