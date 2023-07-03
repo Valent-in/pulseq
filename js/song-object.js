@@ -326,6 +326,62 @@ function SongObject() {
 		return true;
 	}
 
+	this.switchPatterns = function (indexOne, indexTwo) {
+		switchElements(this.patterns, indexOne, indexTwo);
+
+		for (let i = 0; i < this.song.length; i++)
+			switchElements(this.song[i], indexOne, indexTwo);
+
+		function switchElements(array, indexO, indexT) {
+			let tmp = array[indexO] || null;
+			array[indexO] = array[indexT] || null;
+			array[indexT] = tmp;
+		}
+	}
+
+	this.movePattern = function (indexFrom, indexTo) {
+		if (indexFrom < 0 || indexFrom >= this.patterns.length) {
+			console.log("invalid pattern index: FROM " + indexFrom);
+			return;
+		}
+
+		if (indexTo < 0 || indexTo >= this.patterns.length) {
+			console.log("invalid pattern index: TO " + indexTo);
+			return;
+		}
+
+		if (indexFrom < indexTo) {
+			for (let i = indexFrom; i < indexTo; i++)
+				this.switchPatterns(i, i + 1)
+		} else {
+			for (let i = indexFrom; i > indexTo; i--)
+				this.switchPatterns(i - 1, i)
+		}
+	}
+
+	this.sortPatternsByName = function (isDescending) {
+		for (let i = 0; i < this.patterns.length; i++) {
+			let tmpIndex = i;
+			for (let j = i + 1; j < this.patterns.length; j++) {
+				if (comparePatterns(this.patterns[j], this.patterns[tmpIndex], isDescending))
+					tmpIndex = j;
+			}
+
+			this.switchPatterns(i, tmpIndex);
+		}
+
+		function comparePatterns(one, two, isDescending) {
+			// return true if one-two in order
+			if (!isDescending && (one.name <= two.name))
+				return true;
+
+			if (isDescending && (one.name >= two.name))
+				return true;
+
+			return false;
+		}
+	}
+
 	function getPatternSynthIndexes(pattern) {
 		let patternSynthIndexes = [];
 		for (let i = 0; i < pattern.patternData.length; i++) {

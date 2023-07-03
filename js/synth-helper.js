@@ -357,11 +357,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 	};
 
 	window.addEventListener("keyup", (event) => {
-		if (event.key != "Escape")
-			return;
-
-		let dialogs = document.querySelectorAll("#mixer-modal-menu");
-		if (dialogs.length > 0 && mixerIsShown)
+		if (event.key == "Escape" && mixerIsShown)
 			closeMixer();
 	});
 
