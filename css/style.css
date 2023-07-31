@@ -58,8 +58,10 @@ a {
 	box-sizing: border-box;
 }
 
-#container.fullscreen-padding {
-	padding-top: 16px;
+@media (orientation: portrait) {
+	#container.fullscreen-padding {
+		padding-top: 16px;
+	}
 }
 
 #header {
@@ -198,8 +200,10 @@ a {
 	background-color: #111;
 }
 
-.fullscreen-padding .footer {
-	padding-bottom: 16px;
+@media (orientation: portrait) {
+	.fullscreen-padding .footer {
+		padding-bottom: 16px;
+	}
 }
 
 .footer-menu {
@@ -473,8 +477,10 @@ input[type=range].range--volume {
 	background-color: #111;
 }
 
-.fullscreen-padding #synth-footer {
-	padding-bottom: 15px;
+@media (orientation: portrait) {
+	.fullscreen-padding #synth-footer {
+		padding-bottom: 15px;
+	}
 }
 
 #synth-footer-controls {
@@ -1051,6 +1057,7 @@ input[type=file]:focus + span {
 	box-sizing: border-box;
 	display: flex;
 	align-items: center;
+	cursor: pointer;
 }
 
 .pattern-list-entry.drop-hint {

@@ -16,6 +16,7 @@ function SongObject() {
 	this.currentSynthIndex = 0;
 	this.arrangeStartPoint = 0;
 	this.synthFill = [];
+	this.playableLength = 0;
 
 	this.compressorThreshold = -30;
 	this.compressorRatio = 3;
@@ -254,6 +255,7 @@ function SongObject() {
 		ptrn.colorIndex = copyFromPattern.colorIndex;
 		ptrn.patternData = JSON.parse(JSON.stringify(copyFromPattern.patternData));
 		this.patterns.push(ptrn);
+		this.setCurrentPattern(this.patterns.length - 1);
 	}
 
 	this.calculateSynthFill = function (statrPoint, endPoint) {
@@ -295,6 +297,7 @@ function SongObject() {
 			}
 		}
 
+		this.playableLength = this.calcSongLength();
 		return collisions;
 	}
 
@@ -302,8 +305,6 @@ function SongObject() {
 		let pattern = this.patterns[patternIndex];
 		let addBars = Math.ceil(pattern.length / this.barSteps) - 1;
 		let endPoint = Math.min(this.song.length - 1, position + addBars);
-
-		this.calculateSynthFill(position, endPoint);
 
 		for (let i = position; i <= endPoint; i++) {
 			if (!this.isArrangeCellFree(i, patternIndex))
@@ -328,6 +329,11 @@ function SongObject() {
 
 	this.switchPatterns = function (indexOne, indexTwo) {
 		switchElements(this.patterns, indexOne, indexTwo);
+
+		if (this.currentPatternIndex == indexOne)
+			this.setCurrentPattern(indexTwo)
+		else if (this.currentPatternIndex == indexTwo)
+			this.setCurrentPattern(indexOne)
 
 		for (let i = 0; i < this.song.length; i++)
 			switchElements(this.song[i], indexOne, indexTwo);

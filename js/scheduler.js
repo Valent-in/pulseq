@@ -113,7 +113,7 @@ function Scheduler(songObj, barCallback, stepCallback) {
 					synced = true;
 				}
 
-				performSchedulerStep(schedulerData, lSynths, time, null);
+				performSchedulerStep(schedulerData, lSynths, time, null, songObj.song.length);
 			}, "16n");
 
 			transport.bpm.value = songObj.bpm;
@@ -122,7 +122,7 @@ function Scheduler(songObj, barCallback, stepCallback) {
 		}, renderLength);
 	};
 
-	function stop() {
+	function stopScheduler() {
 		if (!isPlaying)
 			return;
 
@@ -139,7 +139,10 @@ function Scheduler(songObj, barCallback, stepCallback) {
 
 		scheduleCall(stepCallback, -1, Tone.now());
 		scheduleCall(barCallback, -1, Tone.now());
+	}
 
+	function stop() {
+		stopScheduler();
 		for (let i = 0; i < songObj.synths.length; i++)
 			songObj.synths[i].triggerRelease();
 	}
@@ -196,7 +199,7 @@ function Scheduler(songObj, barCallback, stepCallback) {
 				synced = true;
 			}
 
-			performSchedulerStep(schedulerData, songObj.synths, time, barCallback);
+			performSchedulerStep(schedulerData, songObj.synths, time, barCallback, songObj.playableLength);
 		}, "16n");
 	}
 
@@ -223,17 +226,17 @@ function Scheduler(songObj, barCallback, stepCallback) {
 					songObj.synths[i].triggerRelease(time);
 			}
 
-			performSchedulerStep(schedulerData, songObj.synths, time, barCallback);
+			performSchedulerStep(schedulerData, songObj.synths, time, barCallback, songObj.song.length);
 		}, "16n");
 	}
 
-	function performSchedulerStep(data, synths, time, realtimeBarCallback) {
+	function performSchedulerStep(data, synths, time, realtimeBarCallback, stopPoint) {
 		if (data.stepIndex % songObj.barSteps == 0) {
-			if (data.barIndex >= songObj.song.length) {
+			if (data.barIndex >= stopPoint) {
 
 				if (realtimeBarCallback) {
 					console.log("Song END");
-					stop();
+					stopScheduler();
 					if (onInnerStopCallback)
 						onInnerStopCallback();
 				}

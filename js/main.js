@@ -1,6 +1,6 @@
 "use strict"
 
-console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v0.9.7 ",
+console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v0.9.8 ",
 	"color:#1ff", "color:#f81", "color:#bbb", "background-color:#000;color:#fff");
 
 {
@@ -36,6 +36,14 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v0.9.7 ",
 			element.classList.add("current-pattern-mark");
 	}
 
+	window.g_scrollToLastPatten = function () {
+		setTimeout(() => {
+			let rows = document.querySelectorAll("#arrange-main table tr:last-child");
+			if (rows[0])
+				rows[0].scrollIntoView();
+		}, 0);
+	}
+
 	let styleForRows = document.getElementById("colored-rows-style");
 	let styleTxt = ``;
 	for (let i = 0; i < DEFAULT_PARAMS.colorSet.length; i++) {
@@ -67,7 +75,7 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v0.9.7 ",
 	arrangeUi.build();
 
 	const scheduler = new Scheduler(songObject, arrangeUi.setMarker, patternUi.setMarker);
-	const schedulerUi = new SchedulerUi(scheduler);
+	const schedulerUi = new SchedulerUi(scheduler, arrangeUi.setLoopMarkers);
 
 	menuInit(songObject, onSongChange, synthHelper.loadSynth, scheduler.renderSong);
 

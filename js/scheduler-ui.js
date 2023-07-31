@@ -1,10 +1,7 @@
-function SchedulerUi(scheduler) {
+function SchedulerUi(scheduler, setLoopMarkersCallback) {
 	let songPlayBtn = document.getElementById("button-arrange-play");
 	let patternPlayBtn = document.getElementById("button-pattern-play");
 	let barsInput = document.getElementById("input-loop-bars");
-
-	let playEndPoint = null;
-	let playStartPoint = null;
 
 	document.addEventListener("keydown", (event) => {
 		if (event.target.type == "number" || event.target.type == "text")
@@ -81,9 +78,9 @@ function SchedulerUi(scheduler) {
 		}
 
 		let startIndex = scheduler.playLoop(onForceStop, barsInLoop);
-
 		removePlayMarkers();
 		setPlayMarkers(startIndex, barsInLoop);
+
 		updateButtons(false, true);
 		hideModal("column-modal-menu");
 	};
@@ -117,28 +114,11 @@ function SchedulerUi(scheduler) {
 
 	function removePlayMarkers() {
 		songPlayBtn.classList.remove("button--play-loop");
-
-		if (playStartPoint)
-			playStartPoint.classList.remove("loop-start-point");
-
-		if (playEndPoint)
-			playEndPoint.classList.remove("loop-end-point");
-
-		playStartPoint = null;
-		playEndPoint = null;
+		setLoopMarkersCallback(-1);
 	};
 
 	function setPlayMarkers(startIndex, length) {
-		let endIndex = startIndex + length - 1;
-
 		songPlayBtn.classList.add("button--play-loop");
-
-		playStartPoint = document.getElementById("arr_col-" + startIndex + "_header");
-		if (playStartPoint)
-			playStartPoint.classList.add("loop-start-point");
-
-		playEndPoint = document.getElementById("arr_col-" + endIndex + "_header");
-		if (playEndPoint)
-			playEndPoint.classList.add("loop-end-point");
+		setLoopMarkersCallback(startIndex, length);
 	}
 }

@@ -10,6 +10,11 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 	let playbackMarkers = [];
 	let previousMarker = 0;
 
+	let loopStartPoint = null;
+	let loopEndPoint = null;
+	let loopStartIndex = -1;
+	let loopLength = 0;
+
 	let pressTimeout = null;
 	let cancelClick = false;
 
@@ -41,6 +46,7 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 			songObj.patterns[rowCount] = new Pattern(result, songObj.barSteps);
 			addRow(result);
 			showPattern(rowCount - 1);
+			g_scrollToLastPatten();
 		}, defaultName);
 	};
 
@@ -117,6 +123,35 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 		}
 	}
 
+	this.setLoopMarkers = function (startIndex, length) {
+		if (startIndex !== undefined) {
+			loopStartIndex = startIndex;
+			loopLength = length || 0;
+		}
+
+		if (loopStartIndex == -1) {
+			if (loopStartPoint) {
+				loopStartPoint.classList.remove("loop-start-point");
+				loopStartPoint = null;
+			}
+
+			if (loopEndPoint) {
+				loopEndPoint.classList.remove("loop-end-point");
+				loopEndPoint = null;
+			}
+		} else {
+			let endIndex = loopStartIndex + loopLength - 1;
+
+			loopStartPoint = document.getElementById("arr_col-" + loopStartIndex + "_header");
+			if (loopStartPoint)
+				loopStartPoint.classList.add("loop-start-point");
+
+			loopEndPoint = document.getElementById("arr_col-" + endIndex + "_header");
+			if (loopEndPoint)
+				loopEndPoint.classList.add("loop-end-point");
+		}
+	};
+
 	this.fillSongView = function () {
 		clearSongView();
 
@@ -147,8 +182,10 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 		fitGridLength();
 		markDisabledCells(0, songObj.song.length - 1);
 		g_markCurrentPattern();
+		this.setLoopMarkers();
 	}
 
+	const reorderMenu = new ReorderMenu(songObj, this.fillSongView.bind(this));
 
 	function maxPatternBars() {
 		return Math.ceil(64 / songObj.barSteps);
@@ -174,8 +211,10 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 		if (tgt.nodeName != "TD")
 			return;
 
-		if (tgt.id == "arr_corner")
+		if (tgt.id == "arr_corner") {
+			reorderMenu.showMenu();
 			return;
+		}
 
 		let idParts = tgt.id.split("_");
 		let col = Number(idParts[1].split("-")[1]);
