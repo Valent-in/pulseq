@@ -86,6 +86,7 @@ function Scheduler(songObj, barCallback, stepCallback) {
 		let schedulerData = {
 			stepIndex: 0,
 			barIndex: 0,
+			swingedStep: false,
 			queue: []
 		};
 
@@ -168,6 +169,7 @@ function Scheduler(songObj, barCallback, stepCallback) {
 	function schedulePattern() {
 		let sequenceIndex = 0;
 		let synced = false;
+		let isSwingedStep = false;
 
 		schedulerId = Tone.Transport.scheduleRepeat(function (time) {
 			if (!synced) {
@@ -175,13 +177,17 @@ function Scheduler(songObj, barCallback, stepCallback) {
 				synced = true;
 			}
 
-			playPatternStep(sequenceIndex, songObj.currentPattern, songObj.synths, time);
+			playPatternStep(sequenceIndex, songObj.currentPattern, songObj.synths, time, isSwingedStep);
+			isSwingedStep = !isSwingedStep;
 
 			scheduleCall(stepCallback, sequenceIndex, time);
 
 			sequenceIndex++;
 			if (sequenceIndex >= songObj.currentPattern.length)
 				sequenceIndex = 0;
+
+			if (sequenceIndex % songObj.barSteps == 0)
+				isSwingedStep = false;
 		}, "16n");
 	}
 
@@ -189,6 +195,7 @@ function Scheduler(songObj, barCallback, stepCallback) {
 		let schedulerData = {
 			stepIndex: 0,
 			barIndex: songObj.arrangeStartPoint,
+			swingedStep: false,
 			queue: []
 		};
 		let synced = false;
@@ -208,6 +215,7 @@ function Scheduler(songObj, barCallback, stepCallback) {
 		let schedulerData = {
 			stepIndex: 0,
 			barIndex: startPoint,
+			swingedStep: false,
 			queue: []
 		};
 		let synced = false;
@@ -253,6 +261,7 @@ function Scheduler(songObj, barCallback, stepCallback) {
 			}
 
 			data.barIndex++;
+			data.swingedStep = false;
 		}
 
 		for (let i = 0; i < data.queue.length; i++) {
@@ -260,7 +269,7 @@ function Scheduler(songObj, barCallback, stepCallback) {
 			let pind = data.queue[i].pattern;
 			let pattern = songObj.patterns[pind];
 
-			playPatternStep(stepIndex, pattern, synths, time);
+			playPatternStep(stepIndex, pattern, synths, time, data.swingedStep);
 			data.queue[i].index++;
 		}
 
@@ -269,10 +278,11 @@ function Scheduler(songObj, barCallback, stepCallback) {
 				data.queue.splice(i, 1);
 		}
 
-		data.stepIndex++
+		data.stepIndex++;
+		data.swingedStep = !data.swingedStep;
 	}
 
-	function playPatternStep(stepIndex, pattern, synths, time) {
+	function playPatternStep(stepIndex, pattern, synths, time, isSwingedStep) {
 		for (let j = 0; j < pattern.patternData.length; j++) {
 			let notes = pattern.patternData[j].notes;
 			let lengths = pattern.patternData[j].lengths;
@@ -283,15 +293,20 @@ function Scheduler(songObj, barCallback, stepCallback) {
 			if (note && synthIndex !== null) {
 				let synth = synths[synthIndex];
 
+				let attackTime = time;
 				let lenCoef = lengths[stepIndex] / 100;
 				let stepLen = (60 / songObj.bpm) / 4 - 0.001;
+				let stopTime = time + lenCoef * stepLen;
+
+				if (songObj.swing && isSwingedStep) {
+					attackTime = time + stepLen * songObj.swing / 200;
+					stopTime = Math.min(attackTime + lenCoef * stepLen, time + stepLen);
+				}
 
 				if (stepIndex > 0 && lengths[stepIndex - 1] >= 100)
 					synth.glideTo(note, volume, time, stepLen)
 				else
-					synth.triggerAttack(note, volume, time, stepLen);
-
-				let stopTime = time + lenCoef * stepLen;
+					synth.triggerAttack(note, volume, attackTime, stepLen);
 
 				if (lengths[stepIndex] < 100 || stepIndex == pattern.length - 1 || !notes[stepIndex + 1])
 					synth.triggerRelease(stopTime);

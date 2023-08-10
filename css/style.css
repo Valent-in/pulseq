@@ -762,12 +762,15 @@ input[type=range].range--volume {
 
 #button-synth-select {
 	width: 60%;
+	max-width: 40vw;
 	box-sizing: border-box;
 	padding-right: 1rem;
 	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' height='70' width='120'><path d='M 10,10 60,60 110,10' style='fill:none;stroke:rgb(150,150,150);stroke-width:20;stroke-linecap:round; stroke-linejoin:round'/></svg>");
 	background-position: center right 0.5em;
 	background-repeat: no-repeat;
 	background-size: auto 25%;
+	overflow-x: hidden;
+	text-overflow: ellipsis;
 }
 
 #button-color-select {
@@ -1023,19 +1026,23 @@ input[type=file]:focus + span {
 	user-select: none;
 }
 
-#compressor-table {
+#additional-table {
 	width: 360px;
 	max-width: 85vw;
 }
 
-#compressor-table td:first-child {
+#additional-table td:first-child {
 	text-align: right;
 }
 
-#compressor-values-cell {
+.values-cell {
 	width: 100%;
 	color: #555;
 	text-align: right;
+}
+
+.dimmed-cell {
+	color: #555;
 }
 
 #pattern-list-container {

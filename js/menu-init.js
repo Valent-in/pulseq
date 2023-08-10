@@ -201,16 +201,18 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			}
 
 			songObj.setBarLength(Number(stepsValue));
+			songObj.swing = 0;
 			onSongChangeCallback(false);
 			showToast("Steps in bar: " + stepsValue);
 		}
 	};
 
-	document.getElementById("button-compressor-menu-open").onclick = () => {
-		showModal("compressor-modal-menu");
+	document.getElementById("button-additional-menu-open").onclick = () => {
+		showModal("additional-modal-menu");
 		document.getElementById("range-compressor-threshold").value = -songObj.compressorThreshold;
 		document.getElementById("range-compressor-ratio").value = songObj.compressorRatio;
-		fillCompressorValues();
+		document.getElementById("range-swing-amount").value = songObj.swing;
+		fillAdditionalValues();
 	};
 
 	document.getElementById("link-song-download").onclick = (event) => {
@@ -297,14 +299,14 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	};
 
 	/*
-	 * Compressor  modal menu
+	 * Modal menu for additional song parameters
 	 */
 	let compressorThresholdInput = document.getElementById("range-compressor-threshold");
 	compressorThresholdInput.onchange = (event) => {
 		let value = -event.target.value;
 		songObj.compressorThreshold = value;
 		songObj.compressor.threshold.value = value;
-		fillCompressorValues();
+		fillAdditionalValues();
 	};
 
 	let compressorRatioInput = document.getElementById("range-compressor-ratio");
@@ -312,10 +314,17 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		let value = +event.target.value;
 		songObj.compressorRatio = value;
 		songObj.compressor.ratio.value = value;
-		fillCompressorValues();
+		fillAdditionalValues();
 	};
 
-	document.getElementById("button-reset-compressor").onclick = () => {
+	let swingAmountInput = document.getElementById("range-swing-amount");
+	swingAmountInput.onchange = (event) => {
+		let value = +event.target.value;
+		songObj.swing = value;
+		fillAdditionalValues();
+	};
+
+	document.getElementById("button-reset-additional").onclick = () => {
 		songObj.compressorThreshold = -30;
 		songObj.compressor.threshold.value = -30;
 		compressorThresholdInput.value = +30;
@@ -324,11 +333,14 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		songObj.compressor.ratio.value = 3;
 		compressorRatioInput.value = 3;
 
-		fillCompressorValues();
+		songObj.swing = 0;
+		swingAmountInput.value = 0;
+
+		fillAdditionalValues();
 	}
 
-	document.getElementById("button-compressor-menu-close").onclick = () => {
-		hideModal("compressor-modal-menu");
+	document.getElementById("button-additional-menu-close").onclick = () => {
+		hideModal("additional-modal-menu");
 	}
 
 	/*
@@ -696,11 +708,12 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		songTitle.appendChild(document.createTextNode(songObj.title || "[untitled]"));
 	}
 
-	function fillCompressorValues() {
+	function fillAdditionalValues() {
 		let cell = document.getElementById("compressor-values-cell");
-		cell.innerHTML = "";
-		let text = "T:" + songObj.compressorThreshold + "dB / R:" + songObj.compressorRatio;
-		cell.appendChild(document.createTextNode(text));
+		cell.textContent = "T:" + songObj.compressorThreshold + "dB / R:" + songObj.compressorRatio;
+
+		cell = document.getElementById("swing-value-cell");
+		cell.textContent = songObj.swing + "%";
 	}
 
 	function importSong(songStr) {
@@ -726,6 +739,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 
 		songObj.bpm = expObj.bpm || 120;
 		Tone.Transport.bpm.value = songObj.bpm;
+		songObj.swing = expObj.swing || 0;
 
 		songObj.barSteps = expObj.barSteps || 16;
 
@@ -770,7 +784,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	function exportSong() {
 		let expObj = {};
 
-		expObj.songFormatVersion = "1.5";
+		expObj.songFormatVersion = "1.6";
 		expObj.synthParams = songObj.synthParams;
 		expObj.synthNames = songObj.synthNames;
 		expObj.song = songObj.song;
@@ -783,6 +797,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		expObj.bpm = songObj.bpm;
 		expObj.barSteps = songObj.barSteps;
 		expObj.title = songObj.title;
+		expObj.swing = songObj.swing;
 
 		for (let i = 0; i < songObj.patterns.length; i++) {
 			expObj.patterns.push(songObj.patterns[i].patternData);

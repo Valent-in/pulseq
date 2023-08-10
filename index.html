@@ -572,10 +572,10 @@
 					</tr>
 					<tr>
 						<td>
-							Compressor
+							Additional
 						</td>
 						<td>
-							<button id="button-compressor-menu-open">Edit</button>
+							<button id="button-additional-menu-open">Edit</button>
 						</td>
 					</tr>
 					<tr>
@@ -624,18 +624,36 @@
 			</div>
 		</div>
 
-		<div id="compressor-modal-menu" class="modal-container nodisplay">
+		<div id="additional-modal-menu" class="modal-container nodisplay">
 			<div class="modal-box">
-				<table id="compressor-table">
+				<table id="additional-table">
 					<tr>
 						<td>
-							Compressor
+							Swing
 						</td>
-						<td id="compressor-values-cell">
+						<td id="swing-value-cell" class="values-cell">
+						</td>
+					</tr>
+					<tr>
+						<td></td>
+						<td>
+							<input id="range-swing-amount" type="range" min=0 max=100 step=5 class="range--4-marks">
 						</td>
 					</tr>
 					<tr>
 						<td>
+							<!--spacer-->
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Compressor
+						</td>
+						<td id="compressor-values-cell" class="values-cell">
+						</td>
+					</tr>
+					<tr>
+						<td class="dimmed-cell">
 							Threshold
 						</td>
 						<td>
@@ -644,7 +662,7 @@
 						</td>
 					</tr>
 					<tr>
-						<td>
+						<td class="dimmed-cell">
 							Ratio
 						</td>
 						<td>
@@ -654,8 +672,8 @@
 				</table>
 
 				<div class="modal-box-block modal-box-footer">
-					<button id="button-reset-compressor" class="button--small">Reset</button>
-					<button id="button-compressor-menu-close" class="button-modal-bottom">Close</button>
+					<button id="button-reset-additional" class="button--small">Reset</button>
+					<button id="button-additional-menu-close" class="button-modal-bottom">Close</button>
 				</div>
 			</div>
 		</div>

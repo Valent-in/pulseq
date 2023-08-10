@@ -10,6 +10,7 @@ function SongObject() {
 	this.title = "";
 	this.bpm = 120;
 	this.barSteps = 16;
+	this.swing = 0;
 
 	this.currentPattern = null;
 	this.currentPatternIndex = 0;
@@ -223,10 +224,12 @@ function SongObject() {
 		this.barSteps = Math.floor(steps);
 		this.patterns = [];
 		this.patterns.push(new Pattern("ptrn1", this.barSteps));
-		this.setCurrentPattern(0);
 
 		this.fillSong();
 		this.calculateSynthFill();
+
+		this.setCurrentPattern(0);
+		this.setCurrentLayerSynthIndex(0);
 	}
 
 	this.calculateDuration = function (bars) {
