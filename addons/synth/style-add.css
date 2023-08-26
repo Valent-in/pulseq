@@ -1,0 +1,71 @@
+#piano-container {
+	height: initial;
+	display: block;
+	min-width: 600px;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+#synth-footer-controls > select,
+#synth-footer-controls > a,
+#synth-footer-controls > #button-import-synth {
+	float: right;
+	margin: 2px;
+}
+
+.key {
+	width: 32px;
+	height: 32px;
+	border: 2px solid gray;
+	float: left;
+	margin: 2px;
+	padding: 2px;
+	border-radius: 4px;
+	background-color: lightgray;
+	overflow: hidden;
+}
+
+.key span {
+	color: #365;
+	pointer-events: none;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+.key.black {
+	background-color: black;
+}
+
+.key.dub {
+	opacity: 0.35;
+}
+
+.row {
+	overflow: hidden;
+}
+
+.row:nth-child(1) {
+	opacity: 0.35;
+}
+
+.row:nth-child(2) {
+	margin-left: 16px;
+}
+
+.row:nth-child(3) {
+	margin-left: 32px;
+}
+
+.row:nth-child(4) {
+	margin-left: 48px;
+	opacity: 0.35;
+}
+
+.piano--shrink .row:nth-child(1),
+.piano--shrink .row:nth-child(4) {
+	display: none;
+}
+
+.pressed {
+	box-shadow: inset 0 0 0 3px red;
+}
