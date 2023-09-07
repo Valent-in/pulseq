@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>MIDI converter - PulseQueue</title>
+
+	<link rel="apple-touch-icon" type="image/png" href="../img/icon.png">
+	<link rel="icon" type="image/png" href="../img/icon.png">
+	<link rel="icon" type="image/svg+xml" href="../img/icon.svg">
+
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width">
+	<meta name="theme-color" content="#111111">
+	<meta name="description" content="Convert JSON to MIDI">
+
+	<style>
+		* {
+			padding: 0;
+			margin: 0;
+			color: #aaa;
+			font-family: sans-serif;
+		}
+
+		body {
+			background-color: #111;
+		}
+
+		#container {
+			margin: 20px;
+		}
+
+		#convert-options {
+			margin: 0 auto;
+			display: none;
+		}
+
+		br {
+			display: block;
+			margin: 3px;
+		}
+	</style>
+
+	<link rel="stylesheet" href="../css/elements.css">
+	<link rel="stylesheet" href="../css/style.css">
+
+	<script defer src="../js/pattern.js"></script>
+	<script defer src="../js/song-object.js"></script>
+
+	<script defer src="midi/midiwriter.js"></script>
+	<script defer src="midi/converter.js"></script>
+	<script defer src="midi/init.js"></script>
+</head>
+
+
+<body>
+
+	<div id="container">
+		<div>
+			<span class="app-title-pulseq">PulseQ</span>
+			<span class="app-title-ueue">ueue</span>
+			<span style="padding-left:8px">convert to MIDI</span>
+		</div>
+
+		<div class="startup-menu-entry">
+			<input type="file" accept=".json" id="input-import-track" class="js-request-focus">
+			<span>Open project (JSON)</span>
+			<div class="dragshade"></div>
+		</div>
+
+		<div id="convert-options">
+			<span id="song-title" class="caption-text"></span>
+			<br>
+
+			<input type="checkbox" id="export-glide" checked>
+			<label for="export-glide">Note overlap for glide&sol;legato</label>
+			<br>
+
+			<input type="checkbox" id="export-expand">
+			<label for="export-expand">Expand short notes to 16th</label>
+			<br>
+
+			<span>Velocity curve</span>
+			<select id="velocity-scale">
+				<option>Exponential</option>
+				<option>Linear</option>
+				<option>Flat (127)</option>
+			</select>
+			<br>
+
+			<div style="padding-top:24px;font-weight:bold;overflow:hidden">
+				<a id="midi-download" style="float:right" href="">Download MIDI</a>
+			</div>
+		</div>
+	</div>
+
+</body>
+
+</html>
