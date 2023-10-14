@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 {
 	// Close dialogs on Escape key

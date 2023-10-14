@@ -1,7 +1,7 @@
-"use strict"
+"use strict";
 
 function PatternUi(songObj, assignSynthCallback) {
-	const maxSequencerLength = 64;
+	const maxSequencerLength = DEFAULT_PARAMS.maxPatternSteps;
 	let sequencerLength = maxSequencerLength;
 
 	let noteArr = DEFAULT_PARAMS.noteSet.slice().reverse();
@@ -26,6 +26,7 @@ function PatternUi(songObj, assignSynthCallback) {
 	let previousMarker = 0;
 
 	let isSidekeyPalying = false;
+	let lastSideKey;
 
 	let patternName = document.getElementById("pattern-name-area");
 	let pattern = document.getElementById("pattern-main");
@@ -37,15 +38,21 @@ function PatternUi(songObj, assignSynthCallback) {
 	table.oncontextmenu = () => false;
 
 	table.addEventListener("pointerdown", (e) => {
-		if (e.target.nodeName != "TD" || e.which == 2)
+		if (e.target.nodeName != "TD" || e.button == 1)
 			return;
 
 		if (!e.target.id.includes("_row-")) {
 			if (e.target.dataset.note) {
 				let synth = getSynthFromLayer();
-				if (synth !== null) {
-					synth.triggerAttack(e.target.dataset.note, 0, Tone.now(), 0.5);
+				if (synth) {
+					if (lastSideKey)
+						lastSideKey.classList.remove("key--pressed");
+
+					let stepLen = (60 / songObj.bpm) / 4;
+					synth.triggerAttack(e.target.dataset.note, 0, Tone.now(), stepLen);
 					isSidekeyPalying = true;
+					lastSideKey = e.target;
+					lastSideKey.classList.add("key--pressed");
 				}
 			}
 
@@ -71,7 +78,7 @@ function PatternUi(songObj, assignSynthCallback) {
 	});
 
 	table.addEventListener("click", (e) => {
-		if (e.target.nodeName != "TD" || !e.target.id.includes("_row-") || e.which == 2)
+		if (e.target.nodeName != "TD" || !e.target.id.includes("_row-") || e.button == 1)
 			return;
 
 		if (!cancelClick)
@@ -84,7 +91,7 @@ function PatternUi(songObj, assignSynthCallback) {
 		if (!pointerPress)
 			return
 
-		if (e.target.nodeName != "TD" || !e.target.id.includes("_row-") || e.which == 2)
+		if (e.target.nodeName != "TD" || !e.target.id.includes("_row-") || e.button == 1)
 			return;
 
 		clearTimeout(pressTimeout);
@@ -123,6 +130,11 @@ function PatternUi(songObj, assignSynthCallback) {
 			let synth = getSynthFromLayer();
 			if (synth)
 				synth.triggerRelease();
+
+			if (lastSideKey) {
+				lastSideKey.classList.remove("key--pressed");
+				lastSideKey = null;
+			}
 		}
 	}
 
@@ -233,11 +245,13 @@ function PatternUi(songObj, assignSynthCallback) {
 				if (i > 0 && j == 0) {
 					td.dataset.note = noteArr[i - 1];
 
-					if (noteArr[i - 1].includes("b")) {
+					if (noteArr[i - 1] == "C4")
+						td.classList.add("c4-key-mark");
+
+					if (noteArr[i - 1].includes("b"))
 						td.classList.add("pattern-black-key");
-					} else {
+					else if (i > 1 && i < DEFAULT_PARAMS.noteSet.length)
 						td.appendChild(document.createTextNode(noteArr[i - 1]));
-					}
 				}
 
 				if (i > 0 && j > 0) {
@@ -304,7 +318,7 @@ function PatternUi(songObj, assignSynthCallback) {
 		if (volumeMod < minVelocity)
 			volumeMod = 0;
 
-		let shadow = "inset " + Math.round(fullWidth * volumeMod / 100) + "px 0 0 0 #111";
+		let shadow = "inset " + Math.round(fullWidth * volumeMod / 100 - 1) + "px 0 0 0 #111";
 		event.target.style.boxShadow = shadow;
 	});
 

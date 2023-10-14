@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 	let that = this;
@@ -96,7 +96,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		});
 	};
 
-	let synthPresetSelect = document.getElementById("selsct-synth-preset");
+	let synthPresetSelect = document.getElementById("select-synth-preset");
 	synthPresetSelect.onchange = () => {
 		let index = synthPresetSelect.selectedIndex - 1;
 		let value = synthPresetSelect.value;
@@ -217,11 +217,15 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 	}
 
 	document.getElementById("link-synth-export").onclick = (e) => {
+		let lnk = e.target;
+		if (lnk.protocol == "blob:")
+			URL.revokeObjectURL(lnk.href);
+
 		let expString = JSON.stringify(songObj.synthParams[selectedSynthIndex], null, 1);
 		let file = new Blob([expString], { type: 'text/json' });
-		e.target.href = URL.createObjectURL(file);
+		lnk.href = URL.createObjectURL(file);
 		let name = songObj.synthNames[selectedSynthIndex] || "synth";
-		e.target.download = name + ".synth.json";
+		lnk.download = name + ".synth.json";
 	};
 
 
@@ -272,6 +276,9 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		}
 
 		g_markCurrentSynth();
+
+		let listInfo = document.getElementById("synth-list-caption-area");
+		listInfo.textContent = "Instruments (" + songObj.synths.length + ")";
 
 		function createSynthEntry(name, isMuted) {
 			let entry = document.createElement("DIV");

@@ -46,6 +46,7 @@
 
 	<script defer src="lib/Tone.js"></script>
 	<script defer src="lib/bufferToWave.js"></script>
+	<script defer src="lib/midi-writer.js"></script>
 
 	<script defer src="js/defaults.js"></script>
 	<script defer src="js/alerts.js"></script>
@@ -61,6 +62,7 @@
 	<script defer src="js/pattern-ui.js"></script>
 	<script defer src="js/arrange-ui.js"></script>
 
+	<script defer src="js/mid-synth.js"></script>
 	<script defer src="js/scheduler.js"></script>
 	<script defer src="js/scheduler-ui.js"></script>
 
@@ -73,7 +75,7 @@
 
 <body>
 	<div id="container">
-		<div id="header" class="focus-lock-area">
+		<div id="header" class="focus-lock-area notranslate" translate="no">
 			<div id="header-tabs">
 				<div id="arrange-tab" class="js-tab tab tab--active">
 					Arrange
@@ -104,12 +106,12 @@
 				<div id="arrange-container">
 					<div class="notranslate" translate="no" id="arrange-main"></div>
 				</div>
-				<div id="arrange-footer" class="footer">
+				<div id="arrange-footer" class="footer notranslate" translate="no">
 					<button id="button-add-pattern">+</button>
 					<div class="footer-menu">
 						<button id="button-arrange-play" class="button--play">L</button>
 						<button id="button-arrange-menu-open">•••</button>
-						<div class="notranslate" translate="no" id="song-title-area">
+						<div id="song-title-area">
 							[untitled]
 						</div>
 					</div>
@@ -122,20 +124,20 @@
 					</div>
 				</div>
 
-				<div id="pattern-footer" class="footer">
+				<div id="pattern-footer" class="footer notranslate" translate="no">
 					<button id="button-add-pattern-layer">+</button>
 
 					<div class="footer-menu">
 						<button id="button-pattern-play" class="button--play">P</button>
 						<button id="button-pattern-menu-open">•••</button>
-						<div class="notranslate" translate="no" id="pattern-name-area"></div>
+						<div id="pattern-name-area"></div>
 					</div>
 				</div>
 			</div>
 
 			<div id="synth-view" class="js-view-container view-container view--hidden focus-lock-area">
 				<div id="synth-main">
-					<div class="bg-oscillator">
+					<div class="bg-oscillator border-osc">
 						<span class="caption-text">Oscillator 1</span>
 						<select class="notranslate" translate="no" id="synth-osc1-type" data-block="js-osc1-block">
 							<option>[none]</option>
@@ -159,7 +161,7 @@
 							<input type="range" id="synth-osc1-level" min=0 max=1 step=0.01 class="range--4-marks">
 						</div>
 					</div>
-					<div class="bg-oscillator">
+					<div class="bg-oscillator border-osc">
 						<span class="caption-text">Oscillator 2</span>
 						<select class="notranslate" translate="no" id="synth-osc2-type" data-block="js-osc2-block">
 							<option>[none]</option>
@@ -183,7 +185,7 @@
 							<input type="range" id="synth-osc2-level" min=0 max=1 step=0.01 class="range--4-marks">
 						</div>
 					</div>
-					<div class="bg-oscillator">
+					<div class="bg-oscillator border-osc-third">
 						<span class="caption-text">Oscillator 3</span>
 						<select class="notranslate" translate="no" id="synth-osc3-type" data-block="js-osc3-block">
 							<option>[none]</option>
@@ -207,7 +209,7 @@
 							<input type="range" id="synth-osc3-level" min=0 max=1 step=0.01 class="range--4-marks">
 						</div>
 					</div>
-					<div>
+					<div class="border-envelope">
 						<select class="notranslate" translate="no" id="synth-envelope-type">
 							<option>exponential</option>
 							<option>linear</option>
@@ -239,7 +241,7 @@
 						<br>
 						<input type="range" id="synth-pan" min=-1 max=1 step=0.01 class="range--10-marks">
 					</div>
-					<div class="bg-filter">
+					<div class="bg-filter border-filter">
 						<span class="caption-text">Filter</span>
 						<select class="notranslate" translate="no" id="synth-filter-type" data-block="js-filter-block">
 							<option>[none]</option>
@@ -284,7 +286,7 @@
 						Modulation
 					</div>
 
-					<div class="bg-modulation-osc">
+					<div class="bg-modulation-osc border-osc-mod">
 						<span class="caption-text">OSC 1 mod. input</span>
 						<select class="notranslate" translate="no" id="synth-osc1-mod-input"
 							data-block="js-modosc1-block">
@@ -302,7 +304,7 @@
 							<input type="range" id="synth-osc1-mod-value" min=-6 max=6 step=0.02 class="range--8-marks">
 						</div>
 					</div>
-					<div class="bg-modulation-osc">
+					<div class="bg-modulation-osc border-osc-mod">
 						<span class="caption-text">OSC 2 mod. input</span>
 						<select class="notranslate" translate="no" id="synth-osc2-mod-input"
 							data-block="js-modosc2-block">
@@ -319,7 +321,7 @@
 							<input type="range" id="synth-osc2-mod-value" min=-6 max=6 step=0.02 class="range--8-marks">
 						</div>
 					</div>
-					<div class="bg-modulation-filt">
+					<div class="bg-modulation-filt border-filter-mod">
 						<span class="caption-text">Filter mod. input</span>
 						<select class="notranslate" translate="no" id="synth-filter-mod-input"
 							data-block="js-modfilt-block">
@@ -335,7 +337,7 @@
 								class="range--10-marks">
 						</div>
 					</div>
-					<div class="bg-modulation-amp">
+					<div class="bg-modulation-amp border-amp-mod">
 						<span class="caption-text">AMP mod. input</span>
 						<select class="notranslate" translate="no" id="synth-amplifier-mod-input"
 							data-block="js-modamp-block">
@@ -384,7 +386,7 @@
 							<input type="range" id="synth-lfo2-frequency" min=0 max=12 step=0.01 class="range--4-marks">
 						</div>
 					</div>
-					<div class="bg-adsr">
+					<div class="bg-adsr border-mod-envelope">
 						<select class="notranslate" translate="no" id="synth-mod-envelope-type"
 							data-block="js-modenv-block">
 							<option>[none]</option>
@@ -470,7 +472,7 @@
 				<div id="synth-list-footer" class="footer">
 					<button id="button-add-synth">+</button>
 					<button id="button-mixer-menu-open">Mix</button>
-					<div id="synth-list-caption-area">Synth List</div>
+					<div id="synth-list-caption-area"></div>
 				</div>
 			</div>
 
@@ -478,7 +480,7 @@
 
 		<div id="startup-modal-menu" class="modal-container js-noskip">
 			<div class="modal-box" id="startup-menu-box">
-				<div class="modal-box-block">
+				<div class="modal-box-block notranslate" translate="no">
 					<span class="app-title-pulseq">PulseQ</span>
 					<span class="app-title-ueue">ueue</span>
 					<div id="app-icons">
@@ -506,7 +508,7 @@
 
 		<div id="demo-modal-menu" class="modal-container nodisplay">
 			<div class="modal-box">
-				<div class="modal-box-block" id="demo-list-container"></div>
+				<div class="modal-box-block notranslate" translate="no" id="demo-list-container"></div>
 
 				<div class="modal-box-block modal-box-footer">
 					<button id="button-demo-menu-close" class="button-modal-bottom">Close</button>
@@ -516,7 +518,7 @@
 
 		<div id="settings-modal-menu" class="modal-container nodisplay">
 			<div class="modal-box">
-				<div class="modal-box-block">
+				<div class="modal-box-block notranslate" translate="no">
 					<span class="app-title-pulseq">PulseQ</span>
 					<span class="app-title-ueue">ueue</span>
 					<span style="margin-left:12px;color:#555;">music creation app</span>
@@ -595,6 +597,7 @@
 
 				<div class="modal-box-block modal-box-footer">
 					<button id="button-export-menu-open">Export WAV</button>
+					<button id="button-midi-menu-open">MIDI</button>
 					<button id="button-arrange-menu-close" class="button-modal-bottom">Close</button>
 				</div>
 			</div>
@@ -620,6 +623,37 @@
 				</div>
 				<div class="modal-box-block modal-box-footer" id="export-menu-close-container">
 					<button id="button-export-menu-close" class="button-modal-bottom">Close</button>
+				</div>
+			</div>
+		</div>
+
+		<div id="midi-modal-menu" class="modal-container nodisplay">
+			<div class="modal-box">
+				<div class="modal-box-block">
+					<div>
+						<a id="link-midi-download" href="">Download MIDI</a>
+					</div>
+				</div>
+				<div class="modal-box-block">
+					<span>Velocity curve</span>
+					<select id="select-velocity-scale" autocomplete="off">
+						<option>Exponential</option>
+						<option>Linear</option>
+						<option>Flat (127)</option>
+					</select>
+				</div>
+				<div class="modal-box-block">
+					<input type="checkbox" id="input-export-glide" autocomplete="off" checked>
+					<label for="input-export-glide">Note overlap for glide&sol;legato</label>
+				</div>
+				<div class="modal-box-block">
+					<div>
+						<input type="checkbox" id="input-export-expand" autocomplete="off">
+						<label for="input-export-expand">Expand short notes to 16th</label>
+					</div>
+				</div>
+				<div class="modal-box-block modal-box-footer" id="export-menu-close-container">
+					<button id="button-midi-menu-close" class="button-modal-bottom">Close</button>
 				</div>
 			</div>
 		</div>
@@ -700,7 +734,7 @@
 		</div>
 
 		<div id="pattern-reorder-modal-menu" class="modal-container nodisplay">
-			<div class="modal-box scrollable-modal">
+			<div class="modal-box scrollable-modal notranslate" translate="no">
 				<div class="modal-box-block" id="pattern-list-container">
 				</div>
 				<div class="modal-box-block modal-box-footer">
@@ -728,7 +762,7 @@
 							Synth&sol;Layer
 						</td>
 						<td>
-							<button id="button-synth-select">[none]</button>
+							<button id="button-synth-select" class="notranslate" translate="no">[none]</button>
 							<button id="button-delete-layer">Delete</button>
 						</td>
 					</tr>
@@ -748,7 +782,8 @@
 							Color
 						</td>
 						<td>
-							<button class="button--shadowed" id="button-color-select">color</button>
+							<button class="button--shadowed notranslate" translate="no"
+								id="button-color-select">color</button>
 						</td>
 					</tr>
 				</table>
@@ -770,7 +805,7 @@
 					<div>
 						<span>Select Instrument</span>
 					</div>
-					<div id="menu-synth-list-container"></div>
+					<div id="menu-synth-list-container" class="notranslate" translate="no"></div>
 				</div>
 				<div class="modal-box-block modal-box-footer">
 					<button id="button-synth-select-close" class="button-modal-bottom">Cancel</button>
@@ -783,7 +818,7 @@
 				<div class="modal-box-block">
 					Select pattern color
 				</div>
-				<div class="modal-box-block" id="color-list-container">
+				<div class="modal-box-block notranslate" translate="no" id="color-list-container">
 				</div>
 				<div class="modal-box-block modal-box-footer">
 					<button id="button-color-menu-close" class="button-modal-bottom">Close</button>
@@ -806,7 +841,8 @@
 					<span class="dim-text">&percnt;</span>
 				</div>
 				<div class="modal-box-block modal-box-footer">
-					<button id="button-apply-fade" class="button-modal-bottom js-request-focus">OK</button>
+					<button id="button-apply-fade" class="button-modal-bottom js-request-focus notranslate"
+						translate="no">OK</button>
 					<button id="button-fade-menu-close" class="button-modal-bottom">Cancel</button>
 				</div>
 			</div>
@@ -814,16 +850,16 @@
 
 		<div id="synth-modal-menu" class="modal-container nodisplay">
 			<div class="modal-box">
-				<div class="modal-box-block">
+				<div id="synth-name-container" class="modal-box-block">
 					<span>Synth name</span>
 					<input type="text" id="input-synth-name">
 				</div>
 				<div class="modal-box-block">
-					<select id="selsct-synth-preset">
-						<option disabled hidden>Preset</option>
-					</select>
 					<button id="button-copy-synth">Copy Synth</button>
 					<button id="button-delete-synth">Delete Synth</button>
+					<select id="select-synth-preset" class="notranslate" translate="no">
+						<option disabled hidden>Preset</option>
+					</select>
 				</div>
 				<div class="modal-box-block">
 					<div id="button-import-synth" class="button">
@@ -841,7 +877,7 @@
 
 		<div id="mixer-modal-menu" class="modal-container nodisplay">
 			<div class="modal-box scrollable-modal">
-				<div class="modal-box-block" id="mixer-list-container">
+				<div class="modal-box-block notranslate" translate="no" id="mixer-list-container">
 				</div>
 				<div class="modal-box-block modal-box-footer">
 					<div class="div-mute-controls-modal">
@@ -861,7 +897,8 @@
 					<input type="text" id="input-modal-alert" class="js-request-focus">
 				</div>
 				<div class="modal-box-block modal-box-footer">
-					<button id="button-alert-ok" class="button-modal-bottom js-request-focus">OK</button>
+					<button id="button-alert-ok" class="button-modal-bottom js-request-focus notranslate"
+						translate="no">OK</button>
 					<button id="button-alert-cancel" class="button-modal-bottom">Cancel</button>
 				</div>
 			</div>

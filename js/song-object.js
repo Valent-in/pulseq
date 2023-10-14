@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 function SongObject() {
 	this.song = [];
@@ -26,7 +26,7 @@ function SongObject() {
 
 	this.fillSong = function () {
 		this.song = [];
-		for (let i = 0; i < 32; i++)
+		for (let i = 0; i < DEFAULT_PARAMS.minSongBars; i++)
 			this.song.push([]);
 	}
 
@@ -175,7 +175,7 @@ function SongObject() {
 	}
 
 	this.calcSongLength = function () {
-		const maxBarsPerPattern = Math.ceil(64 / this.barSteps);
+		const maxBarsPerPattern = Math.ceil(DEFAULT_PARAMS.maxPatternSteps / this.barSteps);
 		let maxLen = 0;
 
 		for (let i = this.song.length - 1; i >= 0; i--) {
@@ -189,7 +189,6 @@ function SongObject() {
 
 			if (maxPatternLen != 0) {
 				maxLen = Math.max(maxLen, i + Math.ceil(maxPatternLen / this.barSteps));
-				maxPatternLen = 0;
 			}
 
 			if (i <= maxLen - maxBarsPerPattern) {

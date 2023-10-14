@@ -1,40 +1,213 @@
-"use strict"
+"use strict";
 
-function SynthUi() {
+function SynthUi(songObj) {
+	const rowKeys = ["KeyQ", "KeyW", "KeyE", "KeyR", "KeyT", "KeyY", "KeyU", "KeyI", "KeyO", "KeyP", "BracketLeft", "BracketRight", "Backslash",
+		"KeyA", "KeyS", "KeyD", "KeyF", "KeyG", "KeyH", "KeyJ", "KeyK", "KeyL", "Semicolon", "Quote"];
+	const rowNotes = ["F3", "G3", "A3", "B3", "Db4", "Eb4", "F4", "G4", "A4", "B4", "Db5", "Eb5", "E5",
+		"Gb3", "Ab3", "Bb3", "C4", "D4", "E4", "Gb4", "Ab4", "Bb4", "C5", "D5"];
+	const rowSymbols = ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]", "\\",
+		"A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'"];
+
+	let rowDomKeys = new Array(rowNotes.length);
+	let lastDomKey;
+	let lastKey = null;
+	let showLetters = false;
+
+	let pianoScroll = 260;
+	let pianoOuter = document.getElementById("piano-container-outer");
 	let pianoContainer = document.getElementById("piano-container");
 	pianoContainer.oncontextmenu = () => false;
 
-	document.getElementById("button-piano-show").onclick = () => {
-		pianoContainer.classList.toggle("piano--hidden");
+	let btnShow = document.getElementById("button-piano-show");
+	btnShow.onclick = () => {
+		if (pianoContainer.classList.contains("piano--hidden")) {
+			pianoContainer.classList.remove("piano--hidden");
+			pianoContainer.classList.remove("show-letters");
+			pianoOuter.classList.remove("piano--scrolllock");
+			pianoOuter.scroll(pianoScroll, 0);
+			showLetters = false;
+		} else {
+			let notScrollable = pianoContainer.offsetWidth < document.body.clientWidth;
+			let noTouchInput = !("ontouchstart" in window);
+			if (pianoOuter.classList.contains("piano--scrolllock") || notScrollable || noTouchInput) {
+				pianoScroll = pianoOuter.scrollLeft;
+				pianoContainer.classList.add("piano--hidden");
+				btnShow.classList.remove("button--highlight-yellow");
+			} else {
+				pianoOuter.classList.add("piano--scrolllock");
+				btnShow.classList.add("button--highlight-yellow");
+				showToast("Scroll Lock");
+			}
+		}
 	}
+
+	let lastNote = "";
+	let isPlaying = false;
+	let pianoTouched = false;
+
+	const upperRow = document.createElement("DIV");
+	const lowerRow = document.createElement("DIV");
+
+	const playSynth = (note, newDomKey) => {
+		let stepLen = (60 / songObj.bpm) / 4;
+
+		if (isPlaying)
+			this.currentSynth.glideTo(note, 0, Tone.now(), stepLen);
+		else
+			this.currentSynth.triggerAttack(note, 0, Tone.now(), stepLen);
+
+		isPlaying = true;
+		lastNote = note;
+
+		lastDomKey.classList.remove("key--pressed");
+		lastDomKey = newDomKey;
+		lastDomKey.classList.add("key--pressed");
+	}
+
+	const stopSynth = () => {
+		this.currentSynth.triggerRelease();
+		isPlaying = false;
+		lastNote = "";
+		lastDomKey.classList.remove("key--pressed");
+	}
+
+	window.addEventListener("blur", () => {
+		if (isPlaying)
+			stopSynth();
+	});
 
 	for (let i = 0; i < DEFAULT_PARAMS.noteSet.length; i++) {
 		let key = document.createElement("DIV");
+		key.classList.add("piano-key");
 		let note = DEFAULT_PARAMS.noteSet[i];
+
+		let indexInKeys = rowNotes.indexOf(note);
+		if (indexInKeys != -1) {
+			rowDomKeys[indexInKeys] = key;
+			let s = document.createElement("SPAN");
+			s.classList.add("letter-mark");
+			s.appendChild(document.createTextNode(rowSymbols[indexInKeys]));
+			key.appendChild(s);
+		}
 
 		if (note.indexOf("b") == -1) {
 			key.classList.add("piano-key-white");
 			let s = document.createElement("SPAN");
+			s.classList.add("note-mark");
 			s.appendChild(document.createTextNode(note));
+
+			if (note == "C4")
+				s.classList.add("c4-key-mark");
+
 			key.appendChild(s);
 		} else {
 			key.classList.add("piano-key-black");
 		}
 
+		if (i % 2 == 0)
+			lowerRow.appendChild(key);
+		else
+			upperRow.appendChild(key);
+
 		key.addEventListener("pointerdown", () => {
-			this.currentSynth.triggerAttack(note, 0, Tone.now(), 0.5);
+			if (isPlaying && lastNote == note)
+				return;
+
+			playSynth(note, key);
 		});
 
 		key.addEventListener("pointerup", () => {
-			this.currentSynth.triggerRelease();
+			if (pianoTouched)
+				return;
+
+			if (lastKey && note != lastNote)
+				return;
+
+			stopSynth();
 		});
 
 		key.addEventListener("pointercancel", () => {
-			this.currentSynth.triggerRelease();
+			if (pianoTouched)
+				return;
+
+			stopSynth();
 		});
 
-		pianoContainer.appendChild(key);
+		key.addEventListener("touchstart", () => {
+			pianoTouched = true;
+
+			if (isPlaying && lastNote == note)
+				return;
+
+			playSynth(note, key);
+		});
+
+		key.addEventListener("touchend", () => {
+			if (note != lastNote)
+				return;
+
+			pianoTouched = false;
+			stopSynth();
+		});
+
+		key.addEventListener("touchcancel", () => {
+			pianoTouched = false;
+			stopSynth();
+		});
 	}
+
+	pianoContainer.appendChild(upperRow);
+	pianoContainer.appendChild(lowerRow);
+	pianoOuter.scroll(pianoScroll, 0);
+	lastDomKey = rowDomKeys[0];
+
+	document.addEventListener("keydown", (e) => {
+		if (e.target.tagName == "INPUT" && e.target.type != "range" && e.target.type != "checkbox")
+			return;
+
+		if (e.target.tagName == "SELECT")
+			e.preventDefault();
+
+		if (e.code == "Slash" || e.code == "Quote")
+			e.preventDefault();
+
+		if (e.code == lastKey)
+			return;
+
+		lastKey = e.code;
+
+		let keyIndex = rowKeys.indexOf(e.code);
+		if (keyIndex == -1)
+			return;
+
+		if (!showLetters) {
+			pianoContainer.classList.add("show-letters");
+			showLetters = true;
+		}
+
+		let note = rowNotes[keyIndex];
+
+		if (isPlaying && note == lastNote)
+			return;
+
+		playSynth(note, rowDomKeys[keyIndex]);
+	});
+
+	document.addEventListener("keyup", (e) => {
+		let keyIndex = rowKeys.indexOf(e.code);
+		if (keyIndex == -1)
+			return;
+
+		let note = rowNotes[keyIndex];
+
+		if (e.code == lastKey)
+			lastKey = null;
+
+		if (note != lastNote)
+			return;
+
+		stopSynth();
+	});
 
 	if ("ontouchstart" in window) {
 		let rangeInputs = document.querySelectorAll("#synth-main input[type=range]");

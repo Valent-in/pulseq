@@ -1,8 +1,9 @@
-"use strict"
+"use strict";
 
-function ArrangeUi(songObj, onPatternSelectCallback) {
-	const aheadSpace = 8;
-	const minColumnCount = 32;
+function ArrangeUi(songObj, onPatternSelectCallback, defaults) {
+	const aheadSpace = defaults.emptyBarsBuffer; //8
+	const minColumnCount = defaults.minSongBars; //32
+	const maxPatternSteps = defaults.maxPatternSteps; //64
 
 	let rowCount = 0;
 	let columnCount = 0;
@@ -188,7 +189,7 @@ function ArrangeUi(songObj, onPatternSelectCallback) {
 	const reorderMenu = new ReorderMenu(songObj, this.fillSongView.bind(this));
 
 	function maxPatternBars() {
-		return Math.ceil(64 / songObj.barSteps);
+		return Math.ceil(maxPatternSteps / songObj.barSteps);
 	}
 
 	function buildGridHeader() {

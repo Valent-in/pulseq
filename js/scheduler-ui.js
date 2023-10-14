@@ -1,3 +1,5 @@
+"use strict";
+
 function SchedulerUi(scheduler, setLoopMarkersCallback) {
 	let songPlayBtn = document.getElementById("button-arrange-play");
 	let patternPlayBtn = document.getElementById("button-pattern-play");

@@ -1,3 +1,5 @@
+"use strict";
+
 function Pattern(name, steps) {
 	this.name = name || "ptrn";
 	this.length = steps || 16;

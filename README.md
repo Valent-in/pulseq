@@ -1,7 +1,7 @@
 # PulseQueue
 
 Minimalistic web-application for creating electronic music with virtual analog synthesizers.  
-Initially designed as sketching tool but can be used as basic DAW.
+Initially designed as sketching tool but can be used for making full-fledged tracks.
 
 **https://valent-in.github.io/pulseq/**
 
@@ -13,6 +13,7 @@ Initially designed as sketching tool but can be used as basic DAW.
 - Multi-layered step sequencer
 - Exportable synth presets
 - WAV audio export
+- MIDI export
 
 ## Music examples (YouTube)
 - [Cosmix - part 1](https://www.youtube.com/watch?v=KkLsClq37w4)
@@ -45,7 +46,10 @@ Some effects are CPU-heavy (especially reverb and phaser). This should be accoun
 WAV export duration may be limited on mobile browsers to about 10 minutes.
 
 ---
-Using Web Audio API and [Tone.js](https://github.com/Tonejs/Tone.js)
+Using Web Audio API and [Tone.js](https://github.com/Tonejs/Tone.js)  
+File export sources:
+[bufferToWave](https://github.com/rwgood18/javascript-audio-file-dynamics-compressor),
+[midi-writer](https://github.com/carter-thaxton/midi-file).
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License version 3.  
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY.

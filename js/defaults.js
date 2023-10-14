@@ -1,6 +1,14 @@
-"use strict"
+"use strict";
 
 const DEFAULT_PARAMS = {};
+
+DEFAULT_PARAMS.programVersion = "1.0";
+DEFAULT_PARAMS.fileFormatVersion = "1.6";
+
+DEFAULT_PARAMS.maxPatternSteps = 64;
+
+DEFAULT_PARAMS.minSongBars = 32;
+DEFAULT_PARAMS.emptyBarsBuffer = 8;
 
 DEFAULT_PARAMS.synthState = {
 	"synth-amplifier-gain": 1,
@@ -67,3 +75,11 @@ DEFAULT_PARAMS.colorSet = [
 	"#b9d", "#9bd", "#bd9", "#dd9", "#db9", "#d9b",
 	"#999", "#bbb", "#ddd", "#55d", "#5b5", "#d55"
 ];
+
+for (let key in DEFAULT_PARAMS) {
+	let o = DEFAULT_PARAMS[key];
+	if (typeof o == "object")
+		Object.freeze(o);
+}
+
+Object.freeze(DEFAULT_PARAMS);

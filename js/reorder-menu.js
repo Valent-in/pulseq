@@ -1,3 +1,5 @@
+"use strict";
+
 function ReorderMenu(songObj, onSongChangeCallback) {
 	let patternListContainer = document.getElementById("pattern-list-container");
 	let sortMenuIsShown = false;

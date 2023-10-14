@@ -70,7 +70,7 @@
 	border-top: none;
 	border-right: 1px solid #444;
 	border-left: 1px solid #444;
-	color: #b5b5b5;
+	font-weight: bold;
 }
 
 #pattern-main table td:nth-child(2) {
@@ -95,6 +95,7 @@
 	background-color: #111;
 	border: 1px solid #696969;
 	border-bottom-right-radius: 3px;
+	font-weight: normal;
 }
 
 #note-length-control:before {

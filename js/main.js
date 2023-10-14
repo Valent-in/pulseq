@@ -1,16 +1,21 @@
-"use strict"
+"use strict";
 
-console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v0.9.9 ",
+console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v" + DEFAULT_PARAMS.programVersion + " ",
 	"color:#1ff", "color:#f81", "color:#bbb", "background-color:#000;color:#fff");
 
 {
 	Tone.context.lookAhead = 0.15;
+	console.log("Sample rate:", Tone.context.sampleRate);
 
 	window.onbeforeunload = function () { return "Leave App?" };
 
 	// Disable closing browser window with back button
-	if (history.length == 1 || window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone) {
-		history.pushState(null, null, location.href);
+	if (history.length == 1) {
+		history.replaceState({ alter: true }, "", location.href);
+		history.pushState({ alter: true }, "", location.href);
+	}
+
+	if (history.length == 1 || (history.state && history.state.alter)) {
 		window.onpopstate = function () {
 			history.go(1);
 		}
@@ -61,9 +66,16 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v0.9.9 ",
 	}
 	styleForRows.innerText = styleTxt;
 
+	let patternDiv = document.getElementById("pattern-main");
+	// non-zero width indicates non-overlay scrollbar
+	if (patternDiv.offsetWidth <= 1) {
+		patternDiv.classList.add("add-scrollbar-spacing");
+		document.getElementById("arrange-main").classList.add("add-scrollbar-spacing");
+	}
+
 	const songObject = new SongObject();
 
-	const synthUi = new SynthUi();
+	const synthUi = new SynthUi(songObject);
 
 	const patternUi = new PatternUi(songObject, synthUi.assignSynth);
 	patternUi.build();
@@ -71,13 +83,13 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v0.9.9 ",
 	const synthHelper = new SynthHelper(songObject, synthUi, updPatternSynthList);
 	synthHelper.buildPresetList();
 
-	const arrangeUi = new ArrangeUi(songObject, onPatternSelect);
+	const arrangeUi = new ArrangeUi(songObject, onPatternSelect, DEFAULT_PARAMS);
 	arrangeUi.build();
 
 	const scheduler = new Scheduler(songObject, arrangeUi.setMarker, patternUi.setMarker);
 	const schedulerUi = new SchedulerUi(scheduler, arrangeUi.setLoopMarkers);
 
-	menuInit(songObject, onSongChange, synthHelper.loadSynth, scheduler.renderSong);
+	menuInit(songObject, onSongChange, synthHelper.loadSynth, scheduler.renderSong, scheduler.exportMidiSequence);
 
 	document.getElementById("startup-loading-title").style.display = "none";
 	document.getElementById("startup-menu").style.display = "block";

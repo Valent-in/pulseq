@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 function Scheduler(songObj, barCallback, stepCallback) {
 	Tone.Transport.bpm.value = songObj.bpm;
@@ -123,7 +123,45 @@ function Scheduler(songObj, barCallback, stepCallback) {
 		}, renderLength);
 	};
 
-	function stopScheduler() {
+	this.exportMidiSequence = (isOverlap, isExpand, velocityType) => {
+		console.log("Export MIDI");
+
+		let lSynths = [];
+		for (let i = 0; i < songObj.synthParams.length; i++)
+			lSynths[i] = new MidSynth(songObj, i, { isOverlap, isExpand, velocityType });
+
+		let schedulerData = {
+			stepIndex: 0,
+			barIndex: 0,
+			swingedStep: false,
+			queue: []
+		};
+
+		let len = songObj.song.length * songObj.barSteps;
+		let stepDuration = (60 / songObj.bpm) / 4;
+
+		for (let i = 0; i < len; i++) {
+			performSchedulerStep(schedulerData, lSynths, i * stepDuration, null, songObj.song.length);
+
+			if (i % songObj.barSteps == 0)
+				lSynths.forEach((e) => { e.setBarMarker(i * stepDuration) });
+		}
+
+		let tracks = [];
+		for (let i = 0; i < lSynths.length; i++) {
+			let e = lSynths[i];
+			if (e.isEmpty) {
+				console.log("empty track >>", songObj.synthNames[i]);
+			} else {
+				e.finish();
+				tracks.push(e.track);
+			}
+		}
+
+		return { tracks };
+	};
+
+	function stop() {
 		if (!isPlaying)
 			return;
 
@@ -131,8 +169,8 @@ function Scheduler(songObj, barCallback, stepCallback) {
 			Tone.Transport.clear(schedulerId);
 			schedulerId = null;
 		}
-		Tone.Transport.cancel();
-		Tone.Transport.stop();
+		Tone.Transport.cancel(Tone.now());
+		Tone.Transport.stop(Tone.now());
 
 		isPlaying = false;
 		isPatternPlaying = false;
@@ -140,12 +178,9 @@ function Scheduler(songObj, barCallback, stepCallback) {
 
 		scheduleCall(stepCallback, -1, Tone.now());
 		scheduleCall(barCallback, -1, Tone.now());
-	}
 
-	function stop() {
-		stopScheduler();
 		for (let i = 0; i < songObj.synths.length; i++)
-			songObj.synths[i].triggerRelease();
+			songObj.synths[i].triggerRelease(Tone.now());
 	}
 
 	function syncLfos(synths, time) {
@@ -206,7 +241,7 @@ function Scheduler(songObj, barCallback, stepCallback) {
 				synced = true;
 			}
 
-			performSchedulerStep(schedulerData, songObj.synths, time, barCallback, songObj.playableLength);
+			performSchedulerStep(schedulerData, songObj.synths, time, barCallback, songObj.playableLength + 1);
 		}, "16n");
 	}
 
@@ -244,7 +279,7 @@ function Scheduler(songObj, barCallback, stepCallback) {
 
 				if (realtimeBarCallback) {
 					console.log("Song END");
-					stopScheduler();
+					stop();
 					if (onInnerStopCallback)
 						onInnerStopCallback();
 				}

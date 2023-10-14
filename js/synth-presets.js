@@ -266,11 +266,11 @@ SYNTH_PRESETS = [
 
 	{
 		"-name": "kick",
-		"synth-envelope-attack": 0.4,
+		"synth-envelope-attack": 0.06,
 		"synth-envelope-decay": 6.84,
 		"synth-envelope-release": 8.48,
 		"synth-envelope-sustain": 0.06,
-		"synth-mod-envelope-attack": 1.22,
+		"synth-mod-envelope-attack": 0,
 		"synth-mod-envelope-type": "exponential",
 		"synth-noise-level": 0.1,
 		"synth-noise-type": "brown",

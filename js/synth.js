@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 function Synth(outputNode, transportBPM) {
 	console.log(">> CREATE SYNTH <<");
@@ -231,13 +231,11 @@ function Synth(outputNode, transportBPM) {
 			this.osc3 = new Tone.Oscillator();
 			this.osc3.detune.value = this.values.osc3octaveValue + this.values.osc3detuneValue;
 			this.gain3 = new Tone.Gain(0);
-
 			this.gain3.gain.value = this.values.osc3gainValue;
-			freqSignal.connect(this.osc3.frequency);
 
+			this.osc3.start();
 			this.osc3.chain(this.gain3);
 			this.gain3.chain(this.envelope);
-			this.osc3.start();
 			this.restoreModulator("osc3");
 			console.log("add osc3");
 		} else {

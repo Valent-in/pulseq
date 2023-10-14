@@ -1,3 +1,5 @@
+"use strict";
+
 function synthParamApply(paramId, controlValue, synth) {
 	let value = Number(controlValue);
 
