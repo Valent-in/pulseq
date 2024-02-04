@@ -87,8 +87,8 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v" + DEFAULT_PARAMS.progra
 	arrangeUi.build();
 
 	const scheduler = new Scheduler(songObject, arrangeUi.setMarker, patternUi.setMarker);
-	const schedulerUi = new SchedulerUi(scheduler, arrangeUi.setLoopMarkers);
 
+	schedulerUi(scheduler, arrangeUi.setLoopMarkers);
 	menuInit(songObject, onSongChange, synthHelper.loadSynth, scheduler.renderSong, scheduler.exportMidiSequence);
 
 	document.getElementById("startup-loading-title").style.display = "none";
@@ -105,7 +105,7 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v" + DEFAULT_PARAMS.progra
 
 		switch (stopCommand) {
 			case "stop":
-				schedulerUi.stop();
+				scheduler.stop();
 				break;
 			case "release":
 				scheduler.release();

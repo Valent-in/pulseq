@@ -250,6 +250,9 @@ button.button--play.button--play-loop {
 
 #arrange-main {
 	overflow: auto;
+	contain: content;
+	/*for chromium-based browsers only*/
+	-webkit-transform: translateZ(0);
 }
 
 #arrange-container {
@@ -281,6 +284,8 @@ button.button--play.button--play-loop {
 #pattern-main {
 	overflow-y: scroll;
 	overflow-x: auto;
+	contain: content;
+	-webkit-transform: translateZ(0);
 }
 
 #pattern-footer > button,
@@ -308,6 +313,8 @@ button.button--play.button--play-loop {
 	overflow-y: auto;
 	margin-bottom: calc(1rem + 16px + 60px);
 	padding: 4px 0;
+	contain: content;
+	-webkit-transform: translateZ(0);
 }
 
 #synth-main > div {

@@ -63,8 +63,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 
 			if (selectedSynthIndex == songObj.currentSynthIndex) {
 				let synthName = document.getElementById("synth-name-area");
-				synthName.innerHTML = "";
-				synthName.appendChild(document.createTextNode(value));
+				synthName.textContent = value;
 			}
 		}
 	});

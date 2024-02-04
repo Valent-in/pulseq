@@ -72,7 +72,7 @@ function Synth(outputNode, transportBPM) {
 
 	this.envelope.chain(this.ampAM);
 	this.ampAM.chain(this.ampout);
-	this.ampout.connect(outputNode);
+	this.ampout.chain(outputNode);
 
 	let freqSignal = new Tone.Signal({ units: "frequency" });
 	let lastVolumeMod = 0;
@@ -512,7 +512,7 @@ function Synth(outputNode, transportBPM) {
 			this.pan.disconnect();
 			this.pan.dispose();
 			this.pan = null;
-			this.ampAM.connect(this.ampout);
+			this.ampAM.chain(this.ampout);
 			console.log("remove pan");
 		}
 	}

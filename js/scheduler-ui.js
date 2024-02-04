@@ -1,6 +1,6 @@
 "use strict";
 
-function SchedulerUi(scheduler, setLoopMarkersCallback) {
+function schedulerUi(scheduler, setLoopMarkersCallback) {
 	let songPlayBtn = document.getElementById("button-arrange-play");
 	let patternPlayBtn = document.getElementById("button-pattern-play");
 	let barsInput = document.getElementById("input-loop-bars");
@@ -52,12 +52,6 @@ function SchedulerUi(scheduler, setLoopMarkersCallback) {
 			loopPlayListener();
 		}
 	});
-
-	this.stop = function () {
-		scheduler.stop();
-		updateButtons(false, false);
-		removePlayMarkers();
-	};
 
 	function onForceStop() {
 		updateButtons(false, false);

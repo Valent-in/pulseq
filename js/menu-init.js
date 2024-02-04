@@ -31,12 +31,17 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		let file = e.target.files[0];
 		if (!file)
 			return;
+		showModal("loading-modal");
 
 		let reader = new FileReader();
 		reader.onload = function (ev) {
 			let songStr = ev.target.result;
+
 			if (importSong(songStr))
 				hideModal("startup-modal-menu");
+
+			hideModal("loading-modal");
+
 		};
 		reader.readAsText(file);
 	}
@@ -83,18 +88,20 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		if (!event.target.classList.contains("js-demo-entry"))
 			return;
 
-		let container = document.getElementById("demo-list-container");
-		container.innerHTML = "Loading...";
+		hideModal("demo-modal-menu");
+		showModal("loading-modal");
 
 		let filename = event.target.dataset.file;
 		fetch("data/tracks/" + filename).then(response => response.json()).then(data => {
-			importSong(JSON.stringify(data));
 
-			hideModal("demo-modal-menu");
-			hideModal("startup-modal-menu");
+			if (importSong(JSON.stringify(data)))
+				hideModal("startup-modal-menu");
+
+			hideModal("loading-modal");
 
 		}).catch(() => {
-			container.innerHTML = "Data loading error!";
+			hideModal("loading-modal");
+			showAlert("Data loading error!");
 		});
 	};
 
@@ -431,8 +438,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 
 		let synthName = songObj.getCurrentLayerSynthName();
 		let synthSelect = document.getElementById("button-synth-select");
-		synthSelect.innerHTML = "";
-		synthSelect.appendChild(document.createTextNode(synthName || "[none]"));
+		synthSelect.textContent = synthName || "[none]";
 
 		document.getElementById("button-color-select").style.backgroundColor =
 			DEFAULT_PARAMS.colorSet[songObj.currentPattern.colorIndex];
@@ -455,9 +461,11 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			songObj.currentPattern.name = value;
 
 			let patternName = document.getElementById("pattern-name-area");
-			patternName.innerHTML = "";
-			patternName.appendChild(document.createTextNode(value));
+			patternName.textContent = value;
 			onSongChangeCallback(false);
+		} else {
+			event.target.value = songObj.currentPattern.name;
+			showToast("Pattern NOT renamed");
 		}
 	};
 
@@ -735,8 +743,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 
 		let synthName = songObj.getCurrentLayerSynthName() || "[none]";
 		let synthSelect = document.getElementById("button-synth-select");
-		synthSelect.innerHTML = "";
-		synthSelect.appendChild(document.createTextNode(synthName));
+		synthSelect.textContent = synthName;
 
 		if (isCreateNewLayer || isEmpty)
 			onSongChangeCallback(false);
@@ -788,8 +795,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	 */
 	function showSongTitle() {
 		let songTitle = document.getElementById("song-title-area");
-		songTitle.innerHTML = "";
-		songTitle.appendChild(document.createTextNode(songObj.title || "[untitled]"));
+		songTitle.textContent = songObj.title || "[untitled]";
 	}
 
 	function fillAdditionalValues() {

@@ -40,7 +40,7 @@ function ArrangeUi(songObj, onPatternSelectCallback, defaults) {
 		showPrompt("Enter pattern name", (result) => {
 
 			if (!result) {
-				console.log("Pattern NOT created");
+				showToast("Pattern NOT created");
 				return;
 			}
 

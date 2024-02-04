@@ -10,6 +10,11 @@ function Scheduler(songObj, barCallback, stepCallback) {
 
 	this.stop = () => {
 		stop();
+
+		if (onInnerStopCallback) {
+			onInnerStopCallback();
+			onInnerStopCallback = null;
+		}
 	}
 
 	this.playSong = () => {
@@ -57,31 +62,29 @@ function Scheduler(songObj, barCallback, stepCallback) {
 	}
 
 	this.playStopSong = (callback) => {
-		onInnerStopCallback = callback;
-
 		if (isPlaying) {
 			stop();
 			return false;
 		} else {
+			onInnerStopCallback = callback;
 			this.playSong();
 			return true;
 		}
 	}
 
 	this.playStopPattern = (callback) => {
-		onInnerStopCallback = callback;
-
 		if (isPlaying || !songObj.currentPattern) {
 			stop();
 			return false;
 		} else {
+			onInnerStopCallback = callback;
 			this.playPattern();
 			return true;
 		}
 	}
 
 	this.renderSong = (renderLength) => {
-		stop();
+		this.stop();
 
 		let schedulerData = {
 			stepIndex: 0,
@@ -280,8 +283,10 @@ function Scheduler(songObj, barCallback, stepCallback) {
 				if (realtimeBarCallback) {
 					console.log("Song END");
 					stop();
-					if (onInnerStopCallback)
+					if (onInnerStopCallback) {
 						onInnerStopCallback();
+						onInnerStopCallback = null;
+					}
 				}
 
 				return;
@@ -348,4 +353,4 @@ function Scheduler(songObj, barCallback, stepCallback) {
 			}
 		}
 	}
-};
+}
