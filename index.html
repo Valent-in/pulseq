@@ -214,7 +214,7 @@
 							<option>exponential</option>
 							<option>linear</option>
 						</select>
-						<span class="envelope-caption highlight-cyan">Amplitude Envelope</span>
+						<span class="envelope-caption">Amplitude Envelope</span>
 						<span>Attack</span>
 						<br>
 						<input type="range" id="synth-envelope-attack" min=0 max=12 step=0.02 class="range--4-marks">
@@ -393,7 +393,7 @@
 							<option>exponential</option>
 							<option>linear</option>
 						</select>
-						<span class="envelope-caption highlight-violet">Modulation Envelope</span>
+						<span class="envelope-caption">Modulation Envelope</span>
 						<span class="js-modenv-block">Attack</span>
 						<div class="js-modenv-block">
 							<input type="range" id="synth-mod-envelope-attack" min=0 max=12 step=0.02
@@ -768,16 +768,6 @@
 
 					<tr>
 						<td>
-							Synth&sol;Layer
-						</td>
-						<td>
-							<button id="button-synth-select" class="notranslate" translate="no">[none]</button>
-							<button id="button-delete-layer">Delete</button>
-						</td>
-					</tr>
-
-					<tr>
-						<td>
 							Length (bars)
 						</td>
 						<td>
@@ -787,21 +777,39 @@
 					</tr>
 
 					<tr>
-						<td>
-							Color
-						</td>
-						<td>
+						<td style="text-align:right">
 							<button class="button--shadowed notranslate" translate="no"
 								id="button-color-select">color</button>
 						</td>
+						<td>
+							<button id="button-copy-pattern">Copy Ptrn</button>
+							<button id="button-delete-pattern">Delete Ptrn</button>
+						</td>
+					</tr>
+
+					<tr>
+						<td>
+							<!--spacer-->
+						</td>
+					</tr>
+
+					<tr>
+						<td style="text-align:right">
+							Synth&sol;Layer
+						</td>
+						<td>
+							<button id="button-synth-select" class="notranslate" translate="no">[none]</button>
+						</td>
+					</tr>
+
+					<tr>
+						<td></td>
+						<td>
+							<button id="button-fade-layer">Fade</button>
+							<button id="button-delete-layer">Delete Layer</button>
+						</td>
 					</tr>
 				</table>
-				<div class="modal-box-block">
-					<button id="button-copy-pattern">Copy Pattern</button>
-					<button id="button-delete-pattern">Delete Pattern</button>
-
-					<button id="button-fade-layer" style="float:right">Fade</button>
-				</div>
 				<div class="modal-box-block modal-box-footer">
 					<button id="button-pattern-menu-close" class="button-modal-bottom">Close</button>
 				</div>

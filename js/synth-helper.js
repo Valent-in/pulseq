@@ -5,8 +5,9 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 	let selectedSynthIndex = 0;
 	let mixerIsShown = false;
 
-	let addSynth = document.getElementById("button-add-synth");
-	addSynth.addEventListener("click", () => {
+	let deleteSynthBtn = document.getElementById("button-delete-synth");
+
+	document.getElementById("button-add-synth").addEventListener("click", () => {
 		let defaultName = songObj.generateSynthName();
 		showPrompt("Enter synth name", (result) => {
 			if (!result) {
@@ -74,7 +75,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		}
 	});
 
-	document.getElementById("button-delete-synth").onclick = () => {
+	deleteSynthBtn.onclick = () => {
 		if (songObj.synths.length == 1) {
 			showAlert("Can not delete last synth");
 			return;
@@ -350,6 +351,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 	function openSynthMenu() {
 		showModal("synth-modal-menu");
 		document.getElementById("input-synth-name").value = songObj.synthNames[selectedSynthIndex];
+		deleteSynthBtn.disabled = (songObj.synths.length == 1);
 	}
 
 	document.getElementById("button-mixer-menu-open").onclick = () => {

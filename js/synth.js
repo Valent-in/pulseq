@@ -74,9 +74,19 @@ function Synth(outputNode, transportBPM) {
 	this.ampAM.chain(this.ampout);
 	this.ampout.chain(outputNode);
 
+	this.filterFreqInput = 0;
+	let filterFreqSweep = 0;
+	let filterQSweep = 0;
+
 	let freqSignal = new Tone.Signal({ units: "frequency" });
 	let lastVolumeMod = 0;
 	let lastNote = "";
+
+	const filterExp = (x) => {
+		let absX = Math.abs(x);
+		let mod = x > 0 ? 1 : -1;
+		return (2 ** absX - 1) * 320 * mod;
+	};
 
 	this.triggerAttack = function (note, volumeMod, time, duration) {
 		lastNote = note;
@@ -129,6 +139,33 @@ function Synth(outputNode, transportBPM) {
 	this.setVolume = function (value) {
 		this.values.volumeValue = value
 		this.ampout.gain.value = this.calculateVolume();
+	}
+
+	this.filterSweep = function (freq, q, time, duration) {
+		if (!this.filter)
+			return;
+
+		let glideTime = Math.max(duration * this.glide, 0.01);
+		let qRamp, fInput;
+
+		if (q || q === 0) {
+			qRamp = q;
+			fInput = freq;
+		} else {
+			qRamp = this.values.filterQValue;
+			fInput = this.filterFreqInput;
+		}
+
+		if (qRamp != filterQSweep) {
+			this.filter.Q.linearRampTo(qRamp, glideTime, time);
+			filterQSweep = qRamp;
+		}
+
+		if (fInput != filterFreqSweep) {
+			let fRamp = filterExp(fInput);
+			this.filter.frequency.linearRampTo(fRamp, glideTime, time);
+			filterFreqSweep = fInput;
+		}
 	}
 
 	this.mute = function (isMute) {
@@ -329,6 +366,27 @@ function Synth(outputNode, transportBPM) {
 			this.filter.frequency.value = this.values.filterFreqValue;
 			this.filter.Q.value = this.values.filterQValue;
 		}
+	}
+
+	this.setFilterQ = function (value) {
+		filterQSweep = value;
+		this.values.filterQValue = value;
+		if (this.filter)
+			this.filter.Q.value = value;
+	}
+
+	this.setFilterFrequency = function (value) {
+		filterFreqSweep = value;
+		this.filterFreqInput = value;
+		this.values.filterFreqValue = filterExp(value);
+		if (this.filter)
+			this.filter.frequency.value = this.values.filterFreqValue;
+	}
+
+	this.setFilterModAmount = function (value) {
+		this.modulatorValues.filter_modgain = filterExp(value);
+		if (this.filter_modgain)
+			this.filter_modgain.gain.value = this.modulatorValues.filter_modgain;
 	}
 
 	this.addFX = function (type) {

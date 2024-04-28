@@ -115,8 +115,8 @@ a {
 }
 
 #header-tabs .tab--active {
-	background-color: #143;
-	border: 1px solid #576;
+	background-color: #242;
+	border: 1px solid #484;
 	color: #ccc;
 }
 
@@ -128,15 +128,15 @@ a {
 	content: "M";
 	font-size: 0.6rem;
 	font-weight: bold;
-	color: orange;
+	color: #fa0;
 	position: absolute;
 	top: 0;
 	right: 2px;
 }
 
 #pattern-footer .tab--active {
-	background-color: #224;
-	border: 1px solid #55a;
+	background-color: #225;
+	border: 1px solid #55c;
 	color: #ccc;
 }
 
@@ -238,7 +238,7 @@ button.button--play.button--play-loop {
 #pattern-name-area,
 #song-title-area,
 #synth-name-area {
-	color: orange;
+	color: #fa0;
 	padding: 2px 8px;
 	max-width: 40vw;
 	overflow: hidden;
@@ -375,19 +375,19 @@ button.button--play.button--play-loop {
 }
 
 #synth-main > div.border-osc {
-	border-top: 3px solid #777;
+	border-top: 2px solid #777;
 }
 
 #synth-main > div.border-osc-third {
-	border-top: 3px solid #444;
+	border-top: 2px solid #444;
 }
 
 #synth-main > div.border-envelope {
-	border-top: 3px solid #088;
+	border-top: 2px solid #4bd;
 }
 
 #synth-main > div.border-filter {
-	border-top: 3px solid #890;
+	border-top: 2px solid #b4d;
 }
 
 #synth-main > div.border-osc-mod {
@@ -395,7 +395,7 @@ button.button--play.button--play-loop {
 }
 
 #synth-main > div.border-filter-mod {
-	border-top: 2px dashed #890;
+	border-top: 2px dashed #b4d;
 }
 
 #synth-main > div.border-amp-mod {
@@ -403,7 +403,7 @@ button.button--play.button--play-loop {
 }
 
 #synth-main > div.border-mod-envelope {
-	border-top: 3px solid #62b;
+	border-top: 2px solid #db4;
 }
 
 #synth-main > div > div:last-child {
@@ -460,10 +460,6 @@ button.button--play.button--play-loop {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-}
-
-.highlight-cyan {
-	color: #7dd;
 	font-weight: bold;
 }
 
@@ -603,7 +599,7 @@ input[type=range].range--volume {
 }
 
 #piano-container.show-letters .letter-mark {
-	color: #588;
+	color: #579;
 }
 
 .piano-key-white {
@@ -615,7 +611,8 @@ input[type=range].range--volume {
 }
 
 .key--pressed {
-	box-shadow: inset 0 0 0 3px #c18600;
+	box-shadow: inset 0 0 1px 3px #d44;
+	border-color: #d44;
 }
 
 .synth-list-entry {
@@ -680,7 +677,7 @@ input[type=range].range--volume {
 .muted-mark:after {
 	content: "Muted";
 	font-size: 0.6rem;
-	color: orange;
+	color: #fa0;
 	float: right;
 	margin-top: -4px;
 }
@@ -822,6 +819,7 @@ input[type=range].range--volume {
 	background-size: auto 25%;
 	overflow-x: hidden;
 	text-overflow: ellipsis;
+	text-align: left;
 }
 
 #button-color-select {
@@ -867,11 +865,11 @@ button.button--shadowed:active {
 }
 
 button.button--highlight-orange {
-	box-shadow: inset 0 0 0 2px orange;
+	box-shadow: inset 0 0 0 2px #fa0;
 }
 
 button.button--highlight-yellow {
-	box-shadow: inset 0 0 0 1px #890;
+	box-shadow: inset 0 0 0 1px #980;
 }
 
 #menu-synth-list-container {

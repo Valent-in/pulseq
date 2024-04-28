@@ -114,6 +114,9 @@ function MidSynth(songObj, index, exportParams) {
         lastVelo = velo;
     }
 
+    // Dummy
+    this.filterSweep = function () { }
+
     this.setBarMarker = function (time) {
         if (barMarkerTick < lastTick)
             barMarkerTick = getTick(time);

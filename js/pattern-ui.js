@@ -8,19 +8,30 @@ function PatternUi(songObj, assignSynthCallback) {
 
 	let lengthMod = 75;
 	let volumeMod = 0;
+
 	let dragStartRow = 0;
 	let dragStartCol = 0;
+
 	let pointerPress = false;
 	let pressTimeout = 0;
 	let cancelClick = false;
-	let barLength = 0;
 
+	let barLength = 0;
 	let velocityStep = 12;
 
-	let sequenceCells = [];
-	for (let i = 0; i < maxSequencerLength; i++)
-		sequenceCells.push({});
+	let autoRow, filterControls;
+	let noFilter = true;
+	let automationFreqMod = 3.5;
+	let automationQMod = 15;
+	const autoFreqScale = 26 / 5;
+	const autoQscale = 26 / 50;
 
+	let sequenceCells = [];
+	let automationCells = [];
+	for (let i = 0; i < maxSequencerLength; i++) {
+		sequenceCells.push({});
+		automationCells.push({});
+	}
 
 	let playbackMarkers = [];
 	let previousMarker = 0;
@@ -119,6 +130,178 @@ function PatternUi(songObj, assignSynthCallback) {
 	table.addEventListener("pointerleave", pointerEndListener);
 	table.addEventListener("touchend", pointerEndListener);
 
+	volumeControl.addEventListener("click", (event) => {
+		let fullWidth = event.target.clientWidth;
+
+		if (event.offsetX < fullWidth / 2) {
+			volumeMod -= velocityStep;
+			volumeMod = Math.ceil(volumeMod / velocityStep) * velocityStep;
+		} else {
+			volumeMod += velocityStep;
+			volumeMod = Math.floor(volumeMod / velocityStep) * velocityStep;
+		}
+
+		let minVelocity = Math.ceil(-90 / velocityStep) * velocityStep
+
+		if (volumeMod > 0)
+			volumeMod = minVelocity;
+
+		if (volumeMod < minVelocity)
+			volumeMod = 0;
+
+		let shadow = "inset " + Math.round(fullWidth * volumeMod / 100 - 1) + "px 0 0 0 #111";
+		event.target.style.boxShadow = shadow;
+	});
+
+
+	this.build = function () {
+		document.getElementById("input-more-velosteps").onchange = (e) => {
+			if (e.target.checked)
+				velocityStep = 6;
+			else
+				velocityStep = 12;
+
+			showToast((8 * 12 / velocityStep) + " levels for note volume control")
+		}
+
+		let lControl;
+
+		for (let i = 0; i <= DEFAULT_PARAMS.noteSet.length; i++) {
+			let tr = document.createElement("TR");
+			table.appendChild(tr);
+			for (let j = 0; j <= maxSequencerLength; j++) {
+				let td = document.createElement("TD");
+
+				if (i == 0 && j == 0) {
+					lControl = document.createElement("DIV");
+					lControl.id = "note-length-control";
+					lControl.classList.add("control-fill-" + lengthMod);
+					td.appendChild(lControl);
+				}
+
+				if (i == 0 && j > 0)
+					playbackMarkers.push(td);
+
+				if (i == 0 && (j - 1) % 4 == 0 && j > 1)
+					td.appendChild(document.createTextNode(j));
+
+				if (i > 0 && j == 0) {
+					td.dataset.note = noteArr[i - 1];
+
+					if (noteArr[i - 1] == "C4")
+						td.classList.add("c4-key-mark");
+
+					if (noteArr[i - 1].includes("b"))
+						td.classList.add("pattern-black-key");
+					else if (i > 1 && i < DEFAULT_PARAMS.noteSet.length)
+						td.appendChild(document.createTextNode(noteArr[i - 1]));
+				}
+
+				if (i > 0 && j > 0) {
+					td.id = "seq_col-" + (j - 1) + "_row-" + (i - 1);
+				}
+
+				tr.appendChild(td);
+
+				if (i == 0 && j == maxSequencerLength) {
+					let tdl = document.createElement("TD");
+					tdl.id = "seq-volume-cell";
+					tdl.appendChild(volumeControl);
+					tr.appendChild(tdl);
+				}
+			}
+		}
+
+		lControl.addEventListener("click", (event) => {
+			lControl.classList.remove("control-fill-" + lengthMod);
+
+			let fullWidth = event.target.clientWidth;
+			if (event.offsetX < fullWidth / 2)
+				lengthMod -= 25;
+			else
+				lengthMod += 25;
+
+			if (lengthMod > 100)
+				lengthMod = 25;
+
+			if (lengthMod < 25)
+				lengthMod = 100;
+
+			lControl.classList.add("control-fill-" + lengthMod);
+		});
+
+		buildAutomationRow();
+		pattern.appendChild(table);
+	}
+
+	this.setMarker = function (index) {
+		playbackMarkers[previousMarker].style.backgroundColor = "#111";
+		if (index >= 0 && index < playbackMarkers.length) {
+			playbackMarkers[index].style.backgroundColor = "#696969";
+			previousMarker = index;
+		}
+	}
+
+	this.setLength = function (len) {
+		if (sequencerLength == len)
+			return;
+
+		for (let i = 0; i < DEFAULT_PARAMS.noteSet.length; i++) {
+			for (let j = 0; j < Math.max(len, sequencerLength); j++) {
+				let cell = document.getElementById("seq_col-" + j + "_row-" + i);
+
+				if (j < len)
+					cell.style.display = "table-cell";
+				else
+					cell.style.display = "none";
+			}
+		}
+
+		for (let j = 1; j < Math.max(len, sequencerLength); j++) {
+			let cellh = playbackMarkers[j];
+			let cellf = automationCells[j].cell;
+			if (j < len) {
+				cellh.style.display = "table-cell";
+				cellf.style.display = "table-cell";
+			} else {
+				cellh.style.display = "none";
+				cellf.style.display = "none";
+			}
+		}
+
+		sequencerLength = len;
+	}
+
+	this.clearGrid = function () {
+		let classNames = ["shade"];
+		for (let className of classNames) {
+			document.querySelectorAll("." + className).forEach(e => {
+				if (e.id != "note-length-control")
+					e.classList.remove(className);
+			});
+		}
+
+		for (let i = 0; i < sequenceCells.length; i++) {
+			if (sequenceCells[i].len)
+				clearCell(i, sequenceCells[i].row);
+		}
+	}
+
+	this.importSequence = (data) => {
+		if (data.length)
+			this.setLength(data.length);
+
+		let dataArr = data.patternData;
+		let currentIndex = data.activeIndex;
+
+		this.clearGrid();
+		importData(dataArr[currentIndex]);
+		importShadowData(dataArr, currentIndex);
+		updateBarSeparator();
+
+		patternName.innerHTML = "";
+		patternName.appendChild(document.createTextNode(data.name));
+	}
 
 	function pointerEndListener() {
 		pointerPress = false;
@@ -211,116 +394,176 @@ function PatternUi(songObj, assignSynthCallback) {
 		sequenceCells[col].len = 0;
 	}
 
-	this.build = function () {
-		document.getElementById("input-more-velosteps").onchange = (e) => {
-			if (e.target.checked)
-				velocityStep = 6;
-			else
-				velocityStep = 12;
+	function resetAutomationCell(col) {
+		let synthIndex = songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].synthIndex;
+		let fHeight = 0;
+		let qHeight = 0;
 
-			showToast((8 * 12 / velocityStep) + " levels for note volume control")
+		if (synthIndex !== null) {
+			let f = songObj.synths[synthIndex].filterFreqInput;
+			fHeight = Math.round(autoFreqScale * f);
+
+			let q = songObj.synths[synthIndex].values.filterQValue;
+			qHeight = Math.round(autoQscale * q);
 		}
 
-		for (let i = 0; i <= DEFAULT_PARAMS.noteSet.length; i++) {
-			let tr = document.createElement("TR");
-			table.appendChild(tr);
-			for (let j = 0; j <= maxSequencerLength; j++) {
-				let td = document.createElement("TD");
+		automationCells[col].fBar.style.height = fHeight + "px";
+		automationCells[col].qBar.style.height = qHeight + "px";
 
-				if (i == 0 && j == 0) {
-					let lControl = document.createElement("DIV");
-					lControl.id = "note-length-control";
-					lControl.classList.add("control-fill-" + lengthMod);
-					td.appendChild(lControl);
-				}
+		automationCells[col].cell.classList.remove("active");
+	}
 
-				if (i == 0 && j > 0) {
-					td.id = "seq_col-" + (j - 1) + "_header";
-					playbackMarkers.push(td);
-				}
+	function setAutomationCell(col, freq, q) {
+		let height = Math.round(autoFreqScale * freq);
+		automationCells[col].fBar.style.height = height + "px";
 
-				if (i == 0 && (j - 1) % 4 == 0 && j > 1)
-					td.appendChild(document.createTextNode(j));
+		height = Math.round(autoQscale * q);
+		automationCells[col].qBar.style.height = height + "px";
 
-				if (i > 0 && j == 0) {
-					td.dataset.note = noteArr[i - 1];
+		automationCells[col].cell.classList.add("active");
+	}
 
-					if (noteArr[i - 1] == "C4")
-						td.classList.add("c4-key-mark");
+	function buildAutomationRow() {
+		autoRow = document.createElement("TR");
+		autoRow.id = "pattern-auto-row";
+		table.appendChild(autoRow);
 
-					if (noteArr[i - 1].includes("b"))
-						td.classList.add("pattern-black-key");
-					else if (i > 1 && i < DEFAULT_PARAMS.noteSet.length)
-						td.appendChild(document.createTextNode(noteArr[i - 1]));
-				}
+		let fRange = document.createElement("INPUT");
+		let qRange = document.createElement("INPUT");
 
-				if (i > 0 && j > 0) {
-					td.id = "seq_col-" + (j - 1) + "_row-" + (i - 1);
-				}
+		// Update automation row on pattern tab selection
+		document.getElementById("pattern-tab").addEventListener("click", () => {
+			redrawAutomationRow(songObj.currentPattern.patternData[songObj.currentPattern.activeIndex])
+		});
 
-				tr.appendChild(td);
+		autoRow.addEventListener("click", (e) => {
+			if (cancelClick)
+				return;
 
-				if (i == 0 && j == maxSequencerLength) {
-					let tdl = document.createElement("TD");
-					tdl.id = "seq-volume-cell";
-					tdl.appendChild(volumeControl);
-					tr.appendChild(tdl);
-				}
+			if (noFilter) {
+				showToast("Filter is not set");
+				return;
 			}
+
+			if (e.target.nodeName != "TD")
+				return;
+
+			if (e.target.id == "automation-levels-set") {
+				filterControls.classList.toggle("nodisplay");
+				return;
+			}
+
+			let index = Number(e.target.dataset.index);
+			let layer = songObj.currentPattern.patternData[songObj.currentPattern.activeIndex];
+
+			if (layer.filtQ[index] || layer.filtQ[index] === 0) {
+				layer.filtQ[index] = null;
+				layer.filtF[index] = null;
+				resetAutomationCell(index);
+			} else {
+				layer.filtQ[index] = automationQMod;
+				layer.filtF[index] = automationFreqMod;
+				setAutomationCell(index, automationFreqMod, automationQMod);
+			}
+		});
+
+		autoRow.addEventListener("pointerdown", (e) => {
+			cancelClick = false;
+
+			if (noFilter)
+				return;
+
+			if (e.target.nodeName != "TD")
+				return;
+
+			if (e.target.id == "automation-levels-set")
+				return;
+
+			let index = Number(e.target.dataset.index);
+			let layer = songObj.currentPattern.patternData[songObj.currentPattern.activeIndex];
+
+			pressTimeout = setTimeout(() => {
+				cancelClick = true;
+
+				if (layer.filtQ[index] || layer.filtQ[index] === 0) {
+					fRange.value = automationFreqMod = layer.filtF[index];
+					qRange.value = automationQMod = layer.filtQ[index];
+				} else {
+					fRange.value = automationFreqMod = songObj.synths[layer.synthIndex].filterFreqInput;
+					qRange.value = automationQMod = songObj.synths[layer.synthIndex].values.filterQValue;
+				}
+
+				fRange.dispatchEvent(new Event("change"));
+				qRange.dispatchEvent(new Event("change"));
+				showToast("Values copied");
+			}, 400)
+		});
+
+		for (let j = 0; j <= maxSequencerLength; j++) {
+			let td = document.createElement("TD");
+
+			let fBar = document.createElement("DIV");
+			let qBar = document.createElement("DIV");
+
+			fBar.classList.add("filter-bar");
+			qBar.classList.add("filter-bar");
+
+			if (j == 0) {
+				td.id = "automation-levels-set"
+
+				filterControls = document.createElement("DIV");
+				filterControls.id = "automation-levels-control";
+				filterControls.classList.add("nodisplay");
+
+				// Prevent touch-scroll
+				filterControls.addEventListener("touchstart", e => {
+					e.stopPropagation();
+				});
+
+				fRange.type = "range";
+				fRange.min = 0;
+				fRange.max = 5;
+				fRange.step = 0.02;
+
+				qRange.type = "range";
+				qRange.min = 0;
+				qRange.max = 50;
+				qRange.step = 0.1;
+
+				fRange.addEventListener("change", (e) => {
+					automationFreqMod = Number(e.target.value);
+					fBar.style.height = (autoFreqScale * automationFreqMod) + "px";
+				});
+
+				qRange.addEventListener("change", (e) => {
+					automationQMod = Number(e.target.value);
+					qBar.style.height = (autoQscale * automationQMod) + "px";
+				});
+
+				fBar.style.height = (autoFreqScale * automationFreqMod) + "px";
+				qBar.style.height = (autoQscale * automationQMod) + "px";
+				fRange.value = automationFreqMod;
+				qRange.value = automationQMod;
+
+				let title = document.createElement("SPAN");
+				title.appendChild(document.createTextNode("Filter"));
+				filterControls.appendChild(title);
+
+				filterControls.appendChild(fRange);
+				filterControls.appendChild(qRange);
+				td.appendChild(filterControls);
+			} else {
+				td.dataset.index = j - 1;
+				automationCells[j - 1].cell = td;
+				automationCells[j - 1].fBar = fBar;
+				automationCells[j - 1].qBar = qBar;
+			}
+
+			td.appendChild(fBar);
+			td.appendChild(qBar);
+			autoRow.appendChild(td);
 		}
-
-		pattern.appendChild(table);
-
-		let lControl = document.getElementById("note-length-control");
-		lControl.addEventListener("click", (event) => {
-			lControl.classList.remove("control-fill-" + lengthMod);
-
-			let fullWidth = event.target.clientWidth;
-			if (event.offsetX < fullWidth / 2)
-				lengthMod -= 25;
-			else
-				lengthMod += 25;
-
-			if (lengthMod > 100)
-				lengthMod = 25;
-
-			if (lengthMod < 25)
-				lengthMod = 100;
-
-			lControl.classList.add("control-fill-" + lengthMod);
-		})
 	}
-
-	this.setMarker = function (index) {
-		playbackMarkers[previousMarker].style.backgroundColor = "#111";
-		if (index >= 0 && index < playbackMarkers.length) {
-			playbackMarkers[index].style.backgroundColor = "#696969";
-			previousMarker = index;
-		}
-	}
-
-	volumeControl.addEventListener("click", (event) => {
-		let fullWidth = event.target.clientWidth;
-
-		if (event.offsetX < fullWidth / 2) {
-			volumeMod -= velocityStep;
-			volumeMod = Math.ceil(volumeMod / velocityStep) * velocityStep;
-		} else {
-			volumeMod += velocityStep;
-			volumeMod = Math.floor(volumeMod / velocityStep) * velocityStep;
-		}
-
-		let minVelocity = Math.ceil(-90 / velocityStep) * velocityStep
-
-		if (volumeMod > 0)
-			volumeMod = minVelocity;
-
-		if (volumeMod < minVelocity)
-			volumeMod = 0;
-
-		let shadow = "inset " + Math.round(fullWidth * volumeMod / 100 - 1) + "px 0 0 0 #111";
-		event.target.style.boxShadow = shadow;
-	});
 
 	function setLineOfNotes() {
 		let col = dragStartCol;
@@ -426,29 +669,6 @@ function PatternUi(songObj, assignSynthCallback) {
 		}
 	}
 
-	this.setLength = function (len) {
-		for (let i = 0; i < DEFAULT_PARAMS.noteSet.length; i++) {
-			for (let j = 0; j < Math.max(len, sequencerLength); j++) {
-				let cell = document.getElementById("seq_col-" + j + "_row-" + i);
-
-				if (j < len)
-					cell.style.display = "table-cell";
-				else
-					cell.style.display = "none";
-			}
-		}
-
-		for (let j = 1; j < Math.max(len, sequencerLength); j++) {
-			let cell = document.getElementById("seq_col-" + j + "_header");
-			if (j < len)
-				cell.style.display = "table-cell";
-			else
-				cell.style.display = "none";
-		}
-
-		sequencerLength = len;
-	}
-
 	function findRowByNote(note) {
 		for (let i = 0; i < noteArr.length; i++)
 			if (noteArr[i] == note)
@@ -477,6 +697,27 @@ function PatternUi(songObj, assignSynthCallback) {
 			let row = findRowByNote(data.notes[i])
 			setCell(i, row, data.lengths[i], data.volumes[i]);
 		}
+
+		redrawAutomationRow(data);
+	}
+
+	function redrawAutomationRow(data) {
+		let index = songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].synthIndex;
+		if (index !== null && songObj.synths[index].filter) {
+			autoRow.classList.remove("inactive");
+			noFilter = false;
+		} else {
+			autoRow.classList.add("inactive");
+			filterControls.classList.add("nodisplay");
+			noFilter = true;
+		}
+
+		for (let i = 0; i < sequencerLength; i++) {
+			if (data.filtQ[i] || data.filtQ[i] === 0)
+				setAutomationCell(i, data.filtF[i], data.filtQ[i]);
+			else
+				resetAutomationCell(i);
+		}
 	}
 
 	function importShadowData(dataArr, excludeIndex) {
@@ -494,37 +735,6 @@ function PatternUi(songObj, assignSynthCallback) {
 					cell.classList.add("shade");
 			}
 		}
-	}
-
-	this.clearGrid = function () {
-		let classNames = ["shade"];
-		for (let className of classNames) {
-			document.querySelectorAll("." + className).forEach(e => {
-				if (e.id != "note-length-control")
-					e.classList.remove(className);
-			});
-		}
-
-		for (let i = 0; i < sequenceCells.length; i++) {
-			if (sequenceCells[i].len)
-				clearCell(i, sequenceCells[i].row);
-		}
-	}
-
-	this.importSequence = (data) => {
-		if (data.length)
-			this.setLength(data.length);
-
-		let dataArr = data.patternData;
-		let currentIndex = data.activeIndex;
-
-		this.clearGrid();
-		importData(dataArr[currentIndex]);
-		importShadowData(dataArr, currentIndex);
-		updateBarSeparator();
-
-		patternName.innerHTML = "";
-		patternName.appendChild(document.createTextNode(data.name));
 	}
 
 

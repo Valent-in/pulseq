@@ -427,9 +427,12 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	/*
 	 * Pattern modal menu
 	 */
-	let patternLengthSet = document.getElementById("button-pattern-length-set");
-
 	let patternNameInput = document.getElementById("input-pattern-name");
+	let patternLengthInput = document.getElementById("input-pattern-length");
+	let patternLengthSet = document.getElementById("button-pattern-length-set");
+	let deletePatternBtn = document.getElementById("button-delete-pattern")
+	let deleteLayerBtn = document.getElementById("button-delete-layer")
+
 	document.getElementById("button-pattern-menu-open").onclick = () => {
 		patternNameInput.value = songObj.currentPattern.name;
 
@@ -442,6 +445,9 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 
 		document.getElementById("button-color-select").style.backgroundColor =
 			DEFAULT_PARAMS.colorSet[songObj.currentPattern.colorIndex];
+
+		deletePatternBtn.disabled = (songObj.patterns.length == 1);
+		deleteLayerBtn.disabled = (songObj.currentPattern.patternData.length == 1);
 
 		highlight(patternLengthSet, false);
 
@@ -469,7 +475,6 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		}
 	};
 
-	let patternLengthInput = document.getElementById("input-pattern-length");
 	patternLengthInput.addEventListener("input", () => {
 		highlight(patternLengthSet, true);
 	});
@@ -547,7 +552,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		showModal("color-select-modal-menu");
 	};
 
-	document.getElementById("button-delete-pattern").onclick = () => {
+	deletePatternBtn.onclick = () => {
 		if (songObj.patterns.length == 1) {
 			showAlert("Can not delete last pattern");
 			return;
@@ -564,7 +569,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		});
 	};
 
-	document.getElementById("button-delete-layer").onclick = () => {
+	deleteLayerBtn.onclick = () => {
 		if (songObj.currentPattern.patternData.length == 1) {
 			showAlert("Can not delete last layer");
 			return;
@@ -860,6 +865,14 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		for (let i = 0; i < expObj.patterns.length; i++) {
 			let ptrn = new Pattern(expObj.patternNames[i]);
 			ptrn.patternData = expObj.patterns[i];
+
+			// Create filter automation if file does not contain it
+			ptrn.patternData.forEach(e => {
+				if (!e.filtQ) {
+					e.filtQ = [];
+					e.filtF = [];
+				}
+			});
 
 			if (expObj.patternLengths)
 				ptrn.length = expObj.patternLengths[i];

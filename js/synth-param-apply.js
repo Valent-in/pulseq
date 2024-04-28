@@ -13,12 +13,6 @@ function synthParamApply(paramId, controlValue, synth) {
 		return (2 ** absX - 1) * 20 * mod;
 	}
 
-	const filterExp = (x) => {
-		let absX = Math.abs(x);
-		let mod = x > 0 ? 1 : -1;
-		return (2 ** absX - 1) * 320 * mod;
-	};
-
 	switch (paramId) {
 		// Oscillator 1
 		case "synth-osc1-octave":
@@ -182,15 +176,11 @@ function synthParamApply(paramId, controlValue, synth) {
 			break;
 
 		case "synth-filter-frequency":
-			synth.values.filterFreqValue = filterExp(value);
-			if (synth.filter)
-				synth.filter.frequency.value = synth.values.filterFreqValue;
+			synth.setFilterFrequency(value);
 			break;
 
 		case "synth-filter-quality":
-			synth.values.filterQValue = value;
-			if (synth.filter)
-				synth.filter.Q.value = value;
+			synth.setFilterQ(value);
 			break;
 
 		// Amplifier
@@ -315,9 +305,7 @@ function synthParamApply(paramId, controlValue, synth) {
 			break;
 
 		case "synth-filter-mod-value":
-			synth.modulatorValues.filter_modgain = filterExp(value);
-			if (synth.filter_modgain)
-				synth.filter_modgain.gain.value = synth.modulatorValues.filter_modgain;
+			synth.setFilterModAmount(value);
 			break;
 
 		case "synth-amplifier-mod-input":

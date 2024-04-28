@@ -51,6 +51,8 @@ function SynthUi(songObj) {
 	const playSynth = (note, newDomKey) => {
 		let stepLen = (60 / songObj.bpm) / 4;
 
+		this.currentSynth.filterSweep(null, null, Tone.now(), 0.01)
+
 		if (isPlaying)
 			this.currentSynth.glideTo(note, 0, Tone.now(), stepLen);
 		else

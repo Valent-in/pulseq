@@ -330,13 +330,21 @@ function Scheduler(songObj, barCallback, stepCallback) {
 			let volume = pattern.patternData[j].volumes[stepIndex];
 			let synthIndex = pattern.patternData[j].synthIndex;
 
-			if (note && synthIndex !== null) {
+			let filterF = pattern.patternData[j].filtF[stepIndex];
+			let filterQ = pattern.patternData[j].filtQ[stepIndex];
+
+			if (synthIndex !== null) {
 				let synth = synths[synthIndex];
 
 				let attackTime = time;
 				let lenCoef = lengths[stepIndex] / 100;
 				let stepLen = (60 / songObj.bpm) / 4 - 0.001;
 				let stopTime = time + lenCoef * stepLen;
+
+				synth.filterSweep(filterF, filterQ, time, stepLen);
+
+				if (!note)
+					continue;
 
 				if (songObj.swing && isSwingedStep) {
 					attackTime = time + stepLen * songObj.swing / 200;

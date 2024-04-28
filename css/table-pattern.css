@@ -44,7 +44,7 @@
 	border-bottom: 1px solid #6a6a6a;
 }
 
-#pattern-main table tr:not(:first-child) td:nth-child(4n+2):not(.shade) {
+#pattern-main table tr:not(:first-child):not(:last-child) td:nth-child(4n+2):not(.shade) {
 	background-color: #1e1e1e;
 }
 
@@ -83,6 +83,10 @@
 	border-right: 8px solid #111;
 	border-top: 1px solid #111;
 	border-bottom: 2px solid #111;
+}
+
+#pattern-main table td.key--pressed {
+	border-color: #d44;
 }
 
 #note-length-control {
@@ -144,7 +148,7 @@
 	background-color: #111;
 	border: 1px solid #696969;
 	box-sizing: border-box;
-	background-image: url("../img/volume.svg");
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' height='21' width='47'><path d='M 0,21 47,21 47,0' style='fill:rgb(153,221,119);stroke:none'/></svg>");
 	background-position: 1px 2px;
 	background-size: 47px 21px;
 	background-repeat: no-repeat;
@@ -291,4 +295,139 @@
 
 .vol--96::before {
 	box-shadow: inset 0 17px 0 0 rgba(0, 0, 0, 0.3);
+}
+
+#pattern-main table tr:last-child td {
+	bottom: 0;
+	position: -webkit-sticky;
+	position: sticky;
+	z-index: 1;
+	border-top: 1px solid #444;
+	height: 30px;
+}
+
+#pattern-main table tr:last-child td:first-child {
+	z-index: 2;
+	overflow: visible;
+	border: 1px solid #555;
+	background-color: #333;
+}
+
+#pattern-main table tr:last-child td:first-child:hover {
+	background-color: #3c3c3c;
+}
+
+#pattern-auto-row td {
+	background-color: #111;
+}
+
+#pattern-auto-row td.active {
+	background-color: #241a34;
+}
+
+#pattern-auto-row .filter-bar {
+	position: absolute;
+	left: 1px;
+	bottom: 1px;
+	width: 6px;
+	background-color: #333;
+	pointer-events: none;
+}
+
+#pattern-auto-row .filter-bar:last-child {
+	left: 8px;
+}
+
+#pattern-auto-row td.active .filter-bar {
+	background-color: #b4d;
+}
+
+#pattern-auto-row td.active .filter-bar:last-child {
+	background-color: #97d;
+}
+
+#pattern-auto-row.inactive td {
+	background-color: #090909;
+}
+
+#pattern-auto-row.inactive td.active {
+	background-color: #322;
+}
+
+#pattern-auto-row.inactive td > div {
+	display: none;
+}
+
+#automation-levels-set .filter-bar {
+	position: absolute;
+	left: 1px;
+	bottom: 1px;
+	width: 12px;
+	background-color: #b4d;
+	pointer-events: none;
+}
+
+#automation-levels-set .filter-bar:last-child {
+	position: absolute;
+	left: 14px;
+	bottom: 1px;
+	width: 12px;
+	background-color: #97d;
+	pointer-events: none;
+}
+
+#automation-levels-control {
+	position: absolute;
+	left: 2px;
+	bottom: 32px;
+	height: 208px;
+	width: 64px;
+	border: 1px solid #696969;
+	border-radius: 3px;
+	background-color: #191919;
+}
+
+#automation-levels-control > span {
+	display: inline-block;
+	width: 100%;
+	text-align: center;
+	margin-top: 4px;
+	font-weight: normal;
+	color: #ddd;
+}
+
+#automation-levels-control > span:before {
+	content: "F";
+	position: absolute;
+	top: 1.4rem;
+	left: 4px;
+	width: 24px;
+	text-align: center;
+	color: #555;
+}
+
+#automation-levels-control > span:after {
+	content: "P";
+	position: absolute;
+	top: 1.4rem;
+	right: 4px;
+	width: 24px;
+	text-align: center;
+	color: #555;
+}
+
+#automation-levels-control input[type=range] {
+	/*appearance: slider-vertical;*/
+	height: 28px;
+	position: absolute;
+	bottom: -25px;
+	left: 3px;
+	width: 160px;
+	transform-origin: top left;
+	transform: rotate(-90deg);
+	background-image: url("../img/range-short.svg");
+}
+
+#automation-levels-control input[type=range]:last-child {
+	left: 33px;
 }
