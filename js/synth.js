@@ -68,7 +68,9 @@ function Synth(outputNode, transportBPM) {
 	this.lastFXType = null;
 	this.FXsync = false;
 	this.glide = 0;
+	this.porta = false;
 	this.lfo1sync = false;
+	this.lfo2retrig = false;
 
 	this.envelope.chain(this.ampAM);
 	this.ampAM.chain(this.ampout);
@@ -89,8 +91,16 @@ function Synth(outputNode, transportBPM) {
 	};
 
 	this.triggerAttack = function (note, volumeMod, time, duration) {
+		if (this.porta && lastNote) {
+			if (note != lastNote) {
+				let freq = Tone.Frequency(note).toFrequency();
+				freqSignal.linearRampTo(freq, duration * this.glide, time);
+			}
+		} else {
+			freqSignal.setValueAtTime(note, time);
+		}
+
 		lastNote = note;
-		freqSignal.setValueAtTime(note, time);
 
 		if (volumeMod != lastVolumeMod) {
 			if (lastVolumeMod < volumeMod) {
@@ -108,6 +118,11 @@ function Synth(outputNode, transportBPM) {
 
 		if (this.envelopeMod)
 			this.envelopeMod.triggerAttack(time);
+
+		if (this.lfo2 && this.lfo2retrig) {
+			this.lfo2.stop(time);
+			this.lfo2.start(time);
+		}
 	}
 
 	this.triggerRelease = function (time) {
@@ -166,6 +181,20 @@ function Synth(outputNode, transportBPM) {
 			this.filter.frequency.linearRampTo(fRamp, glideTime, time);
 			filterFreqSweep = fInput;
 		}
+	}
+
+	this.resetFilter = function () {
+		if (!this.filter)
+			return;
+
+		this.filter.frequency.value = this.values.filterFreqValue;
+		this.filter.Q.value = this.values.filterQValue;
+		filterFreqSweep = this.filterFreqInput;
+		filterQSweep = this.values.filterQValue
+	}
+
+	this.resetPorta = function () {
+		lastNote = "";
 	}
 
 	this.mute = function (isMute) {
@@ -363,8 +392,7 @@ function Synth(outputNode, transportBPM) {
 
 				console.log("add filter");
 			}
-			this.filter.frequency.value = this.values.filterFreqValue;
-			this.filter.Q.value = this.values.filterQValue;
+			this.resetFilter();
 		}
 	}
 

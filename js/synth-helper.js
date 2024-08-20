@@ -6,16 +6,17 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 	let mixerIsShown = false;
 
 	let deleteSynthBtn = document.getElementById("button-delete-synth");
+	let synthNameArea = document.getElementById("synth-name-area");
 
 	document.getElementById("button-add-synth").addEventListener("click", () => {
 		let defaultName = songObj.generateSynthName();
-		showPrompt("Enter synth name", (result) => {
-			if (!result) {
-				console.log("Synth NOT created");
+		showPrompt("Create synthesizer", (result) => {
+			if (result === null)
 				return;
-			}
-			that.createNewSynth(result);
+
+			that.createNewSynth(result || "");
 			g_switchTab("synth");
+			showToast("New synthesizer");
 		}, defaultName);
 	});
 
@@ -44,7 +45,45 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		rebuildPatternSynthListCallback(false);
 	};
 
-	document.getElementById("button-synth-menu-open").onclick = () => {
+	let isSynthGrouped = false;
+	let groupButton = document.getElementById("button-toggle-group");
+	let synthGroups = document.querySelectorAll("#synth-main > div:not(:first-child)");
+
+	let groupTabs = document.querySelectorAll(".group-tab");
+	groupTabs.forEach(e => { e.onclick = groupTabListener });
+
+	groupButton.onclick = () => {
+		let groupBlock = document.getElementById("synth-grouping");
+
+		if (isSynthGrouped) {
+			groupBlock.classList.add("synth-ungroup");
+			groupButton.textContent = "Group";
+			groupTabs.forEach(e => { e.classList.remove("tab--active") });
+			synthGroups.forEach(e => { e.classList.remove("nodisplay") });
+		} else {
+			groupBlock.classList.remove("synth-ungroup");
+			groupButton.textContent = "All";
+		}
+
+		isSynthGrouped = !isSynthGrouped;
+	}
+
+	function groupTabListener() {
+		groupTabs.forEach(e => { e.classList.remove("tab--active") });
+		this.classList.add("tab--active");
+		let group = this.dataset.group;
+		synthGroups.forEach(e => {
+			if (e.classList.contains(group))
+				e.classList.remove("nodisplay")
+			else
+				e.classList.add("nodisplay")
+		});
+	}
+
+	document.getElementById("button-synth-menu-open").onclick = synthMenuOpen;
+	synthNameArea.onclick = synthMenuOpen;
+
+	function synthMenuOpen() {
 		selectedSynthIndex = songObj.currentSynthIndex;
 		openSynthMenu();
 	};
@@ -55,17 +94,14 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 
 	let synthNameInput = document.getElementById("input-synth-name");
 	synthNameInput.addEventListener("change", (event) => {
-		let value = event.target.value;
+		let value = event.target.value || "";
 
-		if (value) {
-			songObj.synthNames[selectedSynthIndex] = value;
-			that.rebuildSynthList();
-			rebuildPatternSynthListCallback(false);
+		songObj.synthNames[selectedSynthIndex] = value;
+		that.rebuildSynthList();
+		rebuildPatternSynthListCallback(false);
 
-			if (selectedSynthIndex == songObj.currentSynthIndex) {
-				let synthName = document.getElementById("synth-name-area");
-				synthName.textContent = value;
-			}
+		if (selectedSynthIndex == songObj.currentSynthIndex) {
+			synthNameArea.textContent = value;
 		}
 	});
 
@@ -81,7 +117,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			return;
 		}
 
-		showConfirm("Delete selected synth?", (isOk) => {
+		showConfirm("Delete selected synthesizer?", (isOk) => {
 			if (!isOk)
 				return;
 
@@ -93,6 +129,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			updateMuteMarkers();
 			g_switchTab("synth-list");
 			hideModal("synth-modal-menu");
+			showToast("Synthesizer deleted");
 		});
 	};
 
@@ -111,6 +148,17 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			let synthParams = this.loadSynth(SYNTH_PRESETS[index], synth);
 			songObj.synthParams[selectedSynthIndex] = synthParams;
 
+			// Clear name to prevent number cycling
+			songObj.synthNames[selectedSynthIndex] = "";
+			let newName = SYNTH_PRESETS[index]["-name"].split(" ")[0];
+			if (newName == "[default]")
+				songObj.synthNames[selectedSynthIndex] = songObj.generateSynthName("synth", selectedSynthIndex + 1);
+			else
+				songObj.synthNames[selectedSynthIndex] = songObj.generateSynthName(newName, 0);
+
+			rebuildPatternSynthListCallback(false);
+			that.rebuildSynthList();
+
 			if (selectedSynthIndex == songObj.currentSynthIndex)
 				synthUi.assignSynth(synthParams, synth, songObj.synthNames[selectedSynthIndex]);
 
@@ -122,7 +170,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		let name = songObj.synthNames[selectedSynthIndex];
 		let defaultName = songObj.generateSynthName(name.split("-")[0] + "-", 2);
 
-		showPrompt("Copy synth \"" + name + "\" to", (result) => {
+		showPrompt("Copy synth '" + name + "' to", (result) => {
 			if (result === null)
 				return;
 
@@ -168,6 +216,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			that.rebuildSynthList();
 			g_switchTab("synth-list");
 			hideModal("synth-modal-menu");
+			showToast("Synthesizer copied");
 		}, defaultName);
 	};
 
@@ -194,6 +243,11 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			let newParams = that.loadSynth(params, synth);
 			for (let key in newParams)
 				synthParams[key] = newParams[key];
+
+			let newName = songObj.generateSynthName(file.name.split(".")[0].split(" ")[0], 0);
+			songObj.synthNames[selectedSynthIndex] = newName;
+			rebuildPatternSynthListCallback(false);
+			that.rebuildSynthList();
 
 			if (selectedSynthIndex == songObj.currentSynthIndex)
 				synthUi.assignSynth(synthParams, synth, songObj.synthNames[selectedSynthIndex]);

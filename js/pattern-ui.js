@@ -39,9 +39,11 @@ function PatternUi(songObj, assignSynthCallback) {
 	let isSidekeyPalying = false;
 	let lastSideKey;
 
-	let patternName = document.getElementById("pattern-name-area");
+	let patternNameArea = document.getElementById("pattern-name-area");
 	let pattern = document.getElementById("pattern-main");
 
+	let lControl = document.createElement("DIV");
+	lControl.id = "note-length-control";
 	let volumeControl = document.createElement("DIV");
 	volumeControl.id = "note-volume-control";
 
@@ -85,7 +87,8 @@ function PatternUi(songObj, assignSynthCallback) {
 				clearLineOfNotes();
 			else
 				setLineOfNotes();
-		}, 400)
+
+		}, DEFAULT_PARAMS.pressDelay);
 	});
 
 	table.addEventListener("click", (e) => {
@@ -130,27 +133,66 @@ function PatternUi(songObj, assignSynthCallback) {
 	table.addEventListener("pointerleave", pointerEndListener);
 	table.addEventListener("touchend", pointerEndListener);
 
+	lControl.addEventListener("click", (event) => {
+		if (cancelClick)
+			return;
+
+		lControl.classList.remove("control-fill-" + lengthMod);
+
+		let fullWidth = event.target.clientWidth;
+		if (event.offsetX < fullWidth / 2)
+			lengthMod -= 25;
+		else
+			lengthMod += 25;
+
+		if (lengthMod == 74)
+			lengthMod = 75;
+
+		if (lengthMod == 124)
+			lengthMod = 100;
+
+		if (lengthMod > 100)
+			lengthMod = 25;
+
+		if (lengthMod < 25)
+			lengthMod = 100;
+
+		lControl.classList.add("control-fill-" + lengthMod);
+	});
+
+	lControl.addEventListener("pointerdown", () => {
+		cancelClick = false;
+
+		pressTimeout = setTimeout(() => {
+			cancelClick = true;
+
+			lControl.classList.remove("control-fill-" + lengthMod);
+			lengthMod = 99;
+			lControl.classList.add("control-fill-" + lengthMod);
+
+		}, DEFAULT_PARAMS.pressDelay);
+	});
+
 	volumeControl.addEventListener("click", (event) => {
 		let fullWidth = event.target.clientWidth;
+		let direction = event.offsetX < fullWidth / 2 ? -1 : 1;
 
-		if (event.offsetX < fullWidth / 2) {
-			volumeMod -= velocityStep;
-			volumeMod = Math.ceil(volumeMod / velocityStep) * velocityStep;
-		} else {
-			volumeMod += velocityStep;
-			volumeMod = Math.floor(volumeMod / velocityStep) * velocityStep;
-		}
+		if (!cancelClick)
+			volumeControlReceiver(direction, false);
+	});
 
-		let minVelocity = Math.ceil(-90 / velocityStep) * velocityStep
+	volumeControl.addEventListener("pointerdown", (event) => {
+		let fullWidth = event.target.clientWidth;
+		let direction = event.offsetX < fullWidth / 2 ? -1 : 1;
+		cancelClick = false;
 
-		if (volumeMod > 0)
-			volumeMod = minVelocity;
+		pressTimeout = setTimeout(() => {
+			cancelClick = true;
 
-		if (volumeMod < minVelocity)
-			volumeMod = 0;
+			volumeControlReceiver(direction, true);
+			showToast("Velocity " + (100 + volumeMod) + "%");
 
-		let shadow = "inset " + Math.round(fullWidth * volumeMod / 100 - 1) + "px 0 0 0 #111";
-		event.target.style.boxShadow = shadow;
+		}, DEFAULT_PARAMS.pressDelay);
 	});
 
 
@@ -164,8 +206,6 @@ function PatternUi(songObj, assignSynthCallback) {
 			showToast((8 * 12 / velocityStep) + " levels for note volume control")
 		}
 
-		let lControl;
-
 		for (let i = 0; i <= DEFAULT_PARAMS.noteSet.length; i++) {
 			let tr = document.createElement("TR");
 			table.appendChild(tr);
@@ -173,8 +213,6 @@ function PatternUi(songObj, assignSynthCallback) {
 				let td = document.createElement("TD");
 
 				if (i == 0 && j == 0) {
-					lControl = document.createElement("DIV");
-					lControl.id = "note-length-control";
 					lControl.classList.add("control-fill-" + lengthMod);
 					td.appendChild(lControl);
 				}
@@ -211,24 +249,6 @@ function PatternUi(songObj, assignSynthCallback) {
 				}
 			}
 		}
-
-		lControl.addEventListener("click", (event) => {
-			lControl.classList.remove("control-fill-" + lengthMod);
-
-			let fullWidth = event.target.clientWidth;
-			if (event.offsetX < fullWidth / 2)
-				lengthMod -= 25;
-			else
-				lengthMod += 25;
-
-			if (lengthMod > 100)
-				lengthMod = 25;
-
-			if (lengthMod < 25)
-				lengthMod = 100;
-
-			lControl.classList.add("control-fill-" + lengthMod);
-		});
 
 		buildAutomationRow();
 		pattern.appendChild(table);
@@ -299,8 +319,31 @@ function PatternUi(songObj, assignSynthCallback) {
 		importShadowData(dataArr, currentIndex);
 		updateBarSeparator();
 
-		patternName.innerHTML = "";
-		patternName.appendChild(document.createTextNode(data.name));
+		patternNameArea.textContent = data.name;
+	}
+
+	function volumeControlReceiver(direction, isHalfStep) {
+		let step = isHalfStep ? velocityStep / 2 : velocityStep;
+
+		if (direction < 0) {
+			volumeMod -= step;
+			volumeMod = Math.ceil(volumeMod / step) * step;
+		} else {
+			volumeMod += step;
+			volumeMod = Math.floor(volumeMod / step) * step;
+		}
+
+		let threshold = isHalfStep ? step : 10;
+		let minVelocity = Math.ceil((threshold - 100) / step) * step;
+
+		if (volumeMod > 0)
+			volumeMod = minVelocity;
+
+		if (volumeMod < minVelocity)
+			volumeMod = 0;
+
+		let shadow = "inset " + Math.round(volumeControl.clientWidth * volumeMod / 100 - 1) + "px 0 0 0 #111";
+		volumeControl.style.boxShadow = shadow;
 	}
 
 	function pointerEndListener() {
@@ -496,7 +539,8 @@ function PatternUi(songObj, assignSynthCallback) {
 				fRange.dispatchEvent(new Event("change"));
 				qRange.dispatchEvent(new Event("change"));
 				showToast("Values copied");
-			}, 400)
+
+			}, DEFAULT_PARAMS.pressDelay);
 		});
 
 		for (let j = 0; j <= maxSequencerLength; j++) {
@@ -776,7 +820,7 @@ function PatternUi(songObj, assignSynthCallback) {
 			if (index === null)
 				name = "[none]";
 			else
-				name = songObj.synthNames[index];
+				name = songObj.synthNames[index] || "[ ... ]";
 
 			if (index !== null && songObj.synths[index].isMuted)
 				tab.classList.add("muted-m-mark");

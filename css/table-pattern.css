@@ -135,6 +135,11 @@
 	background-image: linear-gradient(90deg, #55c 0px, #55c 75%, transparent 75%);
 }
 
+.control-fill-99:before {
+	background-image: linear-gradient(90deg, #55c 0px, #55c 94%, transparent 75%);
+	border-right: 2px solid #696969;
+}
+
 .control-fill-100:before {
 	background-image: linear-gradient(90deg, #55c 0px, #55c 100%);
 }
@@ -211,6 +216,18 @@
 	left: 0;
 	bottom: 0;
 	right: 20%;
+	background-color: #55f;
+	pointer-events: none;
+	border: 1px solid #111;
+}
+
+.fill-99::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
 	background-color: #55f;
 	pointer-events: none;
 	border: 1px solid #111;
@@ -417,7 +434,6 @@
 }
 
 #automation-levels-control input[type=range] {
-	/*appearance: slider-vertical;*/
 	height: 28px;
 	position: absolute;
 	bottom: -25px;

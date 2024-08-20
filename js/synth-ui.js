@@ -280,12 +280,7 @@ function SynthUi(songObj) {
 			}
 		}
 
-		if (name) {
-			let synthTab = document.getElementById("synth-name-area");
-			synthTab.innerHTML = "";
-			synthTab.appendChild(document.createTextNode(name));
-		}
-
+		document.getElementById("synth-name-area").textContent = name;
 		this.updateMuteControls(targetSynth);
 	}
 

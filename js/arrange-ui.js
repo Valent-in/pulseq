@@ -37,17 +37,15 @@ function ArrangeUi(songObj, onPatternSelectCallback, defaults) {
 
 	document.getElementById("button-add-pattern").onclick = () => {
 		let defaultName = songObj.generatePatternName();
-		showPrompt("Enter pattern name", (result) => {
-
-			if (!result) {
-				showToast("Pattern NOT created");
+		showPrompt("Create pattern", (result) => {
+			if (result === null)
 				return;
-			}
 
 			songObj.patterns[rowCount] = new Pattern(result, songObj.barSteps);
 			addRow(result);
 			showPattern(rowCount - 1);
-			g_scrollToLastPatten();
+			showToast("New pattern");
+			g_scrollToLastPattern();
 		}, defaultName);
 	};
 
@@ -252,7 +250,8 @@ function ArrangeUi(songObj, onPatternSelectCallback, defaults) {
 
 			updateTimerView();
 			showModal("column-modal-menu");
-		}, 400);
+
+		}, DEFAULT_PARAMS.pressDelay);
 	}
 
 	function updateTimerView() {
@@ -367,8 +366,6 @@ function ArrangeUi(songObj, onPatternSelectCallback, defaults) {
 	}
 
 	function addRow(name) {
-		name = name ? name : "undf" + (rowCount + 1);
-
 		let tr = document.createElement("TR");
 		for (let j = 0; j <= columnCount; j++) {
 			let td = document.createElement("TD");

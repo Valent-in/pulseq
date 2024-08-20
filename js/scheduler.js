@@ -20,6 +20,11 @@ function Scheduler(songObj, barCallback, stepCallback) {
 	this.playSong = () => {
 		stop();
 
+		for (let i = 0; i < songObj.synths.length; i++) {
+			songObj.synths[i].resetFilter();
+			songObj.synths[i].resetPorta();
+		}
+
 		isPlaying = true;
 		isPatternPlaying = false;
 		scheduleSong();

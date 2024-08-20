@@ -1,7 +1,7 @@
 "use strict";
 
 function Pattern(name, steps) {
-	this.name = name || "ptrn";
+	this.name = name || "";
 	this.length = steps || 16;
 	this.colorIndex = 0;
 	this.patternData = [];

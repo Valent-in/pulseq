@@ -68,7 +68,7 @@ function SongObject() {
 
 		this.synthParams.push(newSynthParamObj);
 		this.synths.push(newSynth);
-		this.synthNames.push(name);
+		this.synthNames.push(name || "");
 	}
 
 	this.deleteSynth = function (index) {
@@ -402,9 +402,12 @@ function SongObject() {
 	}
 
 	function generateName(prefix, givenArray, startIndex) {
-		let index = startIndex || (givenArray.length + 1);
+		let index = startIndex;
 
-		let name = String(prefix) + index;
+		if (startIndex === undefined)
+			index = givenArray.length + 1;
+
+		let name = String(prefix) + (index || "");
 
 		while (givenArray.some(e => e == name))
 			name = String(prefix) + ++index;

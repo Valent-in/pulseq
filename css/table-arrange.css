@@ -42,8 +42,8 @@
 }
 
 #arrange-main td:first-child {
-	min-width: 55px;
-	max-width: 55px;
+	min-width: 59px;
+	max-width: 59px;
 	position: -webkit-sticky;
 	position: sticky;
 	left: 0;
@@ -101,5 +101,5 @@
 }
 
 #arrange-main td.current-pattern-mark {
-	box-shadow: inset -8px 0 #444;
+	box-shadow: inset -19px 0 #444;
 }

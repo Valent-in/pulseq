@@ -2,13 +2,15 @@
 
 const DEFAULT_PARAMS = {};
 
-DEFAULT_PARAMS.programVersion = "1.1";
-DEFAULT_PARAMS.fileFormatVersion = "1.7";
+DEFAULT_PARAMS.programVersion = "1.2";
+DEFAULT_PARAMS.fileFormatVersion = "1.8";
 
 DEFAULT_PARAMS.maxPatternSteps = 64;
 
 DEFAULT_PARAMS.minSongBars = 32;
 DEFAULT_PARAMS.emptyBarsBuffer = 8;
+
+DEFAULT_PARAMS.pressDelay = 380;
 
 DEFAULT_PARAMS.synthState = {
 	"synth-amplifier-gain": 1,
@@ -34,6 +36,7 @@ DEFAULT_PARAMS.synthState = {
 	"synth-lfo1-sync": false,
 	"synth-lfo1-type": "[none]",
 	"synth-lfo2-frequency": 0,
+	"synth-lfo2-retrig": false,
 	"synth-lfo2-type": "[none]",
 	"synth-mod-envelope-attack": 6,
 	"synth-mod-envelope-decay": 6,
@@ -58,7 +61,8 @@ DEFAULT_PARAMS.synthState = {
 	"synth-osc3-level": 0,
 	"synth-osc3-octave": 0,
 	"synth-osc3-type": "[none]",
-	"synth-pan": 0
+	"synth-pan": 0,
+	"synth-porta": false
 };
 
 DEFAULT_PARAMS.noteSet = [

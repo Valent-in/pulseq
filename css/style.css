@@ -13,6 +13,12 @@ a {
 	color: #55f;
 }
 
+input[type=checkbox],
+button.button--small,
+label {
+	position: relative;
+}
+
 .app-title-pulseq {
 	font-weight: bold;
 	color: #ddd;
@@ -58,12 +64,6 @@ a {
 	box-sizing: border-box;
 }
 
-@media (orientation: portrait) {
-	#container.fullscreen-padding {
-		padding-top: 16px;
-	}
-}
-
 #header {
 	display: flex;
 	border-bottom: 2px solid #696969;
@@ -89,6 +89,7 @@ a {
 
 .tab {
 	min-width: 2.4rem;
+	min-height: 1rem;
 	text-align: center;
 	padding: 2px 6px;
 	color: #777;
@@ -200,20 +201,9 @@ a {
 	background-color: #111;
 }
 
-@media (orientation: portrait) {
-	.fullscreen-padding .footer {
-		padding-bottom: 16px;
-	}
-}
-
 .footer-menu {
 	float: right;
 	overflow: hidden;
-}
-
-.footer-menu > div {
-	float: right;
-	margin: 2px;
 }
 
 .footer-menu > button {
@@ -239,13 +229,16 @@ button.button--play.button--play-loop {
 #song-title-area,
 #synth-name-area {
 	color: #fa0;
-	padding: 2px 8px;
+	padding: 0 12px 2px 8px;
 	max-width: 40vw;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	-webkit-user-select: none;
 	user-select: none;
+	cursor: pointer;
+	margin: 4px -2px 2px 2px;
+	float: right;
 }
 
 #arrange-main {
@@ -309,6 +302,7 @@ button.button--play.button--play-loop {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: center;
+	align-content: flex-start;
 	height: 95vh;
 	overflow-y: auto;
 	margin-bottom: calc(1rem + 16px + 60px);
@@ -348,6 +342,52 @@ button.button--play.button--play-loop {
 	margin: 5px;
 }
 
+#synth-main input[type=checkbox] {
+	margin-left: 12px;
+}
+
+#synth-main #synth-grouping {
+	border: none;
+	background-color: inherit;
+	padding: 0 6px;
+	min-width: 90%;
+}
+
+#synth-main .synth-ungroup {
+	margin: 2px 0;
+}
+
+.synth-ungroup .group-tab,
+.synth-ungroup br {
+	display: none;
+}
+
+.synth-ungroup #button-toggle-group {
+	float: right;
+}
+
+#button-toggle-group {
+	vertical-align: bottom;
+	min-width: 2rem;
+}
+
+.group-tab {
+	display: inline-block;
+	border: 1px solid #333;
+	position: relative;
+	background-color: #191919;
+}
+
+.group-tab.tab--active {
+	background-color: #225;
+	border: 1px solid #55c;
+	color: #ccc;
+}
+
+.group-tab.tab--active:hover {
+	color: #eee;
+}
+
 @media (min-width: 720px) and (max-width: 1279px) {
 	#synth-main > div {
 		max-width: 41vw;
@@ -371,6 +411,10 @@ button.button--play.button--play-loop {
 	#synth-main select {
 		max-width: 30%;
 		text-overflow: ellipsis;
+	}
+
+	#synth-main .synth-ungroup {
+		display: none;
 	}
 }
 
@@ -463,16 +507,6 @@ button.button--play.button--play-loop {
 	font-weight: bold;
 }
 
-.highlight-violet {
-	color: #b9f;
-	font-weight: bold;
-}
-
-.highlight-pink {
-	color: #e88;
-	font-weight: bold;
-}
-
 input[type=range] {
 	width: 99%;
 	margin: -6px 0 2px 0;
@@ -497,6 +531,10 @@ input[type=range].range--8-marks {
 	background-image: url("../img/range8marks.svg");
 }
 
+input[type=range].range--8-marks-amp {
+	background-image: url("../img/range8marks2.svg");
+}
+
 input[type=range].range--10-marks {
 	background-image: url("../img/range10marks.svg");
 }
@@ -519,18 +557,11 @@ input[type=range].range--volume {
 	background-color: #111;
 }
 
-@media (orientation: portrait) {
-	.fullscreen-padding #synth-footer {
-		padding-bottom: 15px;
-	}
-}
-
 #synth-footer-controls {
 	padding: 1px 4vw;
 	overflow: hidden;
 }
 
-#synth-name-area,
 #synth-footer-controls > button {
 	float: right;
 	padding: 2px 8px;
@@ -554,7 +585,7 @@ input[type=range].range--volume {
 #piano-container {
 	-webkit-user-select: none;
 	user-select: none;
-	padding: 1px 0;
+	padding: 1px 0 3px 0;
 	/*fix content cut*/
 	min-width: 0;
 }
@@ -623,6 +654,7 @@ input[type=range].range--volume {
 	padding: 8px 12px;
 	width: 80%;
 	max-width: 80vh;
+	min-height: 2rem;
 	overflow: hidden;
 	-webkit-user-select: none;
 	user-select: none;
@@ -631,17 +663,8 @@ input[type=range].range--volume {
 	box-sizing: border-box;
 }
 
-.synth-list-entry--current:before {
-	content: "";
-	position: absolute;
-	left: 0;
-	top: 50%;
-	margin-top: -8px;
-	width: 0;
-	height: 0;
-	border-left: 6px solid #444;
-	border-top: 8px solid transparent;
-	border-bottom: 8px solid transparent;
+.synth-list-entry--current {
+	border-left: 9px solid #444;
 }
 
 .synth-list-entry:hover {
@@ -714,6 +737,32 @@ input[type=range].range--volume {
 
 .dim-text {
 	color: #555;
+}
+
+.highlight-violet {
+	color: #b9f;
+	font-weight: bold;
+}
+
+.highlight-pink {
+	color: #e88;
+	font-weight: bold;
+}
+
+.highlight-pinklight {
+	color: #faa;
+}
+
+.highlight-bluelight {
+	color: #bfe;
+}
+
+.highlight-violetlight {
+	color: #fbe;
+}
+
+.highlight-yellowlight {
+	color: #feb;
 }
 
 .modal-container {
@@ -804,15 +853,27 @@ input[type=range].range--volume {
 	border-radius: 5px;
 }
 
+#layer-dialog-block {
+	display: flex;
+	justify-content: center;
+}
+
+#layer-dialog-block > div {
+	border: 1px solid #333;
+	border-radius: 5px;
+	background-color: #161616;
+	padding: 1px 6px;
+}
+
 #synth-select-modal-menu .modal-box-footer {
 	margin-top: 0;
 }
 
 #button-synth-select {
-	width: 60%;
-	max-width: 40vw;
+	min-width: 75%;
+	max-width: 45vw;
 	box-sizing: border-box;
-	padding-right: 1rem;
+	padding-right: 1.1rem;
 	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' height='70' width='120'><path d='M 10,10 60,60 110,10' style='fill:none;stroke:rgb(150,150,150);stroke-width:20;stroke-linecap:round; stroke-linejoin:round'/></svg>");
 	background-position: center right 0.5em;
 	background-repeat: no-repeat;
@@ -870,6 +931,11 @@ button.button--highlight-orange {
 
 button.button--highlight-yellow {
 	box-shadow: inset 0 0 0 1px #980;
+}
+
+#input-fade-start,
+#input-fade-end {
+	width: 3rem;
 }
 
 #menu-synth-list-container {
@@ -1264,7 +1330,7 @@ button.button--arrow-up {
 	#song-title-area,
 	#synth-name-area,
 	#synth-list-caption-area {
-		padding: 4px 16px;
+		padding: 2px 16px 4px 16px;
 	}
 }
 
@@ -1274,11 +1340,41 @@ button.button--arrow-up {
 	}
 
 	#pattern-main.add-scrollbar-spacing > table {
-		margin-right: 16px;
+		padding-right: 16px;
 	}
 
 	#arrange-main.add-scrollbar-spacing {
 		padding-bottom: 16px;
 		border-bottom: 1px solid #222;
+	}
+}
+
+@media (orientation: portrait) {
+	.fullscreen-padding {
+		padding-top: 26px;
+	}
+
+	.fullscreen-padding .footer {
+		padding-bottom: 26px;
+	}
+
+	.fullscreen-padding #synth-footer {
+		padding-bottom: 25px;
+	}
+}
+
+@media (orientation: landscape) {
+
+	.fullscreen-padding #arrange-container,
+	.fullscreen-padding #pattern-container {
+		padding-left: 21px;
+	}
+
+	.fullscreen-padding #pattern-container table {
+		padding-right: 20px;
+	}
+
+	.fullscreen-padding #pattern-main {
+		border-right: 1px solid #222;
 	}
 }

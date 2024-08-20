@@ -193,6 +193,11 @@ function synthParamApply(paramId, controlValue, synth) {
 			synth.glide = value;
 			break;
 
+		case "synth-porta":
+			value = controlValue;
+			synth.porta = value;
+			break;
+
 		// Panner
 		case "synth-pan":
 			synth.addPan(!!value);
@@ -237,6 +242,11 @@ function synthParamApply(paramId, controlValue, synth) {
 			synth.values.lfo2Value = lfoExp(value);
 			if (synth.lfo2)
 				synth.lfo2.frequency.value = synth.values.lfo2Value;
+			break;
+
+		case "synth-lfo2-retrig":
+			value = controlValue;
+			synth.lfo2retrig = value;
 			break;
 
 		case "synth-lfo2-type":

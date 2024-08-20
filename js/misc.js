@@ -41,7 +41,8 @@
 {
 	// Fullscreen mode
 	let fullBtn = document.getElementById("button-fullscreen");
-	let fullCheck = document.getElementById("input-fullscreen-padding");
+	let fullCheck = document.getElementById("input-fullscreen");
+	let paddingCheck = document.getElementById("input-fullscreen-padding");
 	let container = document.getElementById("container");
 
 	fullBtn.onclick = () => {
@@ -58,8 +59,16 @@
 			enterFullScrn();
 		else
 			exitFullscrn();
+	};
 
-		g_triggerResize();
+	paddingCheck.onchange = () => {
+		if (paddingCheck.checked) {
+			fullCheck.checked = true;
+			enterFullScrn();
+		} else {
+			container.classList.remove("fullscreen-padding");
+			g_triggerResize();
+		}
 	};
 
 	document.addEventListener("fullscreenchange", () => {
@@ -68,6 +77,8 @@
 			!document.msFullscreenElement) {
 			container.classList.remove("fullscreen-padding");
 			fullCheck.checked = false;
+		} else {
+			fullCheck.checked = true;
 		}
 
 		g_triggerResize();
@@ -83,7 +94,7 @@
 	};
 
 	function enterFullScrn() {
-		if (fullCheck.checked)
+		if (paddingCheck.checked)
 			container.classList.add("fullscreen-padding");
 
 		let elem = document.documentElement;
