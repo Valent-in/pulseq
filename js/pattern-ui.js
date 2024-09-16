@@ -1,6 +1,6 @@
 "use strict";
 
-function PatternUi(songObj, assignSynthCallback) {
+function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 	const maxSequencerLength = DEFAULT_PARAMS.maxPatternSteps;
 	let sequencerLength = maxSequencerLength;
 
@@ -835,6 +835,118 @@ function PatternUi(songObj, assignSynthCallback) {
 			tab.classList.add("js-pattern-layer-tab");
 			addLayerBtn.before(tab);
 			tab.addEventListener("click", patternLayerTabListener);
+		}
+	}
+
+
+	// Synth select dialog
+	let isCreateNewLayer = false;
+
+	this.showSynthSelectDialog = function () {
+		if (songObj.synths.length == 1) {
+			songObj.setCurrentLayerSynthIndex(0);
+			onSongChangeCallback(false);
+		} else {
+			isCreateNewLayer = true;
+			showSynthSelectList();
+		}
+	}
+
+	document.getElementById("button-add-pattern-layer").onclick = () => {
+		isCreateNewLayer = true;
+		showSynthSelectList();
+	};
+
+	document.getElementById("button-synth-select").onclick = () => {
+		isCreateNewLayer = false;
+		showSynthSelectList();
+	};
+
+	document.getElementById("menu-synth-list-container").onclick = (event) => {
+		if (!event.target.classList.contains("js-synth-list-entry"))
+			return;
+
+		hideModal("synth-select-modal-menu");
+
+		let isEmpty = songObj.getCurrentLayerSynthIndex() === null;
+
+		let index = Number(event.target.dataset.index);
+
+		if (!isCreateNewLayer &&
+			index == songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].synthIndex) {
+			showToast("Already selected");
+			return;
+		}
+
+		if (songObj.isSynthInCurrentPattern(index)) {
+			showAlert("Synth is already in this pattern");
+		} else {
+			let synthIndex = index >= 0 ? index : null;
+
+			if (songObj.testSynthOnPattern(synthIndex)) {
+				if (isCreateNewLayer)
+					songObj.currentPattern.addLayer();
+
+				songObj.setCurrentLayerSynthIndex(synthIndex);
+			} else {
+				showAlert("Collision with another pattern in track");
+			}
+		}
+
+		let synthName = songObj.getCurrentLayerSynthName();
+		let synthSelect = document.getElementById("button-synth-select");
+		synthSelect.textContent = synthName === null ? "[none]" : synthName || "[ ... ]";;
+
+		if (isCreateNewLayer || isEmpty)
+			onSongChangeCallback(false);
+		else
+			onSongChangeCallback(false, "release");
+
+		isCreateNewLayer = false;
+	};
+
+	document.getElementById("button-synth-select-close").onclick = () => {
+		hideModal("synth-select-modal-menu");
+	};
+
+	function showSynthSelectList() {
+		showModal("synth-select-modal-menu");
+
+		let listContainer = document.getElementById("menu-synth-list-container");
+		listContainer.innerHTML = "";
+
+		let noneEntry = document.createElement("DIV");
+		noneEntry.classList.add("js-synth-list-entry");
+		noneEntry.classList.add("synth-list-entry");
+		noneEntry.id = "synth-list-entry-none";
+
+		if (!isCreateNewLayer && songObj.getCurrentLayerSynthIndex() === null)
+			noneEntry.classList.add("synth-list-entry--current");
+
+		noneEntry.dataset.index = -1;
+		noneEntry.appendChild(document.createTextNode("[none]"));
+		listContainer.appendChild(noneEntry);
+
+		for (let i = 0; i < songObj.synthNames.length; i++) {
+			let entry = document.createElement("DIV");
+			entry.classList.add("js-synth-list-entry");
+			entry.classList.add("synth-list-entry");
+
+			if (!isCreateNewLayer && songObj.getCurrentLayerSynthIndex() === i)
+				entry.classList.add("synth-list-entry--current");
+
+			if (!songObj.testSynthOnPattern(i))
+				entry.classList.add("synth-list-entry--disabled");
+
+			if (isCreateNewLayer && songObj.isSynthInCurrentPattern(i))
+				entry.classList.add("synth-list-entry--disabled");
+
+			if (songObj.synths[i].isMuted)
+				entry.classList.add("muted-mark");
+
+			entry.dataset.index = i;
+			entry.appendChild(document.createTextNode(songObj.synthNames[i]));
+			listContainer.appendChild(entry);
 		}
 	}
 }

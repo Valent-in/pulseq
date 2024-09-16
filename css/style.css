@@ -13,6 +13,12 @@ a {
 	color: #55f;
 }
 
+span,
+label {
+	/*explicit size to fix inconsistent zoom in firefox*/
+	font-size: 1rem;
+}
+
 input[type=checkbox],
 button.button--small,
 label {
@@ -97,6 +103,7 @@ label {
 	border: 1px solid transparent;
 	border-radius: 3px;
 	position: relative;
+	font-size: 1rem;
 }
 
 .combined-tabs {
@@ -239,6 +246,7 @@ button.button--play.button--play-loop {
 	cursor: pointer;
 	margin: 4px -2px 2px 2px;
 	float: right;
+	font-size: 1rem;
 }
 
 #arrange-main {
@@ -303,7 +311,6 @@ button.button--play.button--play-loop {
 	flex-wrap: wrap;
 	justify-content: center;
 	align-content: flex-start;
-	height: 95vh;
 	overflow-y: auto;
 	margin-bottom: calc(1rem + 16px + 60px);
 	padding: 4px 0;
@@ -317,7 +324,7 @@ button.button--play.button--play-loop {
 	border-radius: 3px;
 	flex-grow: 1;
 	width: 100%;
-	min-width: 41vw;
+	min-width: 41%;
 	max-width: 55vh;
 	padding: 10px 15px;
 	margin: 4px;
@@ -390,18 +397,18 @@ button.button--play.button--play-loop {
 
 @media (min-width: 720px) and (max-width: 1279px) {
 	#synth-main > div {
-		max-width: 41vw;
+		max-width: 41%;
 	}
 }
 
 @media (min-width: 1280px) {
 	#synth-main > div {
 		max-width: 27vh;
-		min-width: 21vw;
+		min-width: 21%;
 	}
 
 	#synth-main .fx-spacer {
-		min-width: 21vw;
+		min-width: 21%;
 		padding: 14px 15px;
 		box-sizing: content-box;
 		text-align: right;
@@ -661,6 +668,7 @@ input[type=range].range--volume {
 	cursor: pointer;
 	position: relative;
 	box-sizing: border-box;
+	font-size: 1rem;
 }
 
 .synth-list-entry--current {
@@ -728,6 +736,7 @@ input[type=range].range--volume {
 	margin: 2px;
 	-webkit-user-select: none;
 	user-select: none;
+	font-size: 1rem;
 }
 
 .caption-text {
@@ -769,8 +778,8 @@ input[type=range].range--volume {
 	position: fixed;
 	top: 0;
 	left: 0;
-	width: 100vw;
-	height: 100%;
+	right: 0;
+	bottom: 0;
 	background-color: rgba(0, 0, 0, 0.6);
 	display: flex;
 	justify-content: center;
@@ -785,8 +794,9 @@ input[type=range].range--volume {
 	padding: 12px;
 	box-sizing: border-box;
 	max-height: 100vh;
-	max-width: 100vw;
+	max-width: 100%;
 	overflow-y: auto;
+	font-size: 1rem;
 }
 
 .modal-alert-box {
@@ -800,6 +810,10 @@ input[type=range].range--volume {
 
 .modal-box-block:first-child {
 	padding-top: 4px;
+}
+
+.modal-box-header {
+	padding-bottom: 8px;
 }
 
 .modal-box-block.modal-box-footer {
@@ -854,6 +868,7 @@ input[type=range].range--volume {
 }
 
 #layer-dialog-block {
+	padding: 12px 0 4px 0;
 	display: flex;
 	justify-content: center;
 }
@@ -934,14 +949,9 @@ button.button--highlight-yellow {
 }
 
 #input-fade-start,
-#input-fade-end {
+#input-fade-end,
+#input-zoom-value {
 	width: 3rem;
-}
-
-#menu-synth-list-container {
-	max-width: 55vh;
-	width: 75vw;
-	margin: 12px 16px 0 16px;
 }
 
 #menu-synth-list-container .synth-list-entry {
@@ -950,6 +960,19 @@ button.button--highlight-yellow {
 
 #synth-list-entry-none {
 	color: #e88;
+}
+
+#render-title {
+	display: inline-block;
+	padding-bottom: 8px;
+}
+
+#render-title + div {
+	display: inline-block;
+}
+
+#input-render-length {
+	width: 70px;
 }
 
 #export-ongoing-container {
@@ -1060,6 +1083,7 @@ input[type=file]:focus + span {
 
 #input-synth-name {
 	width: 10rem;
+	min-width: 50%;
 	flex-grow: 1;
 	margin-left: 8px;
 }
@@ -1084,6 +1108,20 @@ input[type=file]:focus + span {
 	padding: 0;
 }
 
+.narrow-modal {
+	width: 480px;
+	max-width: 90%;
+}
+
+.scrollable-modal-header {
+	padding: 8px 12px 4px 12px;
+}
+
+.non-scrollable-modal-header {
+	padding: 0 4px;
+	margin-bottom: -8px;
+}
+
 .scrollable-modal .modal-box-footer {
 	flex-shrink: 0;
 	margin: 0 12px 12px 12px;
@@ -1093,8 +1131,7 @@ input[type=file]:focus + span {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: center;
-	padding: 8px 8px 4px 8px;
-	min-width: 80vw;
+	padding: 4px 8px;
 }
 
 .mixer-entry {
@@ -1158,7 +1195,7 @@ input[type=file]:focus + span {
 
 #additional-table {
 	width: 360px;
-	max-width: 85vw;
+	max-width: 98%;
 }
 
 #additional-table td:first-child {
@@ -1171,13 +1208,8 @@ input[type=file]:focus + span {
 	text-align: right;
 }
 
-.dimmed-cell {
-	color: #555;
-}
-
 #pattern-list-container {
-	width: 480px;
-	max-width: 90vw;
+	padding-top: 4px;
 }
 
 .pattern-list-entry {
@@ -1186,6 +1218,7 @@ input[type=file]:focus + span {
 	border-radius: 3px;
 	margin: 4px auto;
 	padding: 2px 12px;
+	width: 80%;
 	max-width: 320px;
 	overflow: show;
 	-webkit-user-select: none;
@@ -1195,6 +1228,10 @@ input[type=file]:focus + span {
 	display: flex;
 	align-items: center;
 	cursor: pointer;
+}
+
+.pattern-list-entry:last-child {
+	margin-bottom: 8px;
 }
 
 .pattern-list-entry.drop-hint {
@@ -1232,11 +1269,8 @@ input[type=file]:focus + span {
 
 .pattern-list-entry > span {
 	flex-grow: 1;
-}
-
-.pattern-list-entry > span {
 	display: inline-block;
-	min-width: 120px;
+	min-width: 0;
 }
 
 .pattern-list-entry button {
@@ -1351,30 +1385,14 @@ button.button--arrow-up {
 
 @media (orientation: portrait) {
 	.fullscreen-padding {
-		padding-top: 26px;
+		padding-top: 23px;
 	}
 
 	.fullscreen-padding .footer {
-		padding-bottom: 26px;
+		padding-bottom: 23px;
 	}
 
 	.fullscreen-padding #synth-footer {
-		padding-bottom: 25px;
-	}
-}
-
-@media (orientation: landscape) {
-
-	.fullscreen-padding #arrange-container,
-	.fullscreen-padding #pattern-container {
-		padding-left: 21px;
-	}
-
-	.fullscreen-padding #pattern-container table {
-		padding-right: 20px;
-	}
-
-	.fullscreen-padding #pattern-main {
-		border-right: 1px solid #222;
+		padding-bottom: 22px;
 	}
 }

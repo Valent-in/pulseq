@@ -525,8 +525,8 @@
 
 		<div id="demo-modal-menu" class="modal-container nodisplay">
 			<div class="modal-box">
+				<div class="non-scrollable-modal-header" id="demo-list-header">Select track</div>
 				<div class="modal-box-block notranslate" translate="no" id="demo-list-container"></div>
-
 				<div class="modal-box-block modal-box-footer">
 					<button id="button-demo-menu-close" class="button-modal-bottom">Close</button>
 				</div>
@@ -543,25 +543,34 @@
 
 		<div id="settings-modal-menu" class="modal-container nodisplay">
 			<div class="modal-box">
-				<div class="modal-box-block notranslate" translate="no">
+				<div class="modal-box-block modal-box-header notranslate" translate="no">
 					<span class="app-title-pulseq">PulseQ</span>
 					<span class="app-title-ueue">ueue</span>
 					<span style="margin-left:12px;color:#555;">music creation app</span>
-					<a href="https://github.com/valent-in/pulseq/#pulsequeue" target="_blank" rel="noopener"
+					<a href="https://github.com/valent-in/pulseq#pulsequeue" target="_blank" rel="noopener"
 						title="GitHub" style="font-weight:bold;padding:0 6px;">?</a>
 				</div>
 				<div class="modal-box-block">
 					<input type="checkbox" id="input-fullscreen" autocomplete="off">
-					<label for="input-fullscreen">Fullscreen +</label>
-					<input type="checkbox" id="input-fullscreen-padding" autocomplete="off">
-					<label for="input-fullscreen-padding">Spacing</label>
+					<label for="input-fullscreen">Fullscreen</label>
+					<input type="checkbox" id="input-fullscreen-padding" style="margin-left: 8px" autocomplete="off">
+					<label for="input-fullscreen-padding">Camera notch</label>
 				</div>
 				<div class="modal-box-block">
 					<input type="checkbox" id="input-more-velosteps" autocomplete="off">
 					<label for="input-more-velosteps">More velocity steps</label>
 				</div>
 				<div class="modal-box-block">
+					<button id="button-cleanup-menu-open">Cleanup</button>
+				</div>
+				<div class="modal-box-block">
 					<button id="button-context-resume">Sound Fix</button>
+				</div>
+				<div class="modal-box-block">
+					<span>Zoom</span>
+					<input type="number" id="input-zoom-value">
+					<span class="dim-text">&percnt;</span>
+					<button id="button-zoom-set">Set</button>
 				</div>
 				<div class="modal-box-block modal-box-footer">
 					<button id="button-reset-app" class="highlight-pink">Title&sol;Reset</button>
@@ -633,10 +642,12 @@
 		<div id="export-modal-menu" class="modal-container nodisplay js-noskip">
 			<div class="modal-box">
 				<div class="modal-box-block">
-					<span>Export audio</span>
-					<input type="number" id="input-render-length" style="width: 70px;">
-					<span class="dim-text">sec.</span>
-					<button id="button-render" class="js-request-focus">Start</button>
+					<div id="render-title">Export audio</div>
+					<div>
+						<input type="number" id="input-render-length">
+						<span class="dim-text">sec.</span>
+						<button id="button-render" class="js-request-focus">Start</button>
+					</div>
 				</div>
 				<div class="modal-box-block nodisplay" id="export-menu-result-container">
 					<div id="export-ongoing-container">
@@ -656,11 +667,12 @@
 
 		<div id="midi-modal-menu" class="modal-container nodisplay">
 			<div class="modal-box">
-				<div class="modal-box-block">
-					<span>Export MIDI</span>
+				<div class="modal-box-block modal-box-header">
+					<span>Export MIDI:</span>
+					<a id="link-midi-download" href="">Download file</a>
 				</div>
 				<div class="modal-box-block">
-					<span class="dim-text">Velocity curve</span>
+					<span>Velocity curve</span>
 					<select id="select-velocity-scale" autocomplete="off">
 						<option>Exponential</option>
 						<option>Linear</option>
@@ -669,16 +681,12 @@
 				</div>
 				<div class="modal-box-block">
 					<input type="checkbox" id="input-export-glide" autocomplete="off" checked>
-					<label for="input-export-glide" class="dim-text">Note overlap for glide&sol;legato</label>
+					<label for="input-export-glide">Note overlap for glide&sol;legato</label>
 				</div>
 				<div class="modal-box-block">
 					<input type="checkbox" id="input-export-expand" autocomplete="off">
-					<label for="input-export-expand" class="dim-text">Expand short notes to 16th</label>
-				</div>
-				<div class="modal-box-block">
-					<div>
-						<a id="link-midi-download" href="">Download MIDI</a>
-					</div>
+					<label for="input-export-expand">Expand short notes to 16th</label>
+					<div></div>
 				</div>
 				<div class="modal-box-block modal-box-footer" id="export-menu-close-container">
 					<button id="button-midi-menu-close" class="button-modal-bottom">Close</button>
@@ -715,7 +723,7 @@
 						</td>
 					</tr>
 					<tr>
-						<td class="dimmed-cell">
+						<td class="dim-text">
 							Threshold
 						</td>
 						<td>
@@ -724,7 +732,7 @@
 						</td>
 					</tr>
 					<tr>
-						<td class="dimmed-cell">
+						<td class="dim-text">
 							Ratio
 						</td>
 						<td>
@@ -762,8 +770,10 @@
 		</div>
 
 		<div id="pattern-reorder-modal-menu" class="modal-container nodisplay">
-			<div class="modal-box scrollable-modal notranslate" translate="no">
-				<div class="modal-box-block" id="pattern-list-container">
+			<div class="modal-box scrollable-modal narrow-modal">
+				<div class="modal-box-block">
+					<div class="scrollable-modal-header">Reorder patterns</div>
+					<div id="pattern-list-container" class="notranslate" translate="no"></div>
 				</div>
 				<div class="modal-box-block modal-box-footer">
 					<button id="button-sort-patterns-asc" class="button--small">Asc.</button>
@@ -804,7 +814,7 @@
 						</td>
 					</tr>
 				</table>
-				<div id="layer-dialog-block" class="modal-box-block">
+				<div id="layer-dialog-block">
 					<div>
 						<table>
 							<tr>
@@ -832,11 +842,9 @@
 		</div>
 
 		<div id="synth-select-modal-menu" class="modal-container nodisplay">
-			<div class="modal-box">
+			<div class="modal-box scrollable-modal narrow-modal">
 				<div class="modal-box-block">
-					<div>
-						<span>Select Instrument</span>
-					</div>
+					<div class="scrollable-modal-header">Select Instrument</div>
 					<div id="menu-synth-list-container" class="notranslate" translate="no"></div>
 				</div>
 				<div class="modal-box-block modal-box-footer">
@@ -892,7 +900,7 @@
 				</div>
 				<div class="modal-box-block">
 					<input type="checkbox" id="input-copy-pattern-under" autocomplete="off">
-					<label for="input-copy-pattern-under" class="dim-text">Place under source</label>
+					<label for="input-copy-pattern-under">Place under source</label>
 					<div></div>
 				</div>
 				<div class="modal-box-block modal-box-footer">
@@ -932,7 +940,9 @@
 
 		<div id="mixer-modal-menu" class="modal-container nodisplay">
 			<div class="modal-box scrollable-modal">
-				<div class="modal-box-block notranslate" translate="no" id="mixer-list-container">
+				<div class="modal-box-block">
+					<div class="scrollable-modal-header">Mixer</div>
+					<div id="mixer-list-container" class="notranslate" translate="no"></div>
 				</div>
 				<div class="modal-box-block modal-box-footer">
 					<div class="div-mute-controls-modal">

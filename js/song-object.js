@@ -390,6 +390,116 @@ function SongObject() {
 		}
 	}
 
+	this.cleanup = function () {
+		// Delete layers without notes or assigned synth
+		for (let i = this.patterns.length - 1; i >= 0; i--) {
+			for (let j = 0; j < this.patterns[i].patternData.length; j++) {
+
+				let empty = true;
+				for (let k = 0; k < this.patterns[i].length; k++)
+					if (this.patterns[i].patternData[j].notes[k]) {
+						empty = false;
+						break;
+					}
+
+				if (empty)
+					this.patterns[i].patternData[j].synthIndex = null;
+
+				if (this.patterns[i].patternData[j].synthIndex === null)
+					if (this.patterns[i].patternData.length > 1) {
+						this.patterns[i].activeIndex = j;
+						this.patterns[i].deleteActiveLayer();
+					}
+			}
+
+			if (this.patterns.length > 1)
+				if (this.patterns[i].patternData[0].synthIndex === null) {
+					this.setCurrentPattern(i)
+					this.deleteCurrentPattern();
+				}
+		}
+
+		if (this.patterns.length <= 1)
+			return;
+
+		// Replace pattern duplicates with "origin"
+		for (let i = 0; i < this.patterns.length - 1; i++)
+			for (let j = i + 1; j < this.patterns.length; j++)
+				if (comparePatterns(this.patterns[i], this.patterns[j]))
+					for (let k = 0; k < this.song.length; k++)
+						if (this.song[k][j]) {
+							this.song[k][j] = false;
+							this.song[k][i] = true;
+						}
+
+		// Delete unused patterns
+		for (let i = this.patterns.length - 1; i >= 0; i--) {
+			let used = false;
+			for (let j = 0; j < this.song.length; j++)
+				if (this.song[j][i]) {
+					used = true;
+					break;
+				}
+
+			if (!used && this.patterns.length > 1) {
+				this.setCurrentPattern(i)
+				this.deleteCurrentPattern();
+			}
+		}
+	}
+
+	function comparePatterns(ptrn1, ptrn2) {
+		if (ptrn1.length != ptrn2.length)
+			return false;
+
+		if (ptrn1.patternData.length != ptrn2.patternData.length)
+			return false;
+
+		for (let i = 0; i < ptrn1.patternData.length; i++) {
+			if (ptrn1.patternData[i].synthIndex != ptrn2.patternData[i].synthIndex)
+				return false;
+
+			if (!compareArrays(ptrn1.patternData[i].notes, ptrn2.patternData[i].notes, false))
+				return false;
+
+			if (!compareArrays(ptrn1.patternData[i].lengths, ptrn2.patternData[i].lengths, false))
+				return false;
+
+			if (!compareArrays(ptrn1.patternData[i].volumes, ptrn2.patternData[i].volumes, false))
+				return false;
+
+			if (!compareArrays(ptrn1.patternData[i].filtF, ptrn2.patternData[i].filtF, true))
+				return false;
+
+			if (!compareArrays(ptrn1.patternData[i].filtQ, ptrn2.patternData[i].filtQ, true))
+				return false;
+		}
+
+		return true;
+	}
+
+	function compareArrays(arr1, arr2, isStrict) {
+		let len = Math.max(arr1.length, arr2.length);
+
+		for (let i = 0; i < len; i++) {
+			let a = arr1[i] || null;
+			let b = arr2[i] || null;
+
+			if (isStrict) {
+				if (arr1[i] === 0)
+					a = 0;
+
+				if (arr2[i] === 0)
+					b = 0;
+			}
+
+			if (a !== b)
+				return false;
+		}
+
+		return true;
+	}
+
 	function getPatternSynthIndexes(pattern) {
 		let patternSynthIndexes = [];
 		for (let i = 0; i < pattern.patternData.length; i++) {

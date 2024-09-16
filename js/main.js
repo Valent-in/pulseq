@@ -75,7 +75,7 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v" + DEFAULT_PARAMS.progra
 
 	const synthUi = new SynthUi(songObject);
 
-	const patternUi = new PatternUi(songObject, synthUi.assignSynth);
+	const patternUi = new PatternUi(songObject, synthUi.assignSynth, onSongChange);
 	patternUi.build();
 
 	const synthHelper = new SynthHelper(songObject, synthUi, updPatternSynthList);
@@ -121,9 +121,12 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v" + DEFAULT_PARAMS.progra
 		patternUi.rebuildPatternSynthList(songObject.currentPattern);
 	}
 
-	function onPatternSelect(newCurrentPattern) {
+	function onPatternSelect(newCurrentPattern, isNewPattern) {
 		scheduler.releasePattern();
 		patternUi.importSequence(newCurrentPattern);
 		patternUi.rebuildPatternSynthList(newCurrentPattern);
+
+		if (isNewPattern)
+			patternUi.showSynthSelectDialog();
 	}
 }

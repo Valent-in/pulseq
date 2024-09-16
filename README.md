@@ -3,7 +3,7 @@
 Minimalistic web-application for creating electronic music with digital synthesizers.  
 Initially designed as sketching tool but can be used for making full-fledged tracks :musical_note::notes:
 
-[:link: RUN IN BROWSER](https://valent-in.github.io/pulseq)
+**[:link: RUN IN BROWSER :link:](https://valent-in.github.io/pulseq)**
 
 - Simple and easy to use
 - Mobile-friendly

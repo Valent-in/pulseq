@@ -2,12 +2,6 @@
 
 function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallback, midiCallback) {
 
-	let isCreateNewLayer = false;
-	document.getElementById("button-add-pattern-layer").onclick = () => {
-		isCreateNewLayer = true;
-		showSynthSelectList();
-	};
-
 	const backupStorage = "pulseq-backup";
 	let storedSong = localStorage.getItem(backupStorage);
 
@@ -565,11 +559,6 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		}
 	};
 
-	document.getElementById("button-synth-select").onclick = () => {
-		isCreateNewLayer = false;
-		showSynthSelectList();
-	};
-
 	document.getElementById("button-color-select").onclick = () => {
 		let colorButtons = document.querySelectorAll("#color-list-container button.button--selected");
 		colorButtons.forEach(e => { e.classList.remove("button--selected") });
@@ -769,60 +758,21 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	};
 
 	/*
-	 * Synth modal menu
-	 */
-	document.getElementById("menu-synth-list-container").onclick = (event) => {
-		if (!event.target.classList.contains("js-synth-list-entry"))
-			return;
-
-		hideModal("synth-select-modal-menu");
-
-		let isEmpty = songObj.getCurrentLayerSynthIndex() === null;
-
-		let index = Number(event.target.dataset.index);
-
-		if (!isCreateNewLayer &&
-			index == songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].synthIndex) {
-			showToast("Already selected");
-			return;
-		}
-
-		if (songObj.isSynthInCurrentPattern(index)) {
-			showAlert("Synth is already in this pattern");
-		} else {
-			let synthIndex = index >= 0 ? index : null;
-
-			if (songObj.testSynthOnPattern(synthIndex)) {
-				if (isCreateNewLayer)
-					songObj.currentPattern.addLayer();
-
-				songObj.setCurrentLayerSynthIndex(synthIndex);
-			} else {
-				showAlert("Collision with another pattern in track");
-			}
-		}
-
-		let synthName = songObj.getCurrentLayerSynthName();
-		let synthSelect = document.getElementById("button-synth-select");
-		synthSelect.textContent = synthName === null ? "[none]" : synthName || "[ ... ]";;
-
-		if (isCreateNewLayer || isEmpty)
-			onSongChangeCallback(false);
-		else
-			onSongChangeCallback(false, "release");
-
-		isCreateNewLayer = false;
-	};
-
-	document.getElementById("button-synth-select-close").onclick = () => {
-		hideModal("synth-select-modal-menu");
-	};
-
-	/*
 	 * Settings modal menu
 	 */
+	let buttonZoom = document.getElementById("button-zoom-set");
+	let inputZoom = document.getElementById("input-zoom-value");
+	inputZoom.value = 100;
+
 	document.getElementById("button-settings-open").onclick = () => {
 		showModal("settings-modal-menu");
+		highlight(buttonZoom, false);
+
+		let zoom = getAppSettings("zoom");
+		if (zoom)
+			inputZoom.value = zoom;
+		else
+			inputZoom.value = 100;
 	};
 
 	document.getElementById("button-reset-app").onclick = () => {
@@ -834,6 +784,66 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			localStorage.removeItem(backupStorage);
 			window.onbeforeunload = null;
 			document.location.reload();
+		});
+	};
+
+	inputZoom.oninput = () => {
+		highlight(buttonZoom, true);
+	}
+
+	inputZoom.addEventListener("keyup", (event) => {
+		if (event.key == "Enter") {
+			setZoom();
+		}
+	});
+
+	buttonZoom.onclick = () => {
+		setZoom();
+	};
+
+	function setZoom() {
+		let zoom = Number(inputZoom.value);
+
+		if (zoom < 50 || zoom > 200) {
+			showAlert("Zoom percent should be in range 50-200");
+			return;
+		}
+
+		document.body.style.zoom = zoom + "%";
+		highlight(buttonZoom, false);
+
+		if (zoom == 100) {
+			setAppSettings("zoom", null);
+			return;
+		}
+
+		showConfirm("Keep this zoom value?", (isOk) => {
+			if (isOk) {
+				setAppSettings("zoom", zoom);
+			} else {
+				document.body.style.zoom = "100%";
+				setAppSettings("zoom", null);
+				inputZoom.value = 100;
+			}
+		});
+	}
+
+	document.getElementById("button-cleanup-menu-open").onclick = () => {
+
+		showConfirm("WARNING! Destructive operations ahead!", (isOk) => {
+			if (!isOk)
+				return;
+
+			showConfirm("This will delete unused patterns and layers.\nContinue?", (isOkay) => {
+				if (!isOkay)
+					return;
+
+				hideModal("settings-modal-menu");
+				songObj.cleanup();
+				onSongChangeCallback(true, "stop");
+				g_switchTab("arrange");
+				showToast("Cleanup...");
+			});
 		});
 	};
 
@@ -1016,47 +1026,6 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			link.style.display = "block";
 			progress.classList.remove("moving");
 			closeButton.style.display = "block";
-		}
-	}
-
-	function showSynthSelectList() {
-		showModal("synth-select-modal-menu");
-
-		let listContainer = document.getElementById("menu-synth-list-container");
-		listContainer.innerHTML = "";
-
-		let noneEntry = document.createElement("DIV");
-		noneEntry.classList.add("js-synth-list-entry");
-		noneEntry.classList.add("synth-list-entry");
-		noneEntry.id = "synth-list-entry-none";
-
-		if (!isCreateNewLayer && songObj.getCurrentLayerSynthIndex() === null)
-			noneEntry.classList.add("synth-list-entry--current");
-
-		noneEntry.dataset.index = -1;
-		noneEntry.appendChild(document.createTextNode("[none]"));
-		listContainer.appendChild(noneEntry);
-
-		for (let i = 0; i < songObj.synthNames.length; i++) {
-			let entry = document.createElement("DIV");
-			entry.classList.add("js-synth-list-entry");
-			entry.classList.add("synth-list-entry");
-
-			if (!isCreateNewLayer && songObj.getCurrentLayerSynthIndex() === i)
-				entry.classList.add("synth-list-entry--current");
-
-			if (!songObj.testSynthOnPattern(i))
-				entry.classList.add("synth-list-entry--disabled");
-
-			if (isCreateNewLayer && songObj.isSynthInCurrentPattern(i))
-				entry.classList.add("synth-list-entry--disabled");
-
-			if (songObj.synths[i].isMuted)
-				entry.classList.add("muted-mark");
-
-			entry.dataset.index = i;
-			entry.appendChild(document.createTextNode(songObj.synthNames[i]));
-			listContainer.appendChild(entry);
 		}
 	}
 }

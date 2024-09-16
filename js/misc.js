@@ -1,6 +1,48 @@
 "use strict";
 
 {
+	// Application setttings
+	let appSettings;
+	const settingsStorage = "pulseq-settings";
+
+	window.getAppSettings = function (key) {
+		if (appSettings)
+			return appSettings[key];
+
+		let str = localStorage.getItem(settingsStorage);
+		if (!str) {
+			console.log("no settings in storage");
+			return;
+		}
+
+		try {
+			appSettings = JSON.parse(str);
+		} catch {
+			console.log("Can not parse settings from local storage");
+			localStorage.removeItem(settingsStorage);
+			appSettings = {};
+		}
+
+		return appSettings[key];
+	}
+
+	window.setAppSettings = function (key, value) {
+		if (!appSettings)
+			appSettings = {};
+
+		appSettings[key] = value;
+		localStorage.setItem(settingsStorage, JSON.stringify(appSettings));
+	}
+}
+
+{
+	// Set UI zoom on startup
+	let zoom = getAppSettings("zoom");
+	if (zoom)
+		document.body.style.zoom = zoom + "%";
+}
+
+{
 	// Switch tabs
 	let tabs = document.querySelectorAll(".js-tab");
 	let containers = document.querySelectorAll(".js-view-container");
@@ -63,8 +105,12 @@
 
 	paddingCheck.onchange = () => {
 		if (paddingCheck.checked) {
-			fullCheck.checked = true;
 			enterFullScrn();
+
+			if (fullCheck.checked)
+				g_triggerResize();
+			else
+				fullCheck.checked = true;
 		} else {
 			container.classList.remove("fullscreen-padding");
 			g_triggerResize();

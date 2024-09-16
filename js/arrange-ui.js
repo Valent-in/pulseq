@@ -43,7 +43,7 @@ function ArrangeUi(songObj, onPatternSelectCallback, defaults) {
 
 			songObj.patterns[rowCount] = new Pattern(result, songObj.barSteps);
 			addRow(result);
-			showPattern(rowCount - 1);
+			showPattern(rowCount - 1, true);
 			showToast("New pattern");
 			g_scrollToLastPattern();
 		}, defaultName);
@@ -358,10 +358,10 @@ function ArrangeUi(songObj, onPatternSelectCallback, defaults) {
 			setArrangeStartPoint(0);
 	}
 
-	function showPattern(index) {
+	function showPattern(index, isNewPattern) {
 		songObj.setCurrentPattern(index);
 		g_markCurrentPattern();
-		onPatternSelectCallback(songObj.currentPattern);
+		onPatternSelectCallback(songObj.currentPattern, isNewPattern);
 		g_switchTab("pattern");
 	}
 

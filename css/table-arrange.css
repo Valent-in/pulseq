@@ -63,6 +63,7 @@
 	top: 0;
 	background-color: #111;
 	z-index: 1;
+	font-size: 1rem;
 }
 
 #arrange-main tr:first-child td:first-child {
