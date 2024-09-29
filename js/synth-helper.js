@@ -105,12 +105,6 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		}
 	});
 
-	synthNameInput.addEventListener("keydown", (event) => {
-		if (event.key == "Escape") {
-			synthNameInput.value = songObj.synthNames[selectedSynthIndex];
-		}
-	});
-
 	deleteSynthBtn.onclick = () => {
 		if (songObj.synths.length == 1) {
 			showAlert("Can not delete last synth");

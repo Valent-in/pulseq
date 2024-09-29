@@ -867,6 +867,14 @@ input[type=range].range--volume {
 	border-radius: 5px;
 }
 
+#modal-alert-message {
+	padding-bottom: 4px;
+}
+
+#input-area-modal-alert {
+	padding-top: 8px;
+}
+
 #layer-dialog-block {
 	padding: 12px 0 4px 0;
 	display: flex;
@@ -950,8 +958,16 @@ button.button--highlight-yellow {
 
 #input-fade-start,
 #input-fade-end,
-#input-zoom-value {
+#input-zoom-value,
+#input-shift-value,
+#input-transpose-value {
 	width: 3rem;
+}
+
+#button-fade-layer,
+#button-shift-layer,
+#button-transpose-layer {
+	min-width: 4rem;
 }
 
 #menu-synth-list-container .synth-list-entry {

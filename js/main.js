@@ -93,8 +93,8 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v" + DEFAULT_PARAMS.progra
 	document.getElementById("startup-menu").style.display = "block";
 	document.getElementById("input-import-track").focus();
 
-	function onSongChange(isNewSong, stopCommand) {
-		updPatternSynthList(true);
+	function onSongChange(isNewSong, stopCommand, preserveArrangeView) {
+		updPatternSynthList(!preserveArrangeView);
 		if (isNewSong) {
 			synthUi.assignSynth(songObject.synthParams[0], songObject.synths[0], songObject.synthNames[0]);
 			songObject.currentSynthIndex = 0;

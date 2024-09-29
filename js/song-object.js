@@ -24,6 +24,12 @@ function SongObject() {
 	this.compressor = new Tone.Compressor(this.compressorThreshold, this.compressorRatio);
 	this.compressor.toDestination();
 
+	this.setBpm = function (bpm) {
+		Tone.Transport.bpm.value = bpm;
+		this.bpm = bpm;
+		this.synths.forEach(e => e.setBpm(bpm));
+	}
+
 	this.fillSong = function () {
 		this.song = [];
 		for (let i = 0; i < DEFAULT_PARAMS.minSongBars; i++)

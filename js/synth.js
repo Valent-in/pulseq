@@ -1,114 +1,117 @@
 "use strict";
 
-function Synth(outputNode, transportBPM) {
-	console.log(">> CREATE SYNTH <<");
-
+class Synth {
 	/* 
 	 * Main audio chain:
 	 * VCO1+VCO2+O3+Noise -> Mixer -> Envelope -> VC Filter -> VC Amplifier -> Pan -> Amplifier -> FX ->
 	 */
+	constructor(outputNode, transportBPM) {
+		console.log(">> CREATE SYNTH <<");
 
-	this.isMuted = false;
+		this.out = {}; // Exclude from destroying
+		this.out.outputNode = outputNode;
+		this.bpm = transportBPM;
+		this.isMuted = false;
 
-	this.envelope = new Tone.AmplitudeEnvelope();
-	this.ampAM = new Tone.Gain(1);
-	this.ampout = new Tone.Gain(1);
+		this.envelope = new Tone.AmplitudeEnvelope();
+		this.ampAM = new Tone.Gain(1);
+		this.ampout = new Tone.Gain(1);
 
-	this.values = {
-		osc1detuneValue: 0,
-		osc1octaveValue: 0,
-		osc2detuneValue: 0,
-		osc2octaveValue: 0,
-		osc3detuneValue: 0,
-		osc3octaveValue: 0,
+		this.values = {
+			osc1detuneValue: 0,
+			osc1octaveValue: 0,
+			osc2detuneValue: 0,
+			osc2octaveValue: 0,
+			osc3detuneValue: 0,
+			osc3octaveValue: 0,
 
-		filterFreqValue: 0,
-		filterQValue: 0,
-		noiseValue: 0,
-		osc1gainValue: 0,
-		osc2gainValue: 0,
-		osc3gainValue: 0,
-		lfo1Value: 0,
-		lfo2Value: 0,
-		panValue: 0,
-		volumeValue: 0,
+			filterFreqValue: 0,
+			filterQValue: 0,
+			noiseValue: 0,
+			osc1gainValue: 0,
+			osc2gainValue: 0,
+			osc3gainValue: 0,
+			lfo1Value: 0,
+			lfo2Value: 0,
+			panValue: 0,
+			volumeValue: 0,
 
-		envAttackValue: 0,
-		envDecayValue: 0,
-		envSustainValue: 0,
-		envReleaseValue: 0,
+			envAttackValue: 0,
+			envDecayValue: 0,
+			envSustainValue: 0,
+			envReleaseValue: 0,
 
-		envModAttackValue: 0,
-		envModDecayValue: 0,
-		envModSustainValue: 0,
-		envModReleaseValue: 0,
+			envModAttackValue: 0,
+			envModDecayValue: 0,
+			envModSustainValue: 0,
+			envModReleaseValue: 0,
 
-		FXAmountValue: 0,
-		FXRateValue: 0,
-		FXWetValue: 0,
-	};
+			FXAmountValue: 0,
+			FXRateValue: 0,
+			FXWetValue: 0,
+		};
 
-	this.modulators = {
-		osc1_modgain: null,
-		osc2_modgain: null,
-		filter_modgain: null,
-		ampAM_modgain: null
-	};
+		this.modulators = {
+			osc1_modgain: null,
+			osc2_modgain: null,
+			filter_modgain: null,
+			ampAM_modgain: null
+		};
 
-	this.modulatorValues = {
-		osc1_modgain: 0,
-		osc2_modgain: 0,
-		filter_modgain: 0,
-		ampAM_modgain: 0
-	};
+		this.modulatorValues = {
+			osc1_modgain: 0,
+			osc2_modgain: 0,
+			filter_modgain: 0,
+			ampAM_modgain: 0
+		};
 
-	this.bpm = transportBPM;
-	this.modEnvelopeType = "[none]";
-	this.FXType = "[none]";
-	this.lastFXType = null;
-	this.FXsync = false;
-	this.glide = 0;
-	this.porta = false;
-	this.lfo1sync = false;
-	this.lfo2retrig = false;
+		this.modEnvelopeType = "[none]";
+		this.FXType = "[none]";
+		this.lastFXType = null;
+		this.FXsync = false;
+		this.glide = 0;
+		this.porta = false;
+		this.lfo1sync = false;
+		this.lfo2retrig = false;
 
-	this.envelope.chain(this.ampAM);
-	this.ampAM.chain(this.ampout);
-	this.ampout.chain(outputNode);
+		this.envelope.chain(this.ampAM);
+		this.ampAM.chain(this.ampout);
+		this.ampout.chain(this.out.outputNode);
 
-	this.filterFreqInput = 0;
-	let filterFreqSweep = 0;
-	let filterQSweep = 0;
+		this.filterFreqInput = 0;
+		this.filterFreqSweep = 0;
+		this.filterQSweep = 0;
 
-	let freqSignal = new Tone.Signal({ units: "frequency" });
-	let lastVolumeMod = 0;
-	let lastNote = "";
+		this.freqSignal = new Tone.Signal({ units: "frequency" });
+		this.lastVolumeMod = 0;
+		this.lastNote = "";
+	}
 
-	const filterExp = (x) => {
+	filterExp(x) {
 		let absX = Math.abs(x);
 		let mod = x > 0 ? 1 : -1;
 		return (2 ** absX - 1) * 320 * mod;
 	};
 
-	this.triggerAttack = function (note, volumeMod, time, duration) {
-		if (this.porta && lastNote) {
-			if (note != lastNote) {
+	triggerAttack(note, volumeMod, time, duration) {
+		if (this.porta && this.lastNote) {
+			if (note != this.lastNote) {
 				let freq = Tone.Frequency(note).toFrequency();
-				freqSignal.linearRampTo(freq, duration * this.glide, time);
+				this.freqSignal.linearRampTo(freq, duration * this.glide, time);
 			}
 		} else {
-			freqSignal.setValueAtTime(note, time);
+			this.freqSignal.setValueAtTime(note, time);
 		}
 
-		lastNote = note;
+		this.lastNote = note;
 
-		if (volumeMod != lastVolumeMod) {
-			if (lastVolumeMod < volumeMod) {
-				lastVolumeMod = volumeMod;
+		if (volumeMod != this.lastVolumeMod) {
+			if (this.lastVolumeMod < volumeMod) {
+				this.lastVolumeMod = volumeMod;
 				let attackMod = Math.min(this.values.envAttackValue, duration);
 				this.ampout.gain.linearRampTo(this.calculateVolume(), attackMod, time);
 			} else {
-				lastVolumeMod = volumeMod;
+				this.lastVolumeMod = volumeMod;
 				// Reduce volume before triggerAttack
 				this.ampout.gain.linearRampTo(this.calculateVolume(), 0.01, time - 0.011);
 			}
@@ -125,38 +128,38 @@ function Synth(outputNode, transportBPM) {
 		}
 	}
 
-	this.triggerRelease = function (time) {
+	triggerRelease(time) {
 		this.envelope.triggerRelease(time);
 
 		if (this.envelopeMod)
 			this.envelopeMod.triggerRelease(time);
 	}
 
-	this.glideTo = function (note, volumeMod, time, duration) {
-		if (note != lastNote) {
-			lastNote = note;
+	glideTo(note, volumeMod, time, duration) {
+		if (note != this.lastNote) {
+			this.lastNote = note;
 			let freq = Tone.Frequency(note).toFrequency();
-			freqSignal.linearRampTo(freq, duration * this.glide, time);
+			this.freqSignal.linearRampTo(freq, duration * this.glide, time);
 		}
 
-		if (volumeMod != lastVolumeMod) {
-			lastVolumeMod = volumeMod;
+		if (volumeMod != this.lastVolumeMod) {
+			this.lastVolumeMod = volumeMod;
 			let glideTime = Math.max(duration * this.glide, 0.01);
 			this.ampout.gain.linearRampTo(this.calculateVolume(), glideTime, time);
 		}
 	}
 
-	this.calculateVolume = function () {
-		let volume = (1 + lastVolumeMod / 100) * this.values.volumeValue;
+	calculateVolume() {
+		let volume = (1 + this.lastVolumeMod / 100) * this.values.volumeValue;
 		return (Math.exp(volume * 5.76) - 1) / 1000 * 3.1611;
 	}
 
-	this.setVolume = function (value) {
+	setVolume(value) {
 		this.values.volumeValue = value
 		this.ampout.gain.value = this.calculateVolume();
 	}
 
-	this.filterSweep = function (freq, q, time, duration) {
+	filterSweep(freq, q, time, duration) {
 		if (!this.filter)
 			return;
 
@@ -171,33 +174,33 @@ function Synth(outputNode, transportBPM) {
 			fInput = this.filterFreqInput;
 		}
 
-		if (qRamp != filterQSweep) {
+		if (qRamp != this.filterQSweep) {
 			this.filter.Q.linearRampTo(qRamp, glideTime, time);
-			filterQSweep = qRamp;
+			this.filterQSweep = qRamp;
 		}
 
-		if (fInput != filterFreqSweep) {
-			let fRamp = filterExp(fInput);
+		if (fInput != this.filterFreqSweep) {
+			let fRamp = this.filterExp(fInput);
 			this.filter.frequency.linearRampTo(fRamp, glideTime, time);
-			filterFreqSweep = fInput;
+			this.filterFreqSweep = fInput;
 		}
 	}
 
-	this.resetFilter = function () {
+	resetFilter() {
 		if (!this.filter)
 			return;
 
 		this.filter.frequency.value = this.values.filterFreqValue;
 		this.filter.Q.value = this.values.filterQValue;
-		filterFreqSweep = this.filterFreqInput;
-		filterQSweep = this.values.filterQValue
+		this.filterFreqSweep = this.filterFreqInput;
+		this.filterQSweep = this.values.filterQValue
 	}
 
-	this.resetPorta = function () {
-		lastNote = "";
+	resetPorta() {
+		this.lastNote = "";
 	}
 
-	this.mute = function (isMute) {
+	mute(isMute) {
 		this.isMuted = isMute;
 
 		if (isMute) {
@@ -207,13 +210,13 @@ function Synth(outputNode, transportBPM) {
 				this.ampout.disconnect();
 		} else {
 			if (this.FX)
-				this.FX.chain(outputNode);
+				this.FX.chain(this.out.outputNode);
 			else
-				this.ampout.chain(outputNode);
+				this.ampout.chain(this.out.outputNode);
 		}
 	}
 
-	this.addOsc1 = function (isOsc) {
+	addOsc1(isOsc) {
 		if (isOsc) {
 			if (this.osc1)
 				return;
@@ -251,7 +254,7 @@ function Synth(outputNode, transportBPM) {
 		this.freqSignalReconnect();
 	}
 
-	this.addOsc2 = function (isOsc) {
+	addOsc2(isOsc) {
 		if (isOsc) {
 			if (this.osc2)
 				return;
@@ -289,7 +292,7 @@ function Synth(outputNode, transportBPM) {
 		this.freqSignalReconnect();
 	}
 
-	this.addOsc3 = function (isOsc) {
+	addOsc3(isOsc) {
 		if (isOsc) {
 			if (this.osc3)
 				return;
@@ -320,18 +323,18 @@ function Synth(outputNode, transportBPM) {
 		this.freqSignalReconnect();
 	}
 
-	this.freqSignalReconnect = function () {
-		freqSignal.disconnect();
+	freqSignalReconnect() {
+		this.freqSignal.disconnect();
 
 		if (this.osc1)
-			freqSignal.connect(this.osc1.frequency);
+			this.freqSignal.connect(this.osc1.frequency);
 		if (this.osc2)
-			freqSignal.connect(this.osc2.frequency);
+			this.freqSignal.connect(this.osc2.frequency);
 		if (this.osc3)
-			freqSignal.connect(this.osc3.frequency);
+			this.freqSignal.connect(this.osc3.frequency);
 	}
 
-	this.addNoise = function (isNoise) {
+	addNoise(isNoise) {
 		if (isNoise) {
 			if (this.noise)
 				return;
@@ -362,7 +365,7 @@ function Synth(outputNode, transportBPM) {
 		}
 	}
 
-	this.addFilter = function (filterType) {
+	addFilter(filterType) {
 		if (filterType == "[none]") {
 			if (!this.filter)
 				return;
@@ -396,28 +399,28 @@ function Synth(outputNode, transportBPM) {
 		}
 	}
 
-	this.setFilterQ = function (value) {
-		filterQSweep = value;
+	setFilterQ(value) {
+		this.filterQSweep = value;
 		this.values.filterQValue = value;
 		if (this.filter)
 			this.filter.Q.value = value;
 	}
 
-	this.setFilterFrequency = function (value) {
-		filterFreqSweep = value;
+	setFilterFrequency(value) {
+		this.filterFreqSweep = value;
 		this.filterFreqInput = value;
-		this.values.filterFreqValue = filterExp(value);
+		this.values.filterFreqValue = this.filterExp(value);
 		if (this.filter)
 			this.filter.frequency.value = this.values.filterFreqValue;
 	}
 
-	this.setFilterModAmount = function (value) {
-		this.modulatorValues.filter_modgain = filterExp(value);
+	setFilterModAmount(value) {
+		this.modulatorValues.filter_modgain = this.filterExp(value);
 		if (this.filter_modgain)
 			this.filter_modgain.gain.value = this.modulatorValues.filter_modgain;
 	}
 
-	this.addFX = function (type) {
+	addFX(type) {
 		if (this.FX) {
 			this.ampout.disconnect();
 			this.FX.disconnect();
@@ -425,7 +428,7 @@ function Synth(outputNode, transportBPM) {
 			this.FX = null;
 
 			if (!this.isMuted)
-				this.ampout.chain(outputNode);
+				this.ampout.chain(this.out.outputNode);
 
 			console.log("remove FX");
 		}
@@ -488,7 +491,7 @@ function Synth(outputNode, transportBPM) {
 		this.ampout.chain(this.FX);
 
 		if (!this.isMuted)
-			this.FX.chain(outputNode);
+			this.FX.chain(this.out.outputNode);
 
 		this.setFXValue();
 		this.setFXRate();
@@ -496,7 +499,7 @@ function Synth(outputNode, transportBPM) {
 		console.log("add FX - " + type);
 	}
 
-	this.setFXValue = function (value) {
+	setFXValue(value) {
 		if (value !== undefined)
 			this.values.FXAmountValue = value;
 
@@ -542,7 +545,7 @@ function Synth(outputNode, transportBPM) {
 		}
 	}
 
-	this.setFXRate = function (value) {
+	setFXRate(value) {
 		if (value !== undefined)
 			this.values.FXRateValue = value;
 
@@ -578,7 +581,7 @@ function Synth(outputNode, transportBPM) {
 		}
 	}
 
-	this.addPan = function (isPan) {
+	addPan(isPan) {
 		if (isPan) {
 			if (this.pan)
 				return;
@@ -603,7 +606,7 @@ function Synth(outputNode, transportBPM) {
 		}
 	}
 
-	this.addLfo1 = function (isLfo) {
+	addLfo1(isLfo) {
 		if (isLfo) {
 			if (this.lfo1)
 				return;
@@ -628,7 +631,7 @@ function Synth(outputNode, transportBPM) {
 		}
 	}
 
-	this.setLfo1Frequency = function (frequency) {
+	setLfo1Frequency(frequency) {
 		if (frequency != undefined)
 			this.values.lfo1Value = frequency;
 
@@ -656,13 +659,13 @@ function Synth(outputNode, transportBPM) {
 		}
 	}
 
-	this.setBpm = function (bpm) {
+	setBpm(bpm) {
 		this.bpm = bpm;
 		this.setLfo1Frequency(this.values.lfo1Value);
 		this.addFX(this.FXType);
 	}
 
-	this.addLfo2 = function (isLfo) {
+	addLfo2(isLfo) {
 		if (isLfo) {
 			if (this.lfo2)
 				return;
@@ -683,7 +686,7 @@ function Synth(outputNode, transportBPM) {
 		}
 	}
 
-	this.addModEnvelope = function (type) {
+	addModEnvelope(type) {
 		if (type == "[none]") {
 			if (!this.envelopeMod)
 				return
@@ -705,7 +708,7 @@ function Synth(outputNode, transportBPM) {
 		this.modEnvelopeType = type;
 	}
 
-	this.syncModEnvelope = function () {
+	syncModEnvelope() {
 		if (!this.envelopeMod)
 			return;
 
@@ -720,7 +723,7 @@ function Synth(outputNode, transportBPM) {
 		console.log("envelope sync");
 	}
 
-	this.setModulator = function (modulatorStr, carrierGainStr) {
+	setModulator(modulatorStr, carrierGainStr) {
 		let carrierGain = this[carrierGainStr];
 		let previousModulator = this[this.modulators[carrierGainStr]];
 
@@ -756,7 +759,7 @@ function Synth(outputNode, transportBPM) {
 		this.modulators[carrierGainStr] = modulatorStr == "[none]" ? null : modulatorStr;
 	}
 
-	this.restoreModulator = function (modulatorStr) {
+	restoreModulator(modulatorStr) {
 		let modulator = this[modulatorStr];
 		if (!modulator)
 			return;
@@ -767,20 +770,15 @@ function Synth(outputNode, transportBPM) {
 		}
 	}
 
-	this.destroy = () => {
+	destroy() {
 		for (let key in this)
 			if (this[key] && this[key].disconnect)
 				this[key].disconnect();
-
-		freqSignal.disconnect();
 
 		for (let key in this)
 			if (this[key] && this[key].dispose) {
 				this[key].dispose();
 				this[key] = null;
 			}
-
-		freqSignal.dispose();
-		freqSignal = null;
 	}
 }

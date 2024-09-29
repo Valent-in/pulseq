@@ -332,10 +332,6 @@
 	background-color: #333;
 }
 
-#pattern-main table tr:last-child td:first-child:hover {
-	background-color: #3c3c3c;
-}
-
 #pattern-auto-row td {
 	background-color: #111;
 }

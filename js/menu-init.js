@@ -159,12 +159,6 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			titleInput.focus();
 	};
 
-	titleInput.addEventListener("keydown", (event) => {
-		if (event.key == "Escape") {
-			titleInput.value = songObj.title;
-		}
-	});
-
 	titleInput.onchange = (event) => {
 		songObj.title = event.target.value;
 		showSongTitle();
@@ -203,9 +197,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		bpmInput.value = bpmValue;
 		showToast("BPM: " + bpmValue);
 
-		songObj.bpm = bpmValue;
-		Tone.Transport.bpm.value = songObj.bpm;
-		songObj.synths.forEach(e => e.setBpm(songObj.bpm));
+		songObj.setBpm(bpmValue);
 	};
 
 	let barStepsInput = document.getElementById("input-steps-value");
@@ -488,12 +480,6 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		showModal("pattern-modal-menu");
 	};
 
-	patternNameInput.addEventListener("keydown", (event) => {
-		if (event.key == "Escape") {
-			patternNameInput.value = songObj.currentPattern.name;
-		}
-	});
-
 	patternNameInput.onchange = (event) => {
 		let value = event.target.value || "";
 		songObj.currentPattern.name = value;
@@ -624,8 +610,21 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	/*
 	 * Pattern copy menu
 	 */
-	document.getElementById("button-create-pattern").onclick = () => {
-		let newName = document.getElementById("input-pattern-copy-name").value;
+	let inputPatternCopy = document.getElementById("input-pattern-copy-name");
+
+	document.getElementById("button-create-pattern").onclick = copyPattern;
+
+	inputPatternCopy.addEventListener("keyup", (event) => {
+		if (event.key == "Enter")
+			copyPattern();
+	});
+
+	document.getElementById("button-pattern-copy-menu-close").onclick = () => {
+		hideModal("pattern-copy-modal-menu");
+	};
+
+	function copyPattern() {
+		let newName = inputPatternCopy.value;
 		let isPlaceUnder = document.getElementById("input-copy-pattern-under").checked;
 
 		let index = songObj.currentPatternIndex;
@@ -644,10 +643,6 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 
 		if (!isPlaceUnder)
 			g_scrollToLastPattern();
-	};
-
-	document.getElementById("button-pattern-copy-menu-close").onclick = () => {
-		hideModal("pattern-copy-modal-menu");
 	};
 
 	/*
@@ -677,33 +672,59 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	};
 
 	/*
-	 * Layer fade menu
+	 * Layer edit menu
 	 */
-	document.getElementById("button-fade-layer").onclick = () => {
+	document.getElementById("button-layer-edit-open").onclick = () => {
 		let pattern = songObj.currentPattern;
 		let index = pattern.activeIndex;
 		let layer = pattern.patternData[index];
-
-		let startVolume = 0, endVolume = 0, isEmpty = true;
+		let isEmpty = true;
 
 		for (let i = 0; i < pattern.length; i++) {
 			if (layer.notes[i]) {
 				isEmpty = false;
-				endVolume = 100 + layer.volumes[i];
-
-				if (startVolume == 0)
-					startVolume = 100 + layer.volumes[i];
+				break;
 			}
 		}
 
-		if (isEmpty) {
+		if (isEmpty)
 			showAlert("Layer is empty");
-			return;
-		}
+		else
+			showModal("layer-edit-modal-menu");
+	};
 
-		document.getElementById("input-fade-start").value = startVolume;
-		document.getElementById("input-fade-end").value = endVolume;
-		showModal("fade-layer-modal-menu");
+	document.getElementById("button-layer-edit-close").onclick = () => {
+		hideModal("layer-edit-modal-menu");
+	};
+
+	document.getElementById("button-shift-layer").onclick = () => {
+		hideModal("layer-edit-modal-menu");
+		showModal("layer-shift-modal-menu");
+	};
+
+	document.getElementById("button-transpose-layer").onclick = () => {
+		hideModal("layer-edit-modal-menu");
+		showModal("layer-transpose-modal-menu");
+	};
+
+	document.getElementById("button-copy-layer").onclick = () => {
+		hideModal("layer-edit-modal-menu");
+		hideModal("pattern-modal-menu");
+
+		songObj.currentPattern.copyActiveLayer();
+		onSongChangeCallback(false, null, true);
+	};
+
+	/*
+	 * Layer fade menu
+	 */
+	document.getElementById("button-fade-layer").onclick = () => {
+		let range = songObj.currentPattern.getFadeRange();
+		document.getElementById("input-fade-start").value = range.startVolume;
+		document.getElementById("input-fade-end").value = range.endVolume;
+
+		hideModal("layer-edit-modal-menu");
+		showModal("layer-fade-modal-menu");
 	};
 
 	document.getElementById("button-apply-fade").onclick = applyFade;
@@ -714,10 +735,6 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	});
 
 	function applyFade() {
-		let pattern = songObj.currentPattern;
-		let index = pattern.activeIndex;
-		let layer = pattern.patternData[index];
-
 		let startVolume = Number(document.getElementById("input-fade-start").value);
 		let endVolume = Number(document.getElementById("input-fade-end").value);
 
@@ -728,34 +745,83 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			return;
 		}
 
-		let startIndex = -1, endIndex = 0;
-		for (let i = 0; i < pattern.length; i++) {
-			if (layer.notes[i]) {
-				endIndex = i;
+		songObj.currentPattern.fadeActiveLayer(startVolume, endVolume);
 
-				if (startIndex < 0)
-					startIndex = i;
-			}
-		}
-
-		let lineLength = Math.max(1, endIndex - startIndex);
-		let step = (endVolume - startVolume) / lineLength;
-
-		for (let i = 0; i <= lineLength; i++) {
-			if (layer.notes[i + startIndex])
-				layer.volumes[i + startIndex] = Math.min(0, -100 + Math.round(startVolume + i * step));
-		}
-
-		console.log("volumes", layer.volumes);
-
-		onSongChangeCallback(false);
+		onSongChangeCallback(false, null, true);
 		hideModal("pattern-modal-menu");
-		hideModal("fade-layer-modal-menu");
+		hideModal("layer-fade-modal-menu");
 	};
 
 	document.getElementById("button-fade-menu-close").onclick = () => {
-		hideModal("fade-layer-modal-menu");
+		hideModal("layer-fade-modal-menu");
 	};
+
+	/*
+	 * Layer shift menu
+	 */
+	let shiftStepsInput = document.getElementById("input-shift-value");
+
+	document.getElementById("button-apply-shift").onclick = () => {
+		patternShift();
+	};
+
+	shiftStepsInput.addEventListener("keyup", (event) => {
+		if (event.key == "Enter") {
+			patternShift();
+		}
+	});
+
+	function patternShift() {
+		let wholeChk = document.getElementById("input-shift-whole-pattern");
+		let steps = Number(shiftStepsInput.value);
+		songObj.currentPattern.shiftActiveLayer(steps, wholeChk.checked);
+		hideModal("pattern-modal-menu");
+		hideModal("layer-shift-modal-menu");
+		onSongChangeCallback(false, null, true);
+	}
+
+	document.getElementById("button-shift-menu-close").onclick = () => {
+		hideModal("layer-shift-modal-menu");
+	};
+
+	/*
+	 * Layer transpose menu
+	 */
+	let transposeStepsInput = document.getElementById("input-transpose-value");
+
+	document.getElementById("button-transpose-menu-close").onclick = () => {
+		hideModal("layer-transpose-modal-menu");
+	};
+
+	document.getElementById("button-apply-transpose").onclick = () => {
+		layerTranspose();
+	};
+
+	let transposeEnter = false;
+	transposeStepsInput.addEventListener("keydown", (event) => {
+		if (event.key == "Enter")
+			transposeEnter = true;
+	});
+
+	transposeStepsInput.addEventListener("keyup", (event) => {
+		if (transposeEnter && event.key == "Enter") {
+			layerTranspose();
+		}
+		transposeEnter = false;
+	});
+
+	function layerTranspose() {
+		let steps = Number(transposeStepsInput.value);
+		let result = songObj.currentPattern.transposeActiveLayer(Math.floor(steps));
+
+		if (!result) {
+			showAlert("No room for transposing");
+		} else {
+			hideModal("pattern-modal-menu");
+			hideModal("layer-transpose-modal-menu");
+			onSongChangeCallback(false, null, true);
+		}
+	}
 
 	/*
 	 * Settings modal menu

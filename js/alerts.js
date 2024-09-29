@@ -38,7 +38,7 @@
 		let prev = document.querySelectorAll(".modal-container:not(.nodisplay)");
 
 		if (prev.length > 0)
-			requestFocus(prev[0]);
+			requestFocus(prev[prev.length - 1]);
 		else
 			document.getElementById("button-settings-open").focus();
 	}

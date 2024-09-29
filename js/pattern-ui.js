@@ -25,6 +25,8 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 	let automationQMod = 15;
 	const autoFreqScale = 26 / 5;
 	const autoQscale = 26 / 50;
+	let fRangeInput = document.createElement("INPUT");
+	let qRangeInput = document.createElement("INPUT");
 
 	let sequenceCells = [];
 	let automationCells = [];
@@ -55,20 +57,8 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 			return;
 
 		if (!e.target.id.includes("_row-")) {
-			if (e.target.dataset.note) {
-				let synth = getSynthFromLayer();
-				if (synth) {
-					if (lastSideKey)
-						lastSideKey.classList.remove("key--pressed");
-
-					let stepLen = (60 / songObj.bpm) / 4;
-					synth.triggerAttack(e.target.dataset.note, 0, Tone.now(), stepLen);
-					isSidekeyPalying = true;
-					lastSideKey = e.target;
-					lastSideKey.classList.add("key--pressed");
-				}
-			}
-
+			autoRowPointerListener(e);
+			pianoColumnListener(e);
 			return;
 		}
 
@@ -92,11 +82,16 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 	});
 
 	table.addEventListener("click", (e) => {
-		if (e.target.nodeName != "TD" || !e.target.id.includes("_row-") || e.button == 1)
+		if (cancelClick)
 			return;
 
-		if (!cancelClick)
+		if (e.target.nodeName != "TD" || e.button == 1)
+			return;
+
+		if (e.target.id.includes("_row-"))
 			sequencerCellListener(e.target);
+		else
+			autoRowClickListener(e);
 
 		pointerPress = false;
 	});
@@ -364,6 +359,22 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 		}
 	}
 
+	function pianoColumnListener(e) {
+		if (e.target.dataset.note) {
+			let synth = getSynthFromLayer();
+			if (synth) {
+				if (lastSideKey)
+					lastSideKey.classList.remove("key--pressed");
+
+				let stepLen = (60 / songObj.bpm) / 4;
+				synth.triggerAttack(e.target.dataset.note, 0, Tone.now(), stepLen);
+				isSidekeyPalying = true;
+				lastSideKey = e.target;
+				lastSideKey.classList.add("key--pressed");
+			}
+		}
+	}
+
 	function getCellCoordinates(cell) {
 		let idParts = cell.id.split("_");
 		return {
@@ -471,80 +482,14 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 		autoRow.id = "pattern-auto-row";
 		table.appendChild(autoRow);
 
-		let fRange = document.createElement("INPUT");
-		let qRange = document.createElement("INPUT");
-
 		// Update automation row on pattern tab selection
 		document.getElementById("pattern-tab").addEventListener("click", () => {
-			redrawAutomationRow(songObj.currentPattern.patternData[songObj.currentPattern.activeIndex])
-		});
-
-		autoRow.addEventListener("click", (e) => {
-			if (cancelClick)
-				return;
-
-			if (noFilter) {
-				showToast("Filter is not set");
-				return;
-			}
-
-			if (e.target.nodeName != "TD")
-				return;
-
-			if (e.target.id == "automation-levels-set") {
-				filterControls.classList.toggle("nodisplay");
-				return;
-			}
-
-			let index = Number(e.target.dataset.index);
-			let layer = songObj.currentPattern.patternData[songObj.currentPattern.activeIndex];
-
-			if (layer.filtQ[index] || layer.filtQ[index] === 0) {
-				layer.filtQ[index] = null;
-				layer.filtF[index] = null;
-				resetAutomationCell(index);
-			} else {
-				layer.filtQ[index] = automationQMod;
-				layer.filtF[index] = automationFreqMod;
-				setAutomationCell(index, automationFreqMod, automationQMod);
-			}
-		});
-
-		autoRow.addEventListener("pointerdown", (e) => {
-			cancelClick = false;
-
-			if (noFilter)
-				return;
-
-			if (e.target.nodeName != "TD")
-				return;
-
-			if (e.target.id == "automation-levels-set")
-				return;
-
-			let index = Number(e.target.dataset.index);
-			let layer = songObj.currentPattern.patternData[songObj.currentPattern.activeIndex];
-
-			pressTimeout = setTimeout(() => {
-				cancelClick = true;
-
-				if (layer.filtQ[index] || layer.filtQ[index] === 0) {
-					fRange.value = automationFreqMod = layer.filtF[index];
-					qRange.value = automationQMod = layer.filtQ[index];
-				} else {
-					fRange.value = automationFreqMod = songObj.synths[layer.synthIndex].filterFreqInput;
-					qRange.value = automationQMod = songObj.synths[layer.synthIndex].values.filterQValue;
-				}
-
-				fRange.dispatchEvent(new Event("change"));
-				qRange.dispatchEvent(new Event("change"));
-				showToast("Values copied");
-
-			}, DEFAULT_PARAMS.pressDelay);
+			redrawAutomationRow(songObj.currentPattern.patternData[songObj.currentPattern.activeIndex]);
 		});
 
 		for (let j = 0; j <= maxSequencerLength; j++) {
 			let td = document.createElement("TD");
+			td.classList.add("js-auto-cell");
 
 			let fBar = document.createElement("DIV");
 			let qBar = document.createElement("DIV");
@@ -564,37 +509,37 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 					e.stopPropagation();
 				});
 
-				fRange.type = "range";
-				fRange.min = 0;
-				fRange.max = 5;
-				fRange.step = 0.02;
+				fRangeInput.type = "range";
+				fRangeInput.min = 0;
+				fRangeInput.max = 5;
+				fRangeInput.step = 0.02;
 
-				qRange.type = "range";
-				qRange.min = 0;
-				qRange.max = 50;
-				qRange.step = 0.1;
+				qRangeInput.type = "range";
+				qRangeInput.min = 0;
+				qRangeInput.max = 50;
+				qRangeInput.step = 0.1;
 
-				fRange.addEventListener("change", (e) => {
+				fRangeInput.addEventListener("change", (e) => {
 					automationFreqMod = Number(e.target.value);
 					fBar.style.height = (autoFreqScale * automationFreqMod) + "px";
 				});
 
-				qRange.addEventListener("change", (e) => {
+				qRangeInput.addEventListener("change", (e) => {
 					automationQMod = Number(e.target.value);
 					qBar.style.height = (autoQscale * automationQMod) + "px";
 				});
 
 				fBar.style.height = (autoFreqScale * automationFreqMod) + "px";
 				qBar.style.height = (autoQscale * automationQMod) + "px";
-				fRange.value = automationFreqMod;
-				qRange.value = automationQMod;
+				fRangeInput.value = automationFreqMod;
+				qRangeInput.value = automationQMod;
 
 				let title = document.createElement("SPAN");
 				title.appendChild(document.createTextNode("Filter"));
 				filterControls.appendChild(title);
 
-				filterControls.appendChild(fRange);
-				filterControls.appendChild(qRange);
+				filterControls.appendChild(fRangeInput);
+				filterControls.appendChild(qRangeInput);
 				td.appendChild(filterControls);
 			} else {
 				td.dataset.index = j - 1;
@@ -607,6 +552,67 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 			td.appendChild(qBar);
 			autoRow.appendChild(td);
 		}
+	}
+
+	function autoRowClickListener(e) {
+		if (!e.target.classList.contains("js-auto-cell"))
+			return;
+
+		if (noFilter) {
+			showToast("Filter is not set");
+			return;
+		}
+
+		if (e.target.id == "automation-levels-set") {
+			filterControls.classList.toggle("nodisplay");
+			return;
+		}
+
+		let index = Number(e.target.dataset.index);
+		let layer = songObj.currentPattern.patternData[songObj.currentPattern.activeIndex];
+
+		if (layer.filtQ[index] || layer.filtQ[index] === 0) {
+			layer.filtQ[index] = null;
+			layer.filtF[index] = null;
+			resetAutomationCell(index);
+		} else {
+			layer.filtQ[index] = automationQMod;
+			layer.filtF[index] = automationFreqMod;
+			setAutomationCell(index, automationFreqMod, automationQMod);
+		}
+	}
+
+	function autoRowPointerListener(e) {
+		if (!e.target.classList.contains("js-auto-cell"))
+			return;
+
+		cancelClick = false;
+
+		if (noFilter)
+			return;
+
+		if (e.target.id == "automation-levels-set")
+			return;
+
+		let index = Number(e.target.dataset.index);
+		let layer = songObj.currentPattern.patternData[songObj.currentPattern.activeIndex];
+
+		pressTimeout = setTimeout(() => {
+			cancelClick = true;
+
+			if (layer.filtQ[index] || layer.filtQ[index] === 0) {
+				fRangeInput.value = automationFreqMod = layer.filtF[index];
+				qRangeInput.value = automationQMod = layer.filtQ[index];
+			} else {
+				fRangeInput.value = automationFreqMod = songObj.synths[layer.synthIndex].filterFreqInput;
+				qRangeInput.value = automationQMod = songObj.synths[layer.synthIndex].values.filterQValue;
+			}
+
+			fRangeInput.dispatchEvent(new Event("change"));
+			qRangeInput.dispatchEvent(new Event("change"));
+			showToast("Values copied");
+
+		}, DEFAULT_PARAMS.pressDelay);
 	}
 
 	function setLineOfNotes() {
@@ -735,7 +741,7 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 
 	function importData(data) {
 		for (let i = 0; i < data.notes.length; i++) {
-			if (data.notes[i] === null)
+			if (!data.notes[i])
 				continue;
 
 			let row = findRowByNote(data.notes[i])
@@ -770,7 +776,7 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 				continue;
 
 			for (let j = 0; j < dataArr[i].notes.length; j++) {
-				if (dataArr[i][j] === null)
+				if (!dataArr[i].notes[j])
 					continue;
 
 				let row = findRowByNote(dataArr[i].notes[j])

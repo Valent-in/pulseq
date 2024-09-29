@@ -613,7 +613,7 @@
 							Additional
 						</td>
 						<td>
-							<button id="button-additional-menu-open">Edit</button>
+							<button id="button-additional-menu-open">Edit...</button>
 						</td>
 					</tr>
 					<tr>
@@ -828,7 +828,7 @@
 							<tr>
 								<td></td>
 								<td>
-									<button id="button-fade-layer">Fade</button>
+									<button id="button-layer-edit-open">Edit...</button>
 									<button id="button-delete-layer">Delete Layer</button>
 								</td>
 							</tr>
@@ -866,7 +866,24 @@
 			</div>
 		</div>
 
-		<div id="fade-layer-modal-menu" class="modal-container nodisplay">
+		<div id="layer-edit-modal-menu" class="modal-container nodisplay">
+			<div class="modal-box">
+				<div class="modal-box-block">Modify layer</div>
+				<div class="modal-box-block">
+					<button id="button-fade-layer">Fade</button>
+					<button id="button-shift-layer">Shift</button>
+					<button id="button-transpose-layer">Transpose</button>
+				</div>
+				<div class="modal-box-block">
+					<button id="button-copy-layer">Duplicate</button>
+				</div>
+				<div class="modal-box-block modal-box-footer">
+					<button id="button-layer-edit-close" class="button-modal-bottom">Close</button>
+				</div>
+			</div>
+		</div>
+
+		<div id="layer-fade-modal-menu" class="modal-container nodisplay">
 			<div class="modal-box">
 				<div class="modal-box-block">
 					Modify layer volumes
@@ -884,6 +901,42 @@
 				<div class="modal-box-block modal-box-footer">
 					<button id="button-apply-fade" class="button-modal-bottom notranslate" translate="no">OK</button>
 					<button id="button-fade-menu-close" class="button-modal-bottom">Cancel</button>
+				</div>
+			</div>
+		</div>
+
+		<div id="layer-shift-modal-menu" class="modal-container nodisplay">
+			<div class="modal-box">
+				<div class="modal-box-block">
+					<span>Shift layer by</span>
+					<input type="number" id="input-shift-value" class="js-request-focus" value="1" autocomplete="off">
+					<span>steps</span>
+				</div>
+				<div class="modal-box-block">
+					<input type="checkbox" id="input-shift-whole-pattern" autocomplete="off">
+					<label for="input-shift-whole-pattern">Shift whole pattern</label>
+					<div></div>
+				</div>
+				<div class="modal-box-block modal-box-footer">
+					<button id="button-apply-shift" class="button-modal-bottom notranslate" translate="no">OK</button>
+					<button id="button-shift-menu-close" class="button-modal-bottom">Cancel</button>
+				</div>
+			</div>
+		</div>
+
+		<div id="layer-transpose-modal-menu" class="modal-container nodisplay">
+			<div class="modal-box">
+				<div class="modal-box-block">
+					<span>Transpose layer by</span>
+					<input type="number" id="input-transpose-value" class="js-request-focus" value="1"
+						autocomplete="off">
+					<span>smt.</span>
+					<div></div>
+				</div>
+				<div class="modal-box-block modal-box-footer">
+					<button id="button-apply-transpose" class="button-modal-bottom notranslate"
+						translate="no">OK</button>
+					<button id="button-transpose-menu-close" class="button-modal-bottom">Cancel</button>
 				</div>
 			</div>
 		</div>
