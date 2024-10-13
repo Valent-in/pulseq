@@ -10,8 +10,8 @@ class Pattern {
 		this.addLayer();
 	}
 
-	addLayer = () => {
-		if (this.patternData.length == 1 && this.patternData[0].synthIndex === null) {
+	addLayer = (isForced) => {
+		if (this.patternData.length == 1 && this.patternData[0].synthIndex === null && !isForced) {
 			console.log("Layer already created. No synth index.")
 		} else {
 			this.activeIndex = this.patternData.length;
@@ -32,6 +32,16 @@ class Pattern {
 			if (this.patternData[i].synthIndex > index)
 				this.patternData[i].synthIndex--;
 		}
+	}
+
+	isActiveLayerEmpty() {
+		let layer = this.patternData[this.activeIndex];
+		for (let i = 0; i < this.length; i++) {
+			if (layer.notes[i])
+				return false;
+		}
+
+		return true;
 	}
 
 	getFadeRange() {
@@ -71,14 +81,22 @@ class Pattern {
 			if (layer.notes[i + startIndex])
 				layer.volumes[i + startIndex] = Math.min(0, -100 + Math.round(startVolume + i * step));
 		}
+	}
 
-		console.log("volumes", layer.volumes);
+	fadeAddActiveLayer(volumeMod) {
+		let layer = this.patternData[this.activeIndex];
+
+		for (let i = 0; i < this.length; i++) {
+			layer.volumes[i] += Math.round(volumeMod);
+			layer.volumes[i] = Math.max(layer.volumes[i], -99);
+			layer.volumes[i] = Math.min(layer.volumes[i], 0);
+		}
 	}
 
 	copyActiveLayer() {
 		let layer = this.patternData[this.activeIndex];
 
-		this.addLayer();
+		this.addLayer(true);
 		let newLayer = this.patternData[this.activeIndex];
 
 		for (let i = 0; i < this.length; i++) {

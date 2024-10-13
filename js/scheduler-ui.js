@@ -68,7 +68,7 @@ function schedulerUi(scheduler, setLoopMarkersCallback) {
 		let barsInLoop = Math.round(barsInput.value);
 
 		if (!(barsInLoop >= 1 && barsInLoop <= 99)) {
-			showAlert("Loop length should be in range 1-99");
+			showAlert("Loop length should be in range 1..99");
 			barsInput.value = 1;
 			return;
 		}

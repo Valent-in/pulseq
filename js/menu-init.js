@@ -5,6 +5,8 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	const backupStorage = "pulseq-backup";
 	let storedSong = localStorage.getItem(backupStorage);
 
+	let enterPressed = false;
+
 	window.onbeforeunload = function () {
 		backupToLocalStorage();
 		return "Leave App?"
@@ -184,14 +186,9 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	function applyBpm() {
 		let bpmValue = Number(bpmInput.value);
 
-		if (bpmValue < 4) {
-			showAlert("Minimum 4 BPM");
-			bpmValue = 4;
-		}
-
-		if (bpmValue > 1000) {
-			showAlert("Maximum 1000 BPM");
-			bpmValue = 1000;
+		if (bpmValue < 4 || bpmValue > 440) {
+			showAlert("BPM should be in range 4..440");
+			bpmValue = songObj.bpm;
 		}
 
 		bpmInput.value = bpmValue;
@@ -218,7 +215,11 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	};
 
 	function applyBarSteps() {
-		let stepsValue = barStepsInput.value;
+		let stepsFromInput = Number(barStepsInput.value);
+		let stepsValue = Math.floor(stepsFromInput);
+
+		if (stepsFromInput != stepsValue)
+			barStepsInput.value = stepsValue;
 
 		if (stepsValue == songObj.barSteps)
 			return;
@@ -236,17 +237,17 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		function setBarLength() {
 			if (stepsValue > 32) {
 				showAlert("Maximum bar length is 32 steps");
-				stepsValue = 32;
-				barStepsInput.value = 32;
+				barStepsInput.value = songObj.barSteps;
+				return;
 			}
 
 			if (stepsValue < 4) {
 				showAlert("Minimum bar length is 4 steps");
-				stepsValue = 4;
-				barStepsInput.value = 4;
+				barStepsInput.value = songObj.barSteps;
+				return;
 			}
 
-			songObj.setBarLength(Number(stepsValue));
+			songObj.setBarLength(stepsValue);
 			songObj.swing = 0;
 			onSongChangeCallback(false);
 			showToast("Steps in bar: " + stepsValue);
@@ -675,19 +676,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	 * Layer edit menu
 	 */
 	document.getElementById("button-layer-edit-open").onclick = () => {
-		let pattern = songObj.currentPattern;
-		let index = pattern.activeIndex;
-		let layer = pattern.patternData[index];
-		let isEmpty = true;
-
-		for (let i = 0; i < pattern.length; i++) {
-			if (layer.notes[i]) {
-				isEmpty = false;
-				break;
-			}
-		}
-
-		if (isEmpty)
+		if (songObj.currentPattern.isActiveLayerEmpty())
 			showAlert("Layer is empty");
 		else
 			showModal("layer-edit-modal-menu");
@@ -710,6 +699,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	document.getElementById("button-copy-layer").onclick = () => {
 		hideModal("layer-edit-modal-menu");
 		hideModal("pattern-modal-menu");
+		showToast("Layer copied");
 
 		songObj.currentPattern.copyActiveLayer();
 		onSongChangeCallback(false, null, true);
@@ -718,34 +708,95 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	/*
 	 * Layer fade menu
 	 */
+	let fadeTypeSetRadio = document.getElementById("input-fade-type-set");
+	let inputFadeStart = document.getElementById("input-fade-start");
+	let inputFadeEnd = document.getElementById("input-fade-end");
+	let inputFadeAdd = document.getElementById("input-fade-add");
+
 	document.getElementById("button-fade-layer").onclick = () => {
+		openFadeDialog();
+	}
+
+	document.getElementById("layer-block-title").onclick = () => {
+		openFadeDialog();
+	}
+
+	function openFadeDialog() {
+		if (songObj.currentPattern.isActiveLayerEmpty()) {
+			showToast("Layer is empty");
+			return;
+		}
+
 		let range = songObj.currentPattern.getFadeRange();
-		document.getElementById("input-fade-start").value = range.startVolume;
-		document.getElementById("input-fade-end").value = range.endVolume;
+		inputFadeStart.value = range.startVolume;
+		inputFadeEnd.value = range.endVolume;
+		disableFadeInputs();
 
 		hideModal("layer-edit-modal-menu");
 		showModal("layer-fade-modal-menu");
-	};
+	}
+
+	fadeTypeSetRadio.onchange = () => {
+		disableFadeInputs();
+	}
+
+	document.getElementById("input-fade-type-add").onchange = () => {
+		disableFadeInputs();
+	}
+
+	function disableFadeInputs() {
+		let mode = fadeTypeSetRadio.checked;
+		inputFadeStart.disabled = !mode;
+		inputFadeEnd.disabled = !mode;
+		inputFadeAdd.disabled = mode;
+	}
 
 	document.getElementById("button-apply-fade").onclick = applyFade;
 
-	document.getElementById("input-fade-end").addEventListener("keyup", (event) => {
+	inputFadeStart.addEventListener("keyup", (event) => {
+		if (event.key == "Enter")
+			inputFadeEnd.focus();
+	});
+
+	inputFadeEnd.addEventListener("keyup", (event) => {
 		if (event.key == "Enter")
 			applyFade();
 	});
 
+	inputFadeAdd.addEventListener("keydown", (event) => {
+		if (event.key == "Enter")
+			enterPressed = true;
+	});
+
+	inputFadeAdd.addEventListener("keyup", (event) => {
+		if (enterPressed && event.key == "Enter")
+			applyFade();
+
+		enterPressed = false;
+	});
+
 	function applyFade() {
-		let startVolume = Number(document.getElementById("input-fade-start").value);
-		let endVolume = Number(document.getElementById("input-fade-end").value);
+		if (fadeTypeSetRadio.checked) {
+			let startVolume = Number(inputFadeStart.value);
+			let endVolume = Number(inputFadeEnd.value);
 
-		// actual limit is 100 - exceeding values will be capped
-		if (isNaN(startVolume) || startVolume < 1 || startVolume > 200 ||
-			isNaN(endVolume) || endVolume < 1 || endVolume > 200) {
-			showAlert("Volume values should be in range 1-100");
-			return;
+			// actual limit is 100 - exceeding values will be capped
+			if (startVolume < 1 || startVolume > 200 || endVolume < 1 || endVolume > 200) {
+				showAlert("Volume values should be in range 1..100");
+				return;
+			}
+
+			songObj.currentPattern.fadeActiveLayer(startVolume, endVolume);
+		} else {
+			let volumeMod = inputFadeAdd.value;
+
+			if (volumeMod == "" || volumeMod < -100 || volumeMod > 100) {
+				showAlert("Volume modifier should be in range -100..100");
+				return;
+			}
+
+			songObj.currentPattern.fadeAddActiveLayer(volumeMod);
 		}
-
-		songObj.currentPattern.fadeActiveLayer(startVolume, endVolume);
 
 		onSongChangeCallback(false, null, true);
 		hideModal("pattern-modal-menu");
@@ -797,17 +848,17 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		layerTranspose();
 	};
 
-	let transposeEnter = false;
+
 	transposeStepsInput.addEventListener("keydown", (event) => {
 		if (event.key == "Enter")
-			transposeEnter = true;
+			enterPressed = true;
 	});
 
 	transposeStepsInput.addEventListener("keyup", (event) => {
-		if (transposeEnter && event.key == "Enter") {
+		if (enterPressed && event.key == "Enter") {
 			layerTranspose();
 		}
-		transposeEnter = false;
+		enterPressed = false;
 	});
 
 	function layerTranspose() {
@@ -871,7 +922,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		let zoom = Number(inputZoom.value);
 
 		if (zoom < 50 || zoom > 200) {
-			showAlert("Zoom percent should be in range 50-200");
+			showAlert("Zoom percent should be in range 50..200");
 			return;
 		}
 
@@ -895,21 +946,15 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	}
 
 	document.getElementById("button-cleanup-menu-open").onclick = () => {
-
-		showConfirm("WARNING! Destructive operations ahead!", (isOk) => {
+		showConfirm("This will delete unused patterns and layers.\nContinue?", (isOk) => {
 			if (!isOk)
 				return;
 
-			showConfirm("This will delete unused patterns and layers.\nContinue?", (isOkay) => {
-				if (!isOkay)
-					return;
-
-				hideModal("settings-modal-menu");
-				songObj.cleanup();
-				onSongChangeCallback(true, "stop");
-				g_switchTab("arrange");
-				showToast("Cleanup...");
-			});
+			hideModal("settings-modal-menu");
+			songObj.cleanup();
+			onSongChangeCallback(true, "stop");
+			g_switchTab("arrange");
+			showToast("Cleanup...");
 		});
 	};
 

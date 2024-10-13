@@ -525,8 +525,9 @@
 
 		<div id="demo-modal-menu" class="modal-container nodisplay">
 			<div class="modal-box">
-				<div class="non-scrollable-modal-header" id="demo-list-header">Select track</div>
-				<div class="modal-box-block notranslate" translate="no" id="demo-list-container"></div>
+				<div class="modal-box-block" id="demo-list-header">Select track</div>
+				<div class="modal-box-block modal-box-block--dense notranslate" translate="no" id="demo-list-container">
+				</div>
 				<div class="modal-box-block modal-box-footer">
 					<button id="button-demo-menu-close" class="button-modal-bottom">Close</button>
 				</div>
@@ -758,9 +759,9 @@
 				</div>
 				<div class="modal-box-block">
 					<div class="modal-box-inline">
-						<input type=number id="input-loop-bars" style="width:2rem" autocomplete="off" value="1">
-						<span>bar loop</span>
-						<button id="button-loop-play">Play</button>
+						<input type=number id="input-loop-bars" autocomplete="off" value="1">
+						<span style="margin-right:6px">bar loop</span>
+						<button id="button-loop-play" class="button--play">Play</button>
 					</div>
 				</div>
 				<div class="modal-box-block modal-box-footer">
@@ -793,47 +794,48 @@
 						<td>
 							<input type="text" id="input-pattern-name">
 						</td>
+						<td>
+							<button class="button--shadowed notranslate" translate="no"
+								id="button-color-select">color</button>
+						</td>
 					</tr>
 					<tr>
 						<td>
 							Length (bars)
 						</td>
-						<td>
+						<td colspan="2">
 							<input type="number" id="input-pattern-length">
 							<button id="button-pattern-length-set" tabindex="-1">Set</button>
 						</td>
 					</tr>
 					<tr>
-						<td style="text-align:right">
-							<button class="button--shadowed notranslate" translate="no"
-								id="button-color-select">color</button>
-						</td>
-						<td>
-							<button id="button-copy-pattern">Copy Ptrn</button>
-							<button id="button-delete-pattern">Delete Ptrn</button>
+						<td colspan="3">
+							<button id="button-copy-pattern">Copy Pattern</button>
+							<button id="button-delete-pattern">Delete Pattern</button>
 						</td>
 					</tr>
 				</table>
-				<div id="layer-dialog-block">
-					<div>
-						<table>
-							<tr>
-								<td style="text-align:right">
-									Synth&sol;Layer
-								</td>
-								<td>
-									<button id="button-synth-select" class="notranslate" translate="no">[none]</button>
-								</td>
-							</tr>
-							<tr>
-								<td></td>
-								<td>
-									<button id="button-layer-edit-open">Edit...</button>
-									<button id="button-delete-layer">Delete Layer</button>
-								</td>
-							</tr>
-						</table>
-					</div>
+				<div class="layer-dialog-block">
+					<table>
+						<tr>
+							<td style="text-align:right">
+								<span id="layer-block-title">Synth&sol;Layer</span>
+							</td>
+							<td>
+								<button id="button-synth-select" class="notranslate" translate="no">[none]</button>
+							</td>
+						</tr>
+						<tr>
+							<td style="padding:0;visibility:hidden" class="notranslate" translate="no">
+								<!--placeholder-->
+								tame Panther
+							</td>
+							<td>
+								<button id="button-layer-edit-open">Edit...</button>
+								<button id="button-delete-layer">Delete Layer</button>
+							</td>
+						</tr>
+					</table>
 				</div>
 				<div class="modal-box-block modal-box-footer">
 					<button id="button-pattern-menu-close" class="button-modal-bottom">Close</button>
@@ -875,7 +877,7 @@
 					<button id="button-transpose-layer">Transpose</button>
 				</div>
 				<div class="modal-box-block">
-					<button id="button-copy-layer">Duplicate</button>
+					<button id="button-copy-layer">Copy</button>
 				</div>
 				<div class="modal-box-block modal-box-footer">
 					<button id="button-layer-edit-close" class="button-modal-bottom">Close</button>
@@ -889,14 +891,29 @@
 					Modify layer volumes
 				</div>
 				<div class="modal-box-block">
-					<span>start</span>
-					<input type="number" id="input-fade-start" class="js-request-focus">
-					<span class="dim-text">&percnt;</span>
+					<div class="fade-dialog-block">
+						<input type="radio" id="input-fade-type-set" name="fade-type" autocomplete="off" checked>
+						<label for="input-fade-type-set">Set values</label>
+						<br>
+						<span>start</span>
+						<input type="number" id="input-fade-start" class="js-request-focus">
+						<span class="dim-text">&percnt;</span>
 
-					<span style="margin-left:1.5rem">end</span>
-					<input type="number" id="input-fade-end">
-					<span class="dim-text">&percnt;</span>
-					<div></div>
+						<span style="margin-left:1.5rem">end</span>
+						<input type="number" id="input-fade-end">
+						<span class="dim-text">&percnt;</span>
+
+					</div>
+				</div>
+				<div class="modal-box-block modal-box-block--dense">
+					<div class="fade-dialog-block">
+						<input type="radio" id="input-fade-type-add" name="fade-type" autocomplete="off">
+						<label for="input-fade-type-add">Add value</label>
+						<br>
+						<span>modifier</span>
+						<input type="number" id="input-fade-add" class="js-request-focus" autocomplete="off" value="12">
+						<span class="dim-text">&percnt;</span>
+					</div>
 				</div>
 				<div class="modal-box-block modal-box-footer">
 					<button id="button-apply-fade" class="button-modal-bottom notranslate" translate="no">OK</button>

@@ -808,6 +808,10 @@ input[type=range].range--volume {
 	overflow: auto;
 }
 
+.modal-box-block--dense {
+	padding-top: 6px;
+}
+
 .modal-box-block:first-child {
 	padding-top: 4px;
 }
@@ -840,7 +844,8 @@ input[type=range].range--volume {
 }
 
 .modal-box table input[type=text] {
-	width: 95%;
+	box-sizing: border-box;
+	width: 100%;
 }
 
 .modal-box td {
@@ -875,25 +880,38 @@ input[type=range].range--volume {
 	padding-top: 8px;
 }
 
-#layer-dialog-block {
-	padding: 12px 0 4px 0;
-	display: flex;
-	justify-content: center;
-}
-
-#layer-dialog-block > div {
+.layer-dialog-block {
+	margin: 12px 3px 8px 3px;
 	border: 1px solid #333;
 	border-radius: 5px;
 	background-color: #161616;
-	padding: 1px 6px;
 }
 
-#synth-select-modal-menu .modal-box-footer {
-	margin-top: 0;
+.fade-dialog-block {
+	border: 1px solid #333;
+	border-radius: 5px;
+	background-color: #161616;
+	padding: 6px 8px 4px 8px;
+}
+
+.fade-dialog-block label {
+	display: inline-block;
+	margin-bottom: 6px;
+}
+
+.fade-dialog-block input[type=radio]:not(:checked) ~ span {
+	opacity: 0.4;
+	pointer-events: none;
+}
+
+#layer-block-title {
+	cursor: pointer;
+	-webkit-user-select: none;
+	user-select: none;
 }
 
 #button-synth-select {
-	min-width: 75%;
+	min-width: 80%;
 	max-width: 45vw;
 	box-sizing: border-box;
 	padding-right: 1.1rem;
@@ -956,14 +974,17 @@ button.button--highlight-yellow {
 	box-shadow: inset 0 0 0 1px #980;
 }
 
+#input-loop-bars,
 #input-fade-start,
 #input-fade-end,
+#input-fade-add,
 #input-zoom-value,
 #input-shift-value,
 #input-transpose-value {
 	width: 3rem;
 }
 
+#button-copy-layer,
 #button-fade-layer,
 #button-shift-layer,
 #button-transpose-layer {
@@ -1131,11 +1152,6 @@ input[type=file]:focus + span {
 
 .scrollable-modal-header {
 	padding: 8px 12px 4px 12px;
-}
-
-.non-scrollable-modal-header {
-	padding: 0 4px;
-	margin-bottom: -8px;
 }
 
 .scrollable-modal .modal-box-footer {
@@ -1317,7 +1333,7 @@ button.button--arrow-up {
 }
 
 #toast-box {
-	border: 1px solid #444;
+	border: 1px solid #777;
 	border-radius: 3px;
 	padding: 6px 24px;
 	background-color: #222;
