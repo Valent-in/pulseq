@@ -268,7 +268,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		if (lnk.protocol == "blob:")
 			URL.revokeObjectURL(lnk.href);
 
-		let file = new Blob([exportSong()], { type: 'text/json' });
+		let file = new Blob([exportSong(true)], { type: 'text/json' });
 		lnk.href = URL.createObjectURL(file);
 		let name = songObj.title || "song";
 		lnk.download = name + ".json";
@@ -596,7 +596,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 
 	document.getElementById("button-copy-pattern").onclick = () => {
 		let name = songObj.currentPattern.name;
-		let defaultName = songObj.generatePatternName(name.split("-")[0] + "-", 2);
+		let defaultName = songObj.generatePatternName(name.split("-")[0] + "-");
 
 		document.getElementById("span-pattern-for-copy").textContent = "'" + name + "'";
 		showModal("pattern-copy-modal-menu");
@@ -1073,11 +1073,19 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		return true;
 	}
 
-	function exportSong() {
+	function exportSong(isCleanup) {
 		let expObj = {};
 
 		expObj.songFormatVersion = DEFAULT_PARAMS.fileFormatVersion;
-		expObj.synthParams = songObj.synthParams;
+
+		if (isCleanup) {
+			expObj.synthParams = [];
+			for (let i = 0; i < songObj.synthParams.length; i++)
+				expObj.synthParams.push(songObj.getCleanSynthParams(i))
+		} else {
+			expObj.synthParams = songObj.synthParams;
+		}
+
 		expObj.synthNames = songObj.synthNames;
 		expObj.song = songObj.song;
 		expObj.patterns = [];
@@ -1112,7 +1120,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			localStorage.removeItem(backupStorage);
 		} else {
 			console.log("## saving song data to local storage ##");
-			localStorage.setItem(backupStorage, exportSong());
+			localStorage.setItem(backupStorage, exportSong(false));
 		}
 	}
 

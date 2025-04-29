@@ -398,9 +398,6 @@ function ArrangeUi(songObj, onPatternSelectCallback, defaults) {
 		td.classList.add("arrange-header");
 		preCell.after(td);
 
-		if ((columnCount) % 4 == 0)
-			td.appendChild(document.createTextNode(columnCount + 1));
-
 		if (columnCount == songObj.arrangeStartPoint)
 			td.classList.add("play-start-point");
 

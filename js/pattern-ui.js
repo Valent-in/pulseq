@@ -13,7 +13,7 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 	let dragStartCol = 0;
 
 	let pointerPress = false;
-	let pressTimeout = 0;
+	let pressTimeout = null;
 	let cancelClick = false;
 
 	let barLength = 0;
@@ -134,7 +134,7 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 
 		lControl.classList.remove("control-fill-" + lengthMod);
 
-		let fullWidth = event.target.clientWidth;
+		let fullWidth = event.target.getBoundingClientRect().width;
 		if (event.offsetX < fullWidth / 2)
 			lengthMod -= 25;
 		else
@@ -169,7 +169,7 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 	});
 
 	volumeControl.addEventListener("click", (event) => {
-		let fullWidth = event.target.clientWidth;
+		let fullWidth = event.target.getBoundingClientRect().width;
 		let direction = event.offsetX < fullWidth / 2 ? -1 : 1;
 
 		if (!cancelClick)
@@ -177,7 +177,7 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 	});
 
 	volumeControl.addEventListener("pointerdown", (event) => {
-		let fullWidth = event.target.clientWidth;
+		let fullWidth = event.target.getBoundingClientRect().width;
 		let direction = event.offsetX < fullWidth / 2 ? -1 : 1;
 		cancelClick = false;
 
@@ -344,6 +344,7 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 	function pointerEndListener() {
 		pointerPress = false;
 		clearTimeout(pressTimeout);
+		pressTimeout = null;
 
 		if (isSidekeyPalying) {
 			isSidekeyPalying = false;
@@ -792,12 +793,18 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 	const patternLayerTabListener = (event) => {
 		let index = Number(event.target.dataset.index);
 		let synthIndex = songObj.currentPattern.patternData[index].synthIndex;
-		if (synthIndex !== null && event.target.classList.contains("tab--active")) {
-			assignSynthCallback(songObj.synthParams[synthIndex], songObj.synths[synthIndex], songObj.synthNames[synthIndex]);
-			songObj.currentSynthIndex = synthIndex;
-			g_markCurrentSynth();
 
-			g_switchTab("synth");
+		if (event.target.classList.contains("tab--active")) {
+			if (synthIndex === null) {
+				isCreateNewLayer = false;
+				showSynthSelectList();
+			} else {
+				assignSynthCallback(songObj.synthParams[synthIndex], songObj.synths[synthIndex], songObj.synthNames[synthIndex]);
+				songObj.currentSynthIndex = synthIndex;
+				g_markCurrentSynth();
+				g_switchTab("synth");
+			}
+			return;
 		}
 
 		let activeLayerTab = document.querySelectorAll(".js-pattern-layer-tab.tab--active")[0];
@@ -814,9 +821,6 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 		let addLayerBtn = document.getElementById("button-add-pattern-layer");
 		let patternTabs = document.querySelectorAll(".js-pattern-layer-tab");
 		patternTabs.forEach(e => e.remove());
-
-		if (pattern.patternData.length == 1 && pattern.patternData[0].synthIndex === null)
-			return;
 
 		for (let i = 0; i < pattern.patternData.length; i++) {
 			let index = pattern.patternData[i].synthIndex;
@@ -848,12 +852,12 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 	// Synth select dialog
 	let isCreateNewLayer = false;
 
-	this.showSynthSelectDialog = function () {
+	this.setNewPatternSynth = function () {
 		if (songObj.synths.length == 1) {
 			songObj.setCurrentLayerSynthIndex(0);
 			onSongChangeCallback(false);
 		} else {
-			isCreateNewLayer = true;
+			isCreateNewLayer = false;
 			showSynthSelectList();
 		}
 	}

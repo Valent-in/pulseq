@@ -64,6 +64,7 @@
 	background-color: #111;
 	z-index: 1;
 	font-size: 1rem;
+	counter-increment: numbers;
 }
 
 #arrange-main tr:first-child td:first-child {
@@ -73,6 +74,7 @@
 	background-position: center left 0.5em;
 	background-repeat: no-repeat;
 	background-size: auto 35%;
+	counter-reset: numbers -1;
 }
 
 #arrange-main tr td:nth-child(4n+2) {
@@ -81,6 +83,11 @@
 
 #arrange-main tr:first-child td:nth-child(4n+2) {
 	z-index: 2;
+}
+
+#arrange-main tr:first-child td:nth-child(4n+2):before {
+	content: counter(numbers);
+	pointer-events: none;
 }
 
 #arrange-main tr:nth-child(4n+5) td {

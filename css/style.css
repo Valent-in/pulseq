@@ -224,7 +224,7 @@ button.button--play {
 	background-repeat: no-repeat;
 	background-size: 1.1rem 1.1rem;
 	color: transparent;
-	min-width: 1.1rem;
+	min-width: 1.6rem;
 	background-image: url("../img/play.svg");
 }
 
@@ -516,7 +516,7 @@ button.button--play.button--play-loop {
 
 input[type=range] {
 	width: 99%;
-	margin: -6px 0 2px 0;
+	margin: -4px 0 0 0;
 	background-position: center center;
 	background-repeat: no-repeat no-repeat;
 	background-size: calc(102% - 18px) 34px;
@@ -787,13 +787,27 @@ input[type=range].range--volume {
 	z-index: 10;
 }
 
+@media (hover: none) and (orientation: landscape) and (min-height: 480px) {
+	.modal-container:not(.force-centered) {
+		align-items: flex-start;
+		box-sizing: border-box;
+		padding-top: 5%;
+	}
+}
+
+@media (hover: none) and (orientation: portrait) {
+	.modal-container:not(.force-centered) {
+		padding-bottom: 15vh;
+	}
+}
+
 .modal-box {
 	border: 2px solid #333;
 	border-radius: 3px;
 	background-color: #191919;
 	padding: 12px;
 	box-sizing: border-box;
-	max-height: 100vh;
+	max-height: 100%;
 	max-width: 100%;
 	overflow-y: auto;
 	font-size: 1rem;
@@ -966,6 +980,10 @@ button.button--shadowed:active {
 	min-width: 80px;
 }
 
+button.button--highlight-blue {
+	box-shadow: inset 0 0 0 2px #77f;
+}
+
 button.button--highlight-orange {
 	box-shadow: inset 0 0 0 2px #fa0;
 }
@@ -975,6 +993,7 @@ button.button--highlight-yellow {
 }
 
 #input-loop-bars,
+#button-loop-play,
 #input-fade-start,
 #input-fade-end,
 #input-fade-add,
@@ -1320,6 +1339,14 @@ button.button--arrow-down {
 
 button.button--arrow-up {
 	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' height='70' width='120'><path d='M 10,60 60,10 110,60' style='fill:rgb(150,150,150);stroke:none'/></svg>");
+}
+
+#canvas-osc-editor {
+	width: 100%;
+	max-width: min(90vw, 70vh);
+	max-height: min(85vw, 68vh);
+	margin-bottom: 4px;
+	touch-action: none;
 }
 
 .toast-container {

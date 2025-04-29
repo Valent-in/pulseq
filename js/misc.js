@@ -1,7 +1,7 @@
 "use strict";
 
 {
-	// Application setttings
+	// Application settings
 	let appSettings;
 	const settingsStorage = "pulseq-settings";
 

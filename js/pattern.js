@@ -10,13 +10,9 @@ class Pattern {
 		this.addLayer();
 	}
 
-	addLayer = (isForced) => {
-		if (this.patternData.length == 1 && this.patternData[0].synthIndex === null && !isForced) {
-			console.log("Layer already created. No synth index.")
-		} else {
-			this.activeIndex = this.patternData.length;
-			this.patternData.push({ notes: [], lengths: [], volumes: [], filtF: [], filtQ: [], synthIndex: null });
-		}
+	addLayer = () => {
+		this.activeIndex = this.patternData.length;
+		this.patternData.push({ notes: [], lengths: [], volumes: [], filtF: [], filtQ: [], synthIndex: null });
 	}
 
 	deleteActiveLayer() {
@@ -96,7 +92,7 @@ class Pattern {
 	copyActiveLayer() {
 		let layer = this.patternData[this.activeIndex];
 
-		this.addLayer(true);
+		this.addLayer();
 		let newLayer = this.patternData[this.activeIndex];
 
 		for (let i = 0; i < this.length; i++) {

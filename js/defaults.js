@@ -2,8 +2,8 @@
 
 const DEFAULT_PARAMS = {};
 
-DEFAULT_PARAMS.programVersion = "1.2.3";
-DEFAULT_PARAMS.fileFormatVersion = "1.8";
+DEFAULT_PARAMS.programVersion = "1.3";
+DEFAULT_PARAMS.fileFormatVersion = "1.9";
 
 DEFAULT_PARAMS.maxPatternSteps = 64;
 
@@ -50,16 +50,19 @@ DEFAULT_PARAMS.synthState = {
 	"synth-osc1-mod-input": "[none]",
 	"synth-osc1-mod-value": 0,
 	"synth-osc1-octave": 0,
+	"synth-osc1-partials": "",
 	"synth-osc1-type": "triangle",
 	"synth-osc2-detune": 0,
 	"synth-osc2-level": 0,
 	"synth-osc2-mod-input": "[none]",
 	"synth-osc2-mod-value": 0,
 	"synth-osc2-octave": 0,
+	"synth-osc2-partials": "",
 	"synth-osc2-type": "[none]",
 	"synth-osc3-detune": 0,
 	"synth-osc3-level": 0,
 	"synth-osc3-octave": 0,
+	"synth-osc3-partials": "",
 	"synth-osc3-type": "[none]",
 	"synth-pan": 0,
 	"synth-porta": false

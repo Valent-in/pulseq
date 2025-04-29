@@ -65,6 +65,12 @@ class Synth {
 			ampAM_modgain: 0
 		};
 
+		this.partials = {
+			osc1: [],
+			osc2: [],
+			osc3: []
+		}
+
 		this.modEnvelopeType = "[none]";
 		this.FXType = "[none]";
 		this.lastFXType = null;
@@ -201,19 +207,19 @@ class Synth {
 	}
 
 	mute(isMute) {
-		this.isMuted = isMute;
-
-		if (isMute) {
+		if (isMute && !this.isMuted) {
 			if (this.FX)
 				this.FX.disconnect();
 			else
 				this.ampout.disconnect();
-		} else {
+		} else if (!isMute && this.isMuted) {
 			if (this.FX)
 				this.FX.chain(this.out.outputNode);
 			else
 				this.ampout.chain(this.out.outputNode);
 		}
+
+		this.isMuted = isMute;
 	}
 
 	addOsc1(isOsc) {
@@ -556,7 +562,11 @@ class Synth {
 			case "delay":
 			case "pingpong":
 				if (this.FXsync) {
-					this.FX.delayTime.value = (2 ** (4 - Math.round(this.values.FXRateValue * 3))) + "n";
+					let wholeNoteTime = 4 * 60 / this.bpm;
+					let step = 5 - Math.floor(this.values.FXRateValue * 5);
+					let divisor = 2 ** Math.max(1, step);
+
+					this.FX.delayTime.value = Math.min(1, wholeNoteTime / divisor);
 				} else {
 					this.FX.delayTime.value = this.values.FXRateValue;
 				}

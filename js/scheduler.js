@@ -103,6 +103,7 @@ function Scheduler(songObj, barCallback, stepCallback) {
 
 		// Promise
 		return Tone.Offline(({ transport }) => {
+			transport.bpm.value = songObj.bpm;
 			let compressor = new Tone.Compressor(songObj.compressorThreshold, songObj.compressorRatio);
 			compressor.toDestination();
 
@@ -125,9 +126,7 @@ function Scheduler(songObj, barCallback, stepCallback) {
 				performSchedulerStep(schedulerData, lSynths, time, null, songObj.song.length);
 			}, "16n");
 
-			transport.bpm.value = songObj.bpm;
 			transport.start(0.2);
-
 		}, renderLength);
 	};
 

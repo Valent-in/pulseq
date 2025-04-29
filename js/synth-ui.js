@@ -247,6 +247,9 @@ function SynthUi(songObj) {
 
 	let controls = document.querySelectorAll("#synth-main input, #synth-main select, #synth-main button");
 	controls.forEach((e) => {
+		if (!e.id.startsWith("synth"))
+			return;
+
 		switch (e.tagName) {
 			case "INPUT":
 				e.addEventListener("input", universalSynthListener);
@@ -281,15 +284,36 @@ function SynthUi(songObj) {
 		}
 
 		document.getElementById("synth-name-area").textContent = name;
-		this.updateMuteControls(targetSynth);
+		this.updateMuteControls();
 	}
 
-	this.updateMuteControls = function (targetSynth) {
+	this.updateMuteControls = () => {
 		let muteButton = document.getElementById("button-synth-mute");
-		if (targetSynth.isMuted)
+
+		if (isSoloSynth(this.currentSynth))
+			muteButton.classList.add("button--highlight-blue");
+		else
+			muteButton.classList.remove("button--highlight-blue");
+
+		if (this.currentSynth.isMuted)
 			muteButton.classList.add("button--highlight-orange");
 		else
 			muteButton.classList.remove("button--highlight-orange");
+	}
+
+	function isSoloSynth(targetSynth) {
+		if (targetSynth.isMuted)
+			return false;
+
+		if (songObj.synths.length < 2)
+			return false;
+
+		let mutedCount = 0;
+		songObj.synths.forEach(e => { if (e.isMuted) mutedCount++ });
+		if (mutedCount == songObj.synths.length - 1)
+			return true;
+		else
+			return false;
 	}
 
 	function setBlockState(selector) {
@@ -324,6 +348,15 @@ function SynthUi(songObj) {
 				else
 					el.style.visibility = "visible";
 			}
+		}
+
+		if (selector.dataset.edit) {
+			let edit = document.getElementById(selector.dataset.edit);
+			if (selector.value == "custom")
+				edit.style.visibility = "visible";
+			else
+				edit.style.visibility = "hidden";
+
 		}
 	}
 

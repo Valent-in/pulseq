@@ -13,6 +13,15 @@ function synthParamApply(paramId, controlValue, synth) {
 		return (2 ** absX - 1) * 20 * mod;
 	}
 
+	const setPartials = (oscName, isThisParam) => {
+		if (isThisParam) {
+			value = controlValue;
+			synth.partials[oscName] = value.split(",").map(e => Number(e));
+		}
+		if (synth[oscName] && synth[oscName].type == "custom")
+			synth[oscName].partials = synth.partials[oscName].slice();
+	}
+
 	switch (paramId) {
 		// Oscillator 1
 		case "synth-osc1-octave":
@@ -48,7 +57,12 @@ function synthParamApply(paramId, controlValue, synth) {
 			} else {
 				synth.addOsc1(true);
 				synth.osc1.type = controlValue;
+				setPartials("osc1", false);
 			}
+			break;
+
+		case "synth-osc1-partials":
+			setPartials("osc1", true);
 			break;
 
 		// Oscillator 2
@@ -85,7 +99,12 @@ function synthParamApply(paramId, controlValue, synth) {
 			} else {
 				synth.addOsc2(true);
 				synth.osc2.type = controlValue;
+				setPartials("osc2", false);
 			}
+			break;
+
+		case "synth-osc2-partials":
+			setPartials("osc2", true);
 			break;
 
 		// Oscillator 3
@@ -122,7 +141,12 @@ function synthParamApply(paramId, controlValue, synth) {
 			} else {
 				synth.addOsc3(true);
 				synth.osc3.type = controlValue;
+				setPartials("osc3", false);
 			}
+			break;
+
+		case "synth-osc3-partials":
+			setPartials("osc3", true);
 			break;
 
 		// Noise

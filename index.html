@@ -57,6 +57,7 @@
 	<script defer src="js/synth-ui.js"></script>
 	<script defer src="js/synth-presets.js"></script>
 	<script defer src="js/synth-helper.js"></script>
+	<script defer src="js/waveform-editor.js"></script>
 
 	<script defer src="js/pattern.js"></script>
 	<script defer src="js/pattern-ui.js"></script>
@@ -150,14 +151,17 @@
 						<span id="button-toggle-group" class="button button--small">Group</span>
 					</div>
 					<div class="bg-oscillator border-osc js-osc1-group">
-						<span class="caption-text highlight-bluelight">Oscillator 1</span>
-						<select class="notranslate" translate="no" id="synth-osc1-type" data-block="js-osc1-block">
+						<span class="caption-text highlight-bluelight">OSC 1</span>
+						<select class="notranslate" translate="no" id="synth-osc1-type" data-block="js-osc1-block"
+							data-edit="osc1-menu-open">
 							<option>[none]</option>
 							<option>sine</option>
 							<option>triangle</option>
 							<option>sawtooth</option>
 							<option>square</option>
+							<option>custom</option>
 						</select>
+						<button id="osc1-menu-open">Edit</button>
 						<div class="js-osc1-block">
 							<span>Octave</span>
 							<br>
@@ -174,14 +178,17 @@
 						</div>
 					</div>
 					<div class="bg-oscillator border-osc js-osc2-group">
-						<span class="caption-text highlight-violetlight">Oscillator 2</span>
-						<select class="notranslate" translate="no" id="synth-osc2-type" data-block="js-osc2-block">
+						<span class="caption-text highlight-violetlight">OSC 2</span>
+						<select class="notranslate" translate="no" id="synth-osc2-type" data-block="js-osc2-block"
+							data-edit="osc2-menu-open">
 							<option>[none]</option>
 							<option>sine</option>
 							<option>triangle</option>
 							<option>sawtooth</option>
 							<option>square</option>
+							<option>custom</option>
 						</select>
+						<button id="osc2-menu-open">Edit</button>
 						<div class="js-osc2-block">
 							<span>Octave</span>
 							<br>
@@ -198,14 +205,17 @@
 						</div>
 					</div>
 					<div class="bg-oscillator border-osc-third js-osc3-group">
-						<span class="caption-text highlight-yellowlight">Oscillator 3</span>
-						<select class="notranslate" translate="no" id="synth-osc3-type" data-block="js-osc3-block">
+						<span class="caption-text highlight-yellowlight">OSC 3</span>
+						<select class="notranslate" translate="no" id="synth-osc3-type" data-block="js-osc3-block"
+							data-edit="osc3-menu-open">
 							<option>[none]</option>
 							<option>sine</option>
 							<option>triangle</option>
 							<option>sawtooth</option>
 							<option>square</option>
+							<option>custom</option>
 						</select>
+						<button id="osc3-menu-open">Edit</button>
 						<div class="js-osc3-block">
 							<span>Octave</span>
 							<br>
@@ -447,9 +457,9 @@
 							<option>phaser</option>
 							<option>pingpong</option>
 							<option>reverb</option>
-							<option>stereo</option>
 							<option>tremolo</option>
 							<option>vibrato</option>
+							<option disabled hidden>stereo</option>
 						</select>
 						<div class="js-fx-block">
 							<span>Amount (Depth)</span>
@@ -459,7 +469,7 @@
 							<span id="synth-fx-rate-span">Delay (Speed)</span>
 							<input type="checkbox" id="synth-fx-sync">
 							<label id="synth-fx-sync-label" for="synth-fx-sync">BPM sync</label>
-							<input type="range" id="synth-fx-rate" min=0 max=1 step=0.002 class="range--3-marks">
+							<input type="range" id="synth-fx-rate" min=0 max=1 step=0.002 class="range--5-marks">
 							<br>
 							<span>Dry-Wet</span>
 							<br>
@@ -494,7 +504,7 @@
 
 		</div>
 
-		<div id="startup-modal-menu" class="modal-container js-noskip">
+		<div id="startup-modal-menu" class="modal-container js-noskip force-centered">
 			<div class="modal-box" id="startup-menu-box">
 				<div class="modal-box-block notranslate" translate="no">
 					<span class="app-title-pulseq">PulseQ</span>
@@ -523,7 +533,7 @@
 			</div>
 		</div>
 
-		<div id="demo-modal-menu" class="modal-container nodisplay">
+		<div id="demo-modal-menu" class="modal-container force-centered nodisplay">
 			<div class="modal-box">
 				<div class="modal-box-block" id="demo-list-header">Select track</div>
 				<div class="modal-box-block modal-box-block--dense notranslate" translate="no" id="demo-list-container">
@@ -534,7 +544,7 @@
 			</div>
 		</div>
 
-		<div id="loading-modal" class="modal-container nodisplay">
+		<div id="loading-modal" class="modal-container force-centered nodisplay">
 			<div class="modal-box">
 				<div class="modal-box-block">
 					Loading...
@@ -761,7 +771,7 @@
 					<div class="modal-box-inline">
 						<input type=number id="input-loop-bars" autocomplete="off" value="1">
 						<span style="margin-right:6px">bar loop</span>
-						<button id="button-loop-play" class="button--play">Play</button>
+						<button id="button-loop-play">Play</button>
 					</div>
 				</div>
 				<div class="modal-box-block modal-box-footer">
@@ -770,7 +780,7 @@
 			</div>
 		</div>
 
-		<div id="pattern-reorder-modal-menu" class="modal-container nodisplay">
+		<div id="pattern-reorder-modal-menu" class="modal-container force-centered nodisplay">
 			<div class="modal-box scrollable-modal narrow-modal">
 				<div class="modal-box-block">
 					<div class="scrollable-modal-header">Reorder patterns</div>
@@ -843,7 +853,7 @@
 			</div>
 		</div>
 
-		<div id="synth-select-modal-menu" class="modal-container nodisplay">
+		<div id="synth-select-modal-menu" class="modal-container force-centered nodisplay">
 			<div class="modal-box scrollable-modal narrow-modal">
 				<div class="modal-box-block">
 					<div class="scrollable-modal-header">Select Instrument</div>
@@ -981,6 +991,49 @@
 			</div>
 		</div>
 
+		<div id="oscillator-modal-menu" class="modal-container force-centered nodisplay">
+			<div class="modal-box">
+				<div class="modal-box-block">
+					<div>
+						<canvas id="canvas-osc-editor" width="440" height="440"></canvas>
+					</div>
+					<div>
+						<label for="select-osc-harmonics">Harmonics</label>
+						<select id="select-osc-harmonics">
+							<option disabled hidden value=""></option>
+							<option>8</option>
+							<option>12</option>
+							<option>16</option>
+							<option>20</option>
+							<option>24</option>
+							<option>28</option>
+							<option>32</option>
+						</select>
+						<select id="select-harmonics-templates" class="notranslate" translate="no" autocomplete="off">
+							<option selected disabled hidden value="template">template</option>
+							<option id="opt-copy-osc1" value="osc1">OSC 1</option>
+							<option id="opt-copy-osc2" value="osc2">OSC 2</option>
+							<option id="opt-copy-osc3" value="osc3">OSC 3</option>
+							<option value="sine">sine</option>
+							<option value="square">square</option>
+							<option value="pulse33">pulse 33%</option>
+							<option value="pulse25">pulse 25%</option>
+							<option value="pulse20">pulse 20%</option>
+							<option value="sawtooth">sawtooth</option>
+							<option value="softsaw">soft saw</option>
+							<option value="triangle">triangle?</option>
+							<option value="strings1">strings 1</option>
+							<option value="strings2">strings 2</option>
+							<option value="linear">linear</option>
+						</select>
+					</div>
+				</div>
+				<div class="modal-box-block modal-box-footer">
+					<button id="button-osc-menu-close" class="button-modal-bottom">Close</button>
+				</div>
+			</div>
+		</div>
+
 		<div id="synth-modal-menu" class="modal-container nodisplay">
 			<div class="modal-box">
 				<div id="synth-name-container" class="modal-box-block">
@@ -1008,7 +1061,7 @@
 			</div>
 		</div>
 
-		<div id="mixer-modal-menu" class="modal-container nodisplay">
+		<div id="mixer-modal-menu" class="modal-container force-centered nodisplay">
 			<div class="modal-box scrollable-modal">
 				<div class="modal-box-block">
 					<div class="scrollable-modal-header">Mixer</div>

@@ -13,9 +13,10 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v" + DEFAULT_PARAMS.progra
 		history.pushState({ alter: true }, "", location.href);
 	}
 
-	if (history.length == 1 || (history.state && history.state.alter)) {
+	if (history.state && history.state.alter) {
 		window.onpopstate = function () {
 			history.go(1);
+			scheduler.stop();
 		}
 	}
 
@@ -88,6 +89,7 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v" + DEFAULT_PARAMS.progra
 
 	schedulerUi(scheduler, arrangeUi.setLoopMarkers);
 	menuInit(songObject, onSongChange, synthHelper.loadSynth, scheduler.renderSong, scheduler.exportMidiSequence);
+	waveformEditor(songObject);
 
 	document.getElementById("startup-loading-title").style.display = "none";
 	document.getElementById("startup-menu").style.display = "block";
@@ -127,6 +129,6 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v" + DEFAULT_PARAMS.progra
 		patternUi.rebuildPatternSynthList(newCurrentPattern);
 
 		if (isNewPattern)
-			patternUi.showSynthSelectDialog();
+			patternUi.setNewPatternSynth();
 	}
 }

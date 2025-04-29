@@ -5,8 +5,21 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 	let selectedSynthIndex = 0;
 	let mixerIsShown = false;
 
+	let pressTimeout = null;
+	let cancelClick = false;
+
 	let deleteSynthBtn = document.getElementById("button-delete-synth");
 	let synthNameArea = document.getElementById("synth-name-area");
+
+	let unmuteMsg = "Unmute all";
+
+	let listInfo = document.getElementById("synth-list-caption-area");
+	listInfo.onclick = () => {
+		muteAllSynths(false);
+		synthUi.updateMuteControls();
+		updateMuteMarkers();
+		showToast(unmuteMsg);
+	}
 
 	document.getElementById("button-add-synth").addEventListener("click", () => {
 		let defaultName = songObj.generateSynthName();
@@ -21,13 +34,57 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 	});
 
 	document.getElementById("button-synth-mute").onclick = () => {
+		if (cancelClick)
+			return;
+
 		selectedSynthIndex = songObj.currentSynthIndex;
 		let synth = songObj.synths[selectedSynthIndex];
 		synth.mute(!synth.isMuted);
 
-		synthUi.updateMuteControls(synth);
+		synthUi.updateMuteControls();
 		updateMuteMarkers();
 	};
+
+	document.getElementById("button-synth-mute").onpointerdown = () => {
+		cancelClick = false;
+		selectedSynthIndex = songObj.currentSynthIndex;
+		let synth = songObj.synths[selectedSynthIndex];
+
+		pressTimeout = setTimeout(() => {
+			if (songObj.synths.length < 2)
+				return;
+
+			cancelClick = true;
+			synth.mute(false);
+
+			let mutedCount = 0;
+			for (let i = 0; i < songObj.synths.length; i++)
+				if (songObj.synths[i].isMuted)
+					mutedCount++;
+
+			if (mutedCount == songObj.synths.length - 1) {
+				showToast(unmuteMsg);
+				muteAllSynths(false);
+			} else {
+				showToast("Solo");
+				for (let i = 0; i < songObj.synths.length; i++)
+					if (i != selectedSynthIndex)
+						songObj.synths[i].mute(true);
+			}
+
+			synthUi.updateMuteControls();
+			updateMuteMarkers();
+		}, DEFAULT_PARAMS.pressDelay);
+	};
+
+	document.getElementById("button-synth-mute").onpointerup = pointerEndListener;
+	document.getElementById("button-synth-mute").onpointercancel = pointerEndListener;
+	document.getElementById("button-synth-mute").onpointerleave = pointerEndListener;
+
+	function pointerEndListener() {
+		clearTimeout(pressTimeout);
+		pressTimeout = null;
+	}
 
 	function updateMuteMarkers() {
 		let isSomeMuted = false;
@@ -269,7 +326,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		if (lnk.protocol == "blob:")
 			URL.revokeObjectURL(lnk.href);
 
-		let expString = JSON.stringify(songObj.synthParams[selectedSynthIndex], null, 1);
+		let expString = JSON.stringify(songObj.getCleanSynthParams(selectedSynthIndex), null, 1);
 		let file = new Blob([expString], { type: 'text/json' });
 		lnk.href = URL.createObjectURL(file);
 		let name = songObj.synthNames[selectedSynthIndex] || "synth";
@@ -325,8 +382,12 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 
 		g_markCurrentSynth();
 
-		let listInfo = document.getElementById("synth-list-caption-area");
-		listInfo.textContent = "Instruments (" + songObj.synths.length + ")";
+		let voiceCount = 0;
+		songObj.synths.forEach(e => { if (!e.isMuted) voiceCount++ });
+		if (voiceCount == songObj.synths.length)
+			listInfo.textContent = "Instruments (" + songObj.synths.length + ")";
+		else
+			listInfo.textContent = "Instruments (" + voiceCount + "/" + songObj.synths.length + ")";
 
 		function createSynthEntry(name, isMuted) {
 			let entry = document.createElement("DIV");
@@ -419,10 +480,12 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 
 	document.getElementById("button-mute-all").onclick = () => {
 		muteAllSynths(true);
+		buildMixerList();
 	};
 
 	document.getElementById("button-unmute-all").onclick = () => {
 		muteAllSynths(false);
+		buildMixerList();
 	};
 
 	function closeMixer() {
@@ -440,7 +503,6 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 
 	function muteAllSynths(isMute) {
 		songObj.synths.forEach(e => e.mute(isMute));
-		buildMixerList();
 	}
 
 	function buildMixerList() {

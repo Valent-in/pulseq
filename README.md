@@ -10,6 +10,7 @@ Initially designed as sketching tool but can be used for making full-fledged tra
 - Client only (no data processed on servers)
 
 - Subtractive synthesizers with various effects
+- Harmonic oscillators & basic FM
 - Multi-layered step sequencer
 - Exportable synth presets
 - WAV audio export

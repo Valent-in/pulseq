@@ -39,7 +39,7 @@ function SongObject() {
 	this.createEmptySong = function () {
 		this.fillSong();
 		this.createSynth("synth1");
-		this.patterns.push(new Pattern("ptrn1"));
+		this.patterns.push(new Pattern("A1"));
 		this.setCurrentPattern(0);
 		this.currentPattern.patternData[0].synthIndex = 0;
 	}
@@ -57,9 +57,15 @@ function SongObject() {
 		this.setCurrentPattern(0);
 	}
 
-	this.generatePatternName = function (prefix, startNumber) {
+	this.generatePatternName = function (prefix) {
 		let patternNames = this.patterns.map(e => e.name);
-		return generateName(prefix || "ptrn", patternNames, startNumber);
+
+		let genPrefix = patternNames[patternNames.length - 1];
+		let separate = genPrefix.search(/-|\d|\s/);
+		if (separate > 0)
+			genPrefix = genPrefix.substring(0, separate);
+
+		return generateName(prefix || genPrefix || "A", patternNames, 2);
 	}
 
 	this.createSynth = function (name, copyFromParams) {
@@ -399,7 +405,7 @@ function SongObject() {
 	this.cleanup = function () {
 		// Delete layers without notes or assigned synth
 		for (let i = this.patterns.length - 1; i >= 0; i--) {
-			for (let j = 0; j < this.patterns[i].patternData.length; j++) {
+			for (let j = this.patterns[i].patternData.length - 1; j >= 0; j--) {
 
 				let empty = true;
 				for (let k = 0; k < this.patterns[i].length; k++)
@@ -452,6 +458,19 @@ function SongObject() {
 				this.deleteCurrentPattern();
 			}
 		}
+	}
+
+	this.getCleanSynthParams = function (synthIndex) {
+		let params = this.synthParams[synthIndex];
+		let packed = {};
+		for (let key in params)
+			packed[key] = params[key];
+
+		for (let osc of ["osc1", "osc2", "osc3"])
+			if (packed["synth-" + osc + "-type"] != "custom")
+				packed["synth-" + osc + "-partials"] = "";
+
+		return packed;
 	}
 
 	function comparePatterns(ptrn1, ptrn2) {
