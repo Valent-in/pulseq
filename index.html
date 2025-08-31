@@ -382,30 +382,40 @@
 					</div>
 					<div class="bg-lfo js-oth-group">
 						<span class="caption-text">LFO 1</span>
-						<select class="notranslate" translate="no" id="synth-lfo1-type" data-block="js-lfo1-block">
+						<select class="notranslate" translate="no" id="synth-lfo1-type" data-block="js-lfo1-block"
+							data-edit="lfo1-menu-open">
 							<option>[none]</option>
 							<option>sine</option>
 							<option>triangle</option>
 							<option>sawtooth</option>
 							<option>square</option>
+							<option>custom</option>
 						</select>
-						<input type="checkbox" id="synth-lfo1-sync" class="js-lfo1-block">
-						<label for="synth-lfo1-sync" class="js-lfo1-block">BPM sync</label>
+						<button id="lfo1-menu-open">Edit</button>
+						<div class="checkbox-wrapper">
+							<input type="checkbox" id="synth-lfo1-sync" class="js-lfo1-block">
+							<label for="synth-lfo1-sync" class="js-lfo1-block">BPM sync</label>
+						</div>
 						<div class="js-lfo1-block">
 							<span>Frequency</span>
 							<br>
 							<input type="range" id="synth-lfo1-frequency" min=0 max=12 step=0.01 class="range--4-marks">
 						</div>
 						<span class="caption-text">LFO 2</span>
-						<select class="notranslate" translate="no" id="synth-lfo2-type" data-block="js-lfo2-block">
+						<select class="notranslate" translate="no" id="synth-lfo2-type" data-block="js-lfo2-block"
+							data-edit="lfo2-menu-open">
 							<option>[none]</option>
 							<option>sine</option>
 							<option>triangle</option>
 							<option>sawtooth</option>
 							<option>square</option>
+							<option>custom</option>
 						</select>
-						<input type="checkbox" id="synth-lfo2-retrig" class="js-lfo2-block">
-						<label for="synth-lfo2-retrig" class="js-lfo2-block">Re-trig</label>
+						<button id="lfo2-menu-open">Edit</button>
+						<div class="checkbox-wrapper">
+							<input type="checkbox" id="synth-lfo2-retrig" class="js-lfo2-block">
+							<label for="synth-lfo2-retrig" class="js-lfo2-block">Re-trig</label>
+						</div>
 						<div class="js-lfo2-block">
 							<span>Frequency</span>
 							<br>
@@ -461,6 +471,7 @@
 							<option>vibrato</option>
 							<option disabled hidden>stereo</option>
 						</select>
+						<span id="cpu-warning-span">High CPU</span>
 						<div class="js-fx-block">
 							<span>Amount (Depth)</span>
 							<br>
@@ -570,6 +581,11 @@
 				<div class="modal-box-block">
 					<input type="checkbox" id="input-more-velosteps" autocomplete="off">
 					<label for="input-more-velosteps">More velocity steps</label>
+				</div>
+				<div class="modal-box-block">
+					<span>Show scale</span>
+					<select id="select-root-highlight" disabled></select>
+					<select id="select-scale-highlight"></select>
 				</div>
 				<div class="modal-box-block">
 					<button id="button-cleanup-menu-open">Cleanup</button>
@@ -1014,6 +1030,8 @@
 							<option id="opt-copy-osc1" value="osc1">OSC 1</option>
 							<option id="opt-copy-osc2" value="osc2">OSC 2</option>
 							<option id="opt-copy-osc3" value="osc3">OSC 3</option>
+							<option id="opt-copy-lfo1" value="lfo1">LFO 1</option>
+							<option id="opt-copy-lfo2" value="lfo2">LFO 2</option>
 							<option value="sine">sine</option>
 							<option value="square">square</option>
 							<option value="pulse33">pulse 33%</option>

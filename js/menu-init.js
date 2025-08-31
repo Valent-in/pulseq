@@ -877,6 +877,54 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	/*
 	 * Settings modal menu
 	 */
+	let selectRoot = document.getElementById("select-root-highlight");
+	let selectScale = document.getElementById("select-scale-highlight");
+
+	DEFAULT_PARAMS.noteNames.forEach(e => {
+		let opt = document.createElement("OPTION");
+		opt.appendChild(document.createTextNode(e));
+		opt.value = e;
+		selectRoot.appendChild(opt);
+	});
+
+	DEFAULT_PARAMS.scaleSet.forEach(e => {
+		let opt = document.createElement("OPTION");
+		opt.appendChild(document.createTextNode(e[1]));
+		selectScale.appendChild(opt);
+	});
+
+	selectRoot.onchange = setScaleHighlight;
+	selectScale.onchange = setScaleHighlight;
+
+	function setScaleHighlight() {
+		let rootIndex = selectRoot.selectedIndex;
+		let scaleIndex = selectScale.selectedIndex;
+
+		let keys = document.querySelectorAll("#pattern-main table tr:not(:first-child):not(:last-child) td:first-child");
+
+		for (let i = 0; i < keys.length; i++) {
+			keys[i].classList.remove("key--root")
+			keys[i].classList.remove("key--inscale");
+		}
+
+		if (scaleIndex == 0) {
+			selectRoot.disabled = true;
+			return;
+		}
+
+		selectRoot.disabled = false;
+
+		let mScale = DEFAULT_PARAMS.scaleSet[scaleIndex][0];
+		for (let i = 0; i < keys.length; i++) {
+			let index = 11 - (i + rootIndex) % 12
+			if (index == 0)
+				keys[i].classList.add("key--root")
+
+			if (mScale[index] == "1")
+				keys[i].classList.add("key--inscale");
+		}
+	}
+
 	let buttonZoom = document.getElementById("button-zoom-set");
 	let inputZoom = document.getElementById("input-zoom-value");
 	inputZoom.value = 100;
@@ -1010,8 +1058,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			return false;
 		}
 
-		// Expect single-digit numbers
-		if (expObj.songFormatVersion > DEFAULT_PARAMS.fileFormatVersion)
+		if (Number(expObj.songFormatVersion) > Number(DEFAULT_PARAMS.fileFormatVersion))
 			showAlert("WARNING:\nFile was created in more recent PulseQueue version.");
 
 		songObj.title = expObj.title || "";

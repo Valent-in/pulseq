@@ -2,8 +2,8 @@
 
 const DEFAULT_PARAMS = {};
 
-DEFAULT_PARAMS.programVersion = "1.3";
-DEFAULT_PARAMS.fileFormatVersion = "1.9";
+DEFAULT_PARAMS.programVersion = "1.4";
+DEFAULT_PARAMS.fileFormatVersion = "20";
 
 DEFAULT_PARAMS.maxPatternSteps = 64;
 
@@ -33,9 +33,11 @@ DEFAULT_PARAMS.synthState = {
 	"synth-fx-wet": 0.5,
 	"synth-glide": 0,
 	"synth-lfo1-frequency": 0,
+	"synth-lfo1-partials": "",
 	"synth-lfo1-sync": false,
 	"synth-lfo1-type": "[none]",
 	"synth-lfo2-frequency": 0,
+	"synth-lfo2-partials": "",
 	"synth-lfo2-retrig": false,
 	"synth-lfo2-type": "[none]",
 	"synth-mod-envelope-attack": 6,
@@ -74,6 +76,35 @@ DEFAULT_PARAMS.noteSet = [
 	"C4", "Db4", "D4", "Eb4", "E4", "F4", "Gb4", "G4", "Ab4", "A4", "Bb4", "B4",
 	"C5", "Db5", "D5", "Eb5", "E5", "F5", "Gb5", "G5", "Ab5", "A5", "Bb5", "B5",
 	"C6", "Db6", "D6", "Eb6", "E6", "F6", "Gb6", "G6", "Ab6", "A6", "Bb6", "B6"
+];
+
+DEFAULT_PARAMS.noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
+DEFAULT_PARAMS.scaleSet = [[null, "[none]"],
+["101011010101", "Major"],
+["101011011001", "H-Major"], // Harmonic
+["101101011010", "Minor"],
+["101101011001", "H-Minor"],
+["100101010010", "P-Minor"], // Pentatonic
+["100110011001", "Augmented"],
+["101011011101", "Bebop"], // major
+["100101110010", "Blues"],
+["110010101011", "Enigmatic"],
+["110011011001", "Flamenco"],
+["101100111010", "Gypsy"],
+["100111010100", "Harmonics"],
+["100010110001", "Hirajoshi"],
+["100110110110", "Hungarian"], // major
+["110001010010", "Insen"],
+["110110110000", "Istrian"],
+["101101010101", "Jazz"], // Melodic minor (ascending)
+["110101010101", "Neapolitan"], // major ?
+["101101101101", "Octatonic"],
+["110011101001", "Persian"],
+["101010100110", "Prometheus"],
+["110010110010", "Tritone"],
+["101100110110", "Ukrainian"],
+["101010101010", "Wholetone"]
 ];
 
 DEFAULT_PARAMS.colorSet = [

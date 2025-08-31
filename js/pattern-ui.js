@@ -224,10 +224,12 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 					if (noteArr[i - 1] == "C4")
 						td.classList.add("c4-key-mark");
 
-					if (noteArr[i - 1].includes("b"))
+					if (noteArr[i - 1].includes("b")) {
 						td.classList.add("pattern-black-key");
-					else if (i > 1 && i < DEFAULT_PARAMS.noteSet.length)
+						td.appendChild(document.createTextNode("#"));
+					} else if (i > 1 && i < DEFAULT_PARAMS.noteSet.length) {
 						td.appendChild(document.createTextNode(noteArr[i - 1]));
+					}
 				}
 
 				if (i > 0 && j > 0) {

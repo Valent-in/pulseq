@@ -68,7 +68,9 @@ class Synth {
 		this.partials = {
 			osc1: [],
 			osc2: [],
-			osc3: []
+			osc3: [],
+			lfo1: [],
+			lfo2: []
 		}
 
 		this.modEnvelopeType = "[none]";

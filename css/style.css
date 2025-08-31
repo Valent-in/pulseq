@@ -353,6 +353,13 @@ button.button--play.button--play-loop {
 	margin-left: 12px;
 }
 
+.checkbox-wrapper {
+	display: inline-block;
+	white-space: nowrap;
+	overflow: visible;
+	max-width: 3.5rem;
+}
+
 #synth-main #synth-grouping {
 	border: none;
 	background-color: inherit;
@@ -512,6 +519,12 @@ button.button--play.button--play-loop {
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	font-weight: bold;
+}
+
+#cpu-warning-span {
+	font-size: 0.6rem;
+	color: #fa0;
+	padding-left: 4px;
 }
 
 input[type=range] {
@@ -1154,6 +1167,11 @@ input[type=file]:focus + span {
 
 #select-synth-preset {
 	max-width: 5rem;
+}
+
+#select-scale-highlight {
+	max-width: 6rem;
+	text-overflow: ellipsis;
 }
 
 .scrollable-modal {

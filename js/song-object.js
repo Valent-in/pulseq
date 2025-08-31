@@ -466,7 +466,7 @@ function SongObject() {
 		for (let key in params)
 			packed[key] = params[key];
 
-		for (let osc of ["osc1", "osc2", "osc3"])
+		for (let osc of ["osc1", "osc2", "osc3", "lfo1", "lfo2"])
 			if (packed["synth-" + osc + "-type"] != "custom")
 				packed["synth-" + osc + "-partials"] = "";
 

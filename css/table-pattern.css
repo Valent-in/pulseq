@@ -85,6 +85,15 @@
 	border-right: 8px solid #111;
 	border-top: 1px solid #111;
 	border-bottom: 2px solid #111;
+	color: transparent;
+}
+
+#pattern-main table td.key--inscale {
+	color: #48a;
+}
+
+#pattern-main table td.key--root {
+	color: #46e;
 }
 
 #pattern-main table td.key--pressed {

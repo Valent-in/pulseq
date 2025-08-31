@@ -6,7 +6,7 @@ function waveformEditor(songObj) {
     let partials = [];
 
     let oscCopyOptions = {};
-    for (let el of ["osc1", "osc2", "osc3"])
+    for (let el of ["osc1", "osc2", "osc3", "lfo1", "lfo2"])
         oscCopyOptions[el] = document.getElementById("opt-copy-" + el);
 
     let canvas = document.getElementById("canvas-osc-editor");
@@ -49,6 +49,16 @@ function waveformEditor(songObj) {
 
     document.getElementById("osc3-menu-open").onclick = () => {
         oscName = "osc3";
+        openEditor();
+    };
+
+    document.getElementById("lfo1-menu-open").onclick = () => {
+        oscName = "lfo1";
+        openEditor();
+    };
+
+    document.getElementById("lfo2-menu-open").onclick = () => {
+        oscName = "lfo2";
         openEditor();
     };
 
@@ -140,6 +150,8 @@ function waveformEditor(songObj) {
             case "osc1":
             case "osc2":
             case "osc3":
+            case "lfo1":
+            case "lfo2":
                 let synth = songObj.synths[songObj.currentSynthIndex];
                 partials = synth.partials[e.target.value].slice();
                 selectOscHarmonics.value = partials.length;

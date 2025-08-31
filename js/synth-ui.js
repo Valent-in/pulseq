@@ -322,6 +322,7 @@ function SynthUi(songObj) {
 			let span = document.getElementById("synth-fx-rate-span");
 			let checkbox = document.getElementById("synth-fx-sync");
 			let label = document.getElementById("synth-fx-sync-label");
+			let warning = document.getElementById("cpu-warning-span");
 
 			if ("stereo distort reverb".includes(selector.value)) {
 				range.disabled = true;
@@ -338,6 +339,12 @@ function SynthUi(songObj) {
 				checkbox.style.visibility = "hidden";
 				label.style.visibility = "hidden";
 			}
+
+			if ("reverb phaser".includes(selector.value)) {
+				warning.style.visibility = "visible";
+			} else {
+				warning.style.visibility = "hidden";
+			}
 		}
 
 		if (selector.dataset.block) {
@@ -353,10 +360,9 @@ function SynthUi(songObj) {
 		if (selector.dataset.edit) {
 			let edit = document.getElementById(selector.dataset.edit);
 			if (selector.value == "custom")
-				edit.style.visibility = "visible";
+				edit.style.display = "inline";
 			else
-				edit.style.visibility = "hidden";
-
+				edit.style.display = "none";
 		}
 	}
 

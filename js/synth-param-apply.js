@@ -258,7 +258,12 @@ function synthParamApply(paramId, controlValue, synth) {
 			} else {
 				synth.addLfo1(true);
 				synth.lfo1.type = controlValue;
+				setPartials("lfo1", false);
 			}
+			break;
+
+		case "synth-lfo1-partials":
+			setPartials("lfo1", true);
 			break;
 
 		//LFO2
@@ -280,7 +285,12 @@ function synthParamApply(paramId, controlValue, synth) {
 			} else {
 				synth.addLfo2(true);
 				synth.lfo2.type = controlValue;
+				setPartials("lfo2", false);
 			}
+			break;
+
+		case "synth-lfo2-partials":
+			setPartials("lfo2", true);
 			break;
 
 		// Modulation envelope
