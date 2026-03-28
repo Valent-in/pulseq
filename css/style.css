@@ -51,16 +51,20 @@ label {
 	border-radius: 4px;
 }
 
-#app-icons > :nth-child(1) {
+.bg-play {
+	background-image: url("../img/play.svg");
+}
+
+.bg-stop {
 	background-image: url("../img/stop.svg");
 }
 
-#app-icons > :nth-child(2) {
-	background-image: url("../img/icon.svg");
+.bg-stopg {
+	background-image: url("../img/stopg.svg");
 }
 
-#app-icons > :nth-child(3) {
-	background-image: url("../img/stopg.svg");
+.bg-icon {
+	background-image: url("../img/icon.svg");
 }
 
 #container {
@@ -104,6 +108,29 @@ label {
 	border-radius: 3px;
 	position: relative;
 	font-size: 1rem;
+}
+
+.tab span {
+	color: inherit;
+	pointer-events: none;
+}
+
+@keyframes beaming {
+	0% {
+		opacity: 1
+	}
+
+	50% {
+		opacity: 0.6
+	}
+
+	100% {
+		opacity: 1
+	}
+}
+
+.playback-animation span {
+	animation: beaming 2s infinite;
 }
 
 .combined-tabs {
@@ -225,7 +252,6 @@ button.button--play {
 	background-size: 1.1rem 1.1rem;
 	color: transparent;
 	min-width: 1.6rem;
-	background-image: url("../img/play.svg");
 }
 
 button.button--play.button--play-loop {
@@ -470,39 +496,39 @@ button.button--play.button--play-loop {
 }
 
 .bg-oscillator {
-	background-image: url('../img/oscillator.svg');
+	background-image: url("../img/oscillator.svg");
 }
 
 .bg-lfo {
-	background-image: url('../img/lfo.svg');
+	background-image: url("../img/lfo.svg");
 }
 
 .bg-filter {
-	background-image: url('../img/filter.svg');
+	background-image: url("../img/filter.svg");
 }
 
 .bg-noise {
-	background-image: url('../img/noise.svg');
+	background-image: url("../img/noise.svg");
 }
 
 .bg-adsr {
-	background-image: url('../img/adsr.svg');
+	background-image: url("../img/adsr.svg");
 }
 
 .bg-modulation-osc {
-	background-image: url('../img/modulation-osc.svg');
+	background-image: url("../img/modulation-osc.svg");
 }
 
 .bg-modulation-filt {
-	background-image: url('../img/modulation-filt.svg');
+	background-image: url("../img/modulation-filt.svg");
 }
 
 .bg-modulation-amp {
-	background-image: url('../img/modulation-amp.svg');
+	background-image: url("../img/modulation-amp.svg");
 }
 
 .bg-effect {
-	background-image: url('../img/effect.svg');
+	background-image: url("../img/effect.svg");
 }
 
 #synth-mod-envelope-type,
@@ -797,20 +823,29 @@ input[type=range].range--volume {
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	box-sizing: border-box;
 	z-index: 10;
 }
 
-@media (hover: none) and (orientation: landscape) and (min-height: 480px) {
+@media (hover: none) and (orientation: landscape) and (min-height: 380px) {
 	.modal-container:not(.force-centered) {
 		align-items: flex-start;
-		box-sizing: border-box;
 		padding-top: 5%;
+	}
+
+	.modal-container:not(.force-centered).shiftdialog {
+		padding-top: calc(5% + 3rem);
 	}
 }
 
 @media (hover: none) and (orientation: portrait) {
 	.modal-container:not(.force-centered) {
-		padding-bottom: 15vh;
+		align-items: flex-start;
+		padding-top: 30%;
+	}
+
+	.modal-container:not(.force-centered).shiftdialog {
+		padding-top: calc(30% + 3rem);
 	}
 }
 

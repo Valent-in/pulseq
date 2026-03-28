@@ -948,7 +948,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			console.log("bye!");
 			localStorage.removeItem(backupStorage);
 			window.onbeforeunload = null;
-			document.location.reload();
+			document.location.reload(true);
 		});
 	};
 

@@ -76,13 +76,13 @@
 
 <body>
 	<div id="container">
-		<div id="header" class="focus-lock-area notranslate" translate="no">
+		<div id="header" class="focus-lock-area">
 			<div id="header-tabs">
 				<div id="arrange-tab" class="js-tab tab tab--active">
-					Arrange
+					<span>Arrange</span>
 				</div>
 				<div id="pattern-tab" class="js-tab tab">
-					Pattern
+					<span>Pattern</span>
 				</div>
 
 				<div class="combined-tabs">
@@ -110,7 +110,7 @@
 				<div id="arrange-footer" class="footer notranslate" translate="no">
 					<button id="button-add-pattern">+</button>
 					<div class="footer-menu">
-						<button id="button-arrange-play" class="button--play">L</button>
+						<button id="button-arrange-play" class="button--play bg-play">L</button>
 						<button id="button-arrange-menu-open">•••</button>
 						<div id="song-title-area">
 							[untitled]
@@ -129,7 +129,7 @@
 					<button id="button-add-pattern-layer">+</button>
 
 					<div class="footer-menu">
-						<button id="button-pattern-play" class="button--play">P</button>
+						<button id="button-pattern-play" class="button--play bg-play">P</button>
 						<button id="button-pattern-menu-open">•••</button>
 						<div id="pattern-name-area"></div>
 					</div>
@@ -521,9 +521,9 @@
 					<span class="app-title-pulseq">PulseQ</span>
 					<span class="app-title-ueue">ueue</span>
 					<div id="app-icons">
-						<div></div>
-						<div></div>
-						<div></div>
+						<div class="bg-stop"></div>
+						<div class="bg-icon"></div>
+						<div class="bg-stopg"></div>
 					</div>
 				</div>
 
@@ -666,7 +666,7 @@
 			</div>
 		</div>
 
-		<div id="export-modal-menu" class="modal-container nodisplay js-noskip">
+		<div id="export-modal-menu" class="modal-container shiftdialog nodisplay js-noskip">
 			<div class="modal-box">
 				<div class="modal-box-block">
 					<div id="render-title">Export audio</div>
@@ -894,7 +894,7 @@
 			</div>
 		</div>
 
-		<div id="layer-edit-modal-menu" class="modal-container nodisplay">
+		<div id="layer-edit-modal-menu" class="modal-container shiftdialog nodisplay">
 			<div class="modal-box">
 				<div class="modal-box-block">Modify layer</div>
 				<div class="modal-box-block">
@@ -948,7 +948,7 @@
 			</div>
 		</div>
 
-		<div id="layer-shift-modal-menu" class="modal-container nodisplay">
+		<div id="layer-shift-modal-menu" class="modal-container shiftdialog nodisplay">
 			<div class="modal-box">
 				<div class="modal-box-block">
 					<span>Shift layer by</span>
@@ -967,7 +967,7 @@
 			</div>
 		</div>
 
-		<div id="layer-transpose-modal-menu" class="modal-container nodisplay">
+		<div id="layer-transpose-modal-menu" class="modal-container shiftdialog nodisplay">
 			<div class="modal-box">
 				<div class="modal-box-block">
 					<span>Transpose layer by</span>
@@ -984,7 +984,7 @@
 			</div>
 		</div>
 
-		<div id="pattern-copy-modal-menu" class="modal-container nodisplay">
+		<div id="pattern-copy-modal-menu" class="modal-container shiftdialog nodisplay">
 			<div class="modal-box">
 				<div class="modal-box-block">
 					<span>Copy pattern</span>
@@ -1095,7 +1095,7 @@
 			</div>
 		</div>
 
-		<div id="modal-alert" class="modal-container nodisplay">
+		<div id="modal-alert" class="modal-container shiftdialog nodisplay">
 			<div class="modal-box modal-alert-box">
 				<div class="modal-box-block" id="modal-alert-message">
 				</div>

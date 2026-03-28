@@ -4,6 +4,8 @@ function schedulerUi(scheduler, setLoopMarkersCallback) {
 	let songPlayBtn = document.getElementById("button-arrange-play");
 	let patternPlayBtn = document.getElementById("button-pattern-play");
 	let barsInput = document.getElementById("input-loop-bars");
+	let arrangeTab = document.getElementById("arrange-tab")
+	let patternTab = document.getElementById("pattern-tab")
 
 	document.addEventListener("keydown", (event) => {
 		if (event.target.type == "number" || event.target.type == "text")
@@ -88,23 +90,24 @@ function schedulerUi(scheduler, setLoopMarkersCallback) {
 	};
 
 	function updateButtons(patternState, songState) {
-		let playUrl = "url('img/play.svg')";
-		let stopUrl = "url('img/stop.svg')";
-		let stopgUrl = "url('img/stopg.svg')";
-
-		if (!patternState && !songState) {
-			songPlayBtn.style.backgroundImage = playUrl;
-			patternPlayBtn.style.backgroundImage = playUrl;
-		}
-
 		if (patternState) {
-			patternPlayBtn.style.backgroundImage = stopUrl;
-			songPlayBtn.style.backgroundImage = stopgUrl;
+			patternPlayBtn.classList.add("bg-stop");
+			songPlayBtn.classList.add("bg-stopg");
+			patternTab.classList.add("playback-animation")
+		} else {
+			patternPlayBtn.classList.remove("bg-stop");
+			songPlayBtn.classList.remove("bg-stopg");
+			patternTab.classList.remove("playback-animation")
 		}
 
 		if (songState) {
-			songPlayBtn.style.backgroundImage = stopUrl;
-			patternPlayBtn.style.backgroundImage = stopgUrl;
+			songPlayBtn.classList.add("bg-stop");
+			patternPlayBtn.classList.add("bg-stopg");
+			arrangeTab.classList.add("playback-animation")
+		} else {
+			songPlayBtn.classList.remove("bg-stop");
+			patternPlayBtn.classList.remove("bg-stopg");
+			arrangeTab.classList.remove("playback-animation")
 		}
 	};
 
