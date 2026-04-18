@@ -2,8 +2,8 @@
 
 const DEFAULT_PARAMS = {};
 
-DEFAULT_PARAMS.programVersion = "1.4.1";
-DEFAULT_PARAMS.fileFormatVersion = "20";
+DEFAULT_PARAMS.programVersion = "1.5";
+DEFAULT_PARAMS.fileFormatVersion = "21";
 
 DEFAULT_PARAMS.maxPatternSteps = 64;
 
@@ -11,6 +11,8 @@ DEFAULT_PARAMS.minSongBars = 32;
 DEFAULT_PARAMS.emptyBarsBuffer = 8;
 
 DEFAULT_PARAMS.pressDelay = 380;
+
+DEFAULT_PARAMS.heavyEffects = "reverb phaser";
 
 DEFAULT_PARAMS.synthState = {
 	"synth-amplifier-gain": 1,

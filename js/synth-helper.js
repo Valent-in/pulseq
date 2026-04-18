@@ -17,7 +17,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 	listInfo.onclick = () => {
 		muteAllSynths(false);
 		synthUi.updateMuteControls();
-		updateMuteMarkers();
+		that.rebuildSynthList();
 		showToast(unmuteMsg);
 	}
 
@@ -42,7 +42,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		synth.mute(!synth.isMuted);
 
 		synthUi.updateMuteControls();
-		updateMuteMarkers();
+		that.rebuildSynthList();
 	};
 
 	document.getElementById("button-synth-mute").onpointerdown = () => {
@@ -73,7 +73,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			}
 
 			synthUi.updateMuteControls();
-			updateMuteMarkers();
+			that.rebuildSynthList();
 		}, DEFAULT_PARAMS.pressDelay);
 	};
 
@@ -84,6 +84,14 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 	function pointerEndListener() {
 		clearTimeout(pressTimeout);
 		pressTimeout = null;
+	}
+
+	function selectSynth(index) {
+		let params = songObj.synthParams[index];
+		let synth = songObj.synths[index];
+		let name = songObj.synthNames[index];
+		synthUi.assignSynth(params, synth, name);
+		songObj.currentSynthIndex = index;
 	}
 
 	function updateMuteMarkers() {
@@ -97,9 +105,6 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			listTab.classList.add("muted-m-mark");
 		else
 			listTab.classList.remove("muted-m-mark");
-
-		that.rebuildSynthList();
-		rebuildPatternSynthListCallback(false);
 	};
 
 	let isSynthGrouped = false;
@@ -174,10 +179,9 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 
 			songObj.deleteSynth(selectedSynthIndex);
 			rebuildPatternSynthListCallback(true);
-			synthUi.assignSynth(songObj.synthParams[0], songObj.synths[0], songObj.synthNames[0]);
-			songObj.currentSynthIndex = 0;
+			selectSynth(0);
+
 			that.rebuildSynthList();
-			updateMuteMarkers();
 			g_switchTab("synth-list");
 			hideModal("synth-modal-menu");
 			showToast("Synthesizer deleted");
@@ -333,7 +337,6 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		lnk.download = name + ".synth.json";
 	};
 
-
 	this.buildPresetList = function () {
 		for (let preset of SYNTH_PRESETS) {
 			let option = document.createElement("OPTION");
@@ -346,12 +349,8 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 	this.createNewSynth = function (name, copyFromParams) {
 		songObj.createSynth(name, copyFromParams);
 
-		if (!copyFromParams) {
-			songObj.currentSynthIndex = songObj.synths.length - 1;
-			let synthParamObj = songObj.synthParams[songObj.currentSynthIndex];
-			let synth = songObj.synths[songObj.currentSynthIndex];
-			synthUi.assignSynth(synthParamObj, synth, name);
-		}
+		if (!copyFromParams)
+			selectSynth(songObj.synths.length - 1);
 
 		this.rebuildSynthList();
 	}
@@ -373,14 +372,15 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 					return;
 				}
 
-				synthUi.assignSynth(songObj.synthParams[i], songObj.synths[i], songObj.synthNames[i]);
-				songObj.currentSynthIndex = i;
+				selectSynth(i);
 				g_markCurrentSynth();
 				g_switchTab("synth");
 			})
 		}
 
 		g_markCurrentSynth();
+		updateMuteMarkers();
+		rebuildPatternSynthListCallback(false);
 
 		let voiceCount = 0;
 		songObj.synths.forEach(e => { if (!e.isMuted) voiceCount++ });
@@ -489,10 +489,9 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 	};
 
 	function closeMixer() {
-		let index = songObj.currentSynthIndex;
-		synthUi.assignSynth(songObj.synthParams[index], songObj.synths[index], songObj.synthNames[index]);
+		selectSynth(songObj.currentSynthIndex);
 
-		updateMuteMarkers();
+		that.rebuildSynthList();
 		hideModal("mixer-modal-menu");
 
 		let container = document.getElementById("mixer-list-container");
@@ -521,7 +520,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 
 			let volValue = params["synth-amplifier-gain"];
 			let panValue = params["synth-pan"];
-			let fxValue = params["synth-fx-type"] == "[none]" ? false : true;
+			let isFxEnabled = (params["synth-fx-type"] != "[none]")
 
 			let entry = document.createElement("DIV");
 			entry.classList.add("mixer-entry");
@@ -535,7 +534,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			let fxCheckbox = document.createElement("INPUT");
 			fxCheckbox.type = "checkbox";
 			fxCheckbox.id = "mixer-fx-chk-" + index;
-			fxCheckbox.checked = fxValue;
+			fxCheckbox.checked = isFxEnabled;
 			let fxLabel = document.createElement("LABEL");
 			fxLabel.appendChild(document.createTextNode("FX"));
 			fxLabel.htmlFor = fxCheckbox.id;
@@ -543,6 +542,15 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			if (!synth.lastFXType) {
 				fxCheckbox.disabled = true;
 				fxLabel.classList.add("disabled");
+			}
+
+			let fxWarn = document.createElement("SPAN");
+			fxWarn.classList.add("fx-warning-span")
+			fxWarn.appendChild(document.createTextNode("!"));
+			if (DEFAULT_PARAMS.heavyEffects.includes(params["synth-fx-type"])) {
+				fxWarn.style.visibility = "visible";
+			} else {
+				fxWarn.style.visibility = "hidden";
 			}
 
 			let muteButton = document.createElement("BUTTON");
@@ -553,6 +561,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 
 			headerDiv.appendChild(nameSpan);
 			headerDiv.appendChild(muteButton);
+			headerDiv.appendChild(fxWarn);
 			headerDiv.appendChild(fxLabel);
 			headerDiv.appendChild(fxCheckbox);
 
@@ -589,6 +598,15 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 
 			panDiv.appendChild(panRange);
 			panDiv.appendChild(panSpan);
+
+			nameSpan.onclick = () => {
+				selectSynth(index);
+				g_markCurrentSynth();
+				g_switchTab("synth");
+
+				that.rebuildSynthList();
+				hideModal("mixer-modal-menu");
+			}
 
 			fxCheckbox.onchange = () => {
 				if (fxCheckbox.checked) {

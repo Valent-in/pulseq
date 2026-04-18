@@ -345,36 +345,53 @@
 	background-color: #111;
 }
 
-#pattern-auto-row td.active {
+#pattern-auto-row td.filt-active, #pattern-auto-row td.fx-active {
 	background-color: #241a34;
 }
 
 #pattern-auto-row .filter-bar {
 	position: absolute;
 	left: 1px;
-	bottom: 1px;
-	width: 6px;
+	bottom: 0;
+	width: 5px;
 	background-color: #333;
 	pointer-events: none;
 }
 
-#pattern-auto-row .filter-bar:last-child {
-	left: 8px;
+#pattern-auto-row .filter-bar.filt-q-bar {
+	left: 7px;
+	width: 4px;
 }
 
-#pattern-auto-row td.active .filter-bar {
+#pattern-auto-row .filter-bar.fx-wet-bar {
+	left: 12px;
+	width: 3px;
+}
+
+#pattern-auto-row td.filt-active .filt-f-bar {
 	background-color: #b4d;
 }
 
-#pattern-auto-row td.active .filter-bar:last-child {
+#pattern-auto-row td.filt-active .filt-q-bar {
 	background-color: #97d;
+}
+
+#pattern-auto-row td.fx-active .fx-wet-bar {
+	background-color: #4db;
+}
+
+#pattern-auto-row.no-filter-set .filt-f-bar,
+#pattern-auto-row.no-filter-set .filt-q-bar,
+#pattern-auto-row.no-fx-set .fx-wet-bar {
+	display: none;
 }
 
 #pattern-auto-row.inactive td {
 	background-color: #090909;
 }
 
-#pattern-auto-row.inactive td.active {
+#pattern-auto-row.inactive td.filt-active,
+#pattern-auto-row.inactive td.fx-active {
 	background-color: #322;
 }
 
@@ -385,19 +402,29 @@
 #automation-levels-set .filter-bar {
 	position: absolute;
 	left: 1px;
-	bottom: 1px;
-	width: 12px;
-	background-color: #b4d;
+	bottom: 0;
+	width: 10px;
+	background-color: #333;
 	pointer-events: none;
 }
 
-#automation-levels-set .filter-bar:last-child {
-	position: absolute;
-	left: 14px;
-	bottom: 1px;
-	width: 12px;
-	background-color: #97d;
-	pointer-events: none;
+#automation-levels-set .filter-bar.filt-q-bar {
+	left: 12px;
+	width: 10px;
+}
+
+#automation-levels-set .filter-bar.fx-wet-bar {
+	left: 23px;
+	width: 10px;
+}
+
+#automation-levels-set.control-fx .filt-f-bar,
+#automation-levels-set.control-fx .filt-q-bar {
+	display: none;
+}
+
+#automation-levels-set:not(.control-fx) .fx-wet-bar {
+	display: none;
 }
 
 #automation-levels-control {
@@ -411,44 +438,64 @@
 	background-color: #191919;
 }
 
-#automation-levels-control > span {
-	display: inline-block;
-	width: 100%;
+#automation-levels-title {
 	text-align: center;
 	margin-top: 4px;
 	font-weight: normal;
+	cursor: pointer;
+}
+
+#automation-levels-title:hover span {
 	color: #ddd;
 }
 
-#automation-levels-control > span:before {
+#automation-levels-control.js-auto-control-fx #automation-title-filter {
+	display: none;
+}
+
+#automation-levels-control:not(.js-auto-control-fx) #automation-title-fx {
+	display: none;
+}
+
+#automation-levels-control:not(.js-auto-control-fx) #automation-levels-title:before {
 	content: "F";
 	position: absolute;
 	top: 1.4rem;
-	left: 4px;
-	width: 24px;
+	left: 3px;
+	width: 28px;
 	text-align: center;
 	color: #555;
+	pointer-events: none;
 }
 
-#automation-levels-control > span:after {
+#automation-levels-control #automation-levels-title:after {
 	content: "P";
 	position: absolute;
 	top: 1.4rem;
-	right: 4px;
-	width: 24px;
+	right: 3px;
+	width: 28px;
 	text-align: center;
 	color: #555;
+	pointer-events: none;
+}
+
+#automation-levels-control.js-auto-control-fx #automation-levels-title:after {
+	content: "W";
 }
 
 #automation-levels-control input[type=range] {
 	height: 28px;
 	position: absolute;
-	bottom: -25px;
+	bottom: -23px;
 	left: 3px;
 	width: 160px;
 	transform-origin: top left;
 	transform: rotate(-90deg);
 	background-image: url("../img/range-short.svg");
+}
+
+#automation-levels-control.js-auto-control-fx input[type=range]:not(:last-child) {
+	display: none;
 }
 
 #automation-levels-control input[type=range]:last-child {

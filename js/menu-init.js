@@ -120,9 +120,9 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		showModal("loading-modal");
 
 		let filename = event.target.dataset.file;
-		fetch("data/tracks/" + filename).then(response => response.json()).then(data => {
+		fetch("data/tracks/" + filename).then(response => response.text()).then(data => {
 
-			if (importSong(JSON.stringify(data)))
+			if (importSong(data))
 				hideModal("startup-modal-menu");
 
 			hideModal("loading-modal");
@@ -1022,6 +1022,38 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	};
 
 	/*
+	 * Advanced menu
+	 */
+	let selectSampletate = document.getElementById("select-samplerate");
+	let selectLatency = document.getElementById("select-latency");
+	let selectLookahead = document.getElementById("select-lookahead");
+
+	document.getElementById("button-advanced-open").onclick = () => {
+		selectLookahead.value = getAppSettings("lookahead") || "0.15";
+		selectLatency.value = getAppSettings("latency") || "";
+		selectSampletate.value = getAppSettings("samplerate") || "";
+
+		showModal("advanced-modal-menu");
+	}
+
+	selectLookahead.onchange = () => {
+		setAppSettings("lookahead", Number(selectLookahead.value))
+	}
+
+	selectLatency.onchange = () => {
+		setAppSettings("latency", selectLatency.value)
+	}
+
+	selectSampletate.onchange = () => {
+		setAppSettings("samplerate", Number(selectSampletate.value))
+	}
+
+	document.getElementById("button-advanced-close").onclick = () => {
+		hideModal("advanced-modal-menu");
+		showAlert("Reload page to take effect");
+	}
+
+	/*
 	 * Auxility
 	 */
 	function showSongTitle() {
@@ -1059,7 +1091,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		}
 
 		if (Number(expObj.songFormatVersion) > Number(DEFAULT_PARAMS.fileFormatVersion))
-			showAlert("WARNING:\nFile was created in more recent PulseQueue version.");
+			showAlert("WARNING:\nFile was created in more recent PulseQuaver version.");
 
 		songObj.title = expObj.title || "";
 		songObj.synthParams = [];
@@ -1091,11 +1123,15 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			let ptrn = new Pattern(expObj.patternNames[i]);
 			ptrn.patternData = expObj.patterns[i];
 
-			// Create filter automation if file does not contain it
+			// Create automation if file does not contain it
 			ptrn.patternData.forEach(e => {
 				if (!e.filtQ) {
 					e.filtQ = [];
 					e.filtF = [];
+				}
+
+				if (!e.fxWet) {
+					e.fxWet = [];
 				}
 			});
 
@@ -1109,8 +1145,28 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		}
 
 		songObj.song = expObj.song;
-		songObj.setCurrentPattern(0);
-		songObj.arrangeStartPoint = 0;
+
+		if (expObj.appState) {
+			console.log("Restoring app state");
+			let appState = expObj.appState;
+			songObj.setCurrentPattern(appState.activePattern || 0);
+			songObj.arrangeStartPoint = appState.startPoint || 0;
+			songObj.currentSynthIndex = appState.activeSynth || 0;
+
+			setTimeout(() => {
+				for (let i = 0; i < songObj.synths.length; i++)
+					songObj.synths[i].mute(appState.muteStatus[i]);
+				onSongChangeCallback(false, null, true);
+			}, 909);
+
+			selectRoot.selectedIndex = appState.rootIndex || 0;
+			selectScale.selectedIndex = appState.scaleIndex || 0;
+			setScaleHighlight();
+		} else {
+			songObj.setCurrentPattern(0);
+			songObj.arrangeStartPoint = 0;
+			songObj.currentSynthIndex = 0;
+		}
 		onSongChangeCallback(true);
 		showSongTitle();
 
@@ -1131,6 +1187,18 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 				expObj.synthParams.push(songObj.getCleanSynthParams(i))
 		} else {
 			expObj.synthParams = songObj.synthParams;
+
+			let appState = {};
+			appState.activePattern = songObj.currentPatternIndex;
+			appState.activeSynth = songObj.currentSynthIndex;
+			appState.startPoint = songObj.arrangeStartPoint;
+			appState.rootIndex = selectRoot.selectedIndex;
+			appState.scaleIndex = selectScale.selectedIndex;
+
+			appState.muteStatus = [];
+			songObj.synths.forEach(e => { appState.muteStatus.push(e.isMuted) });
+
+			expObj.appState = appState;
 		}
 
 		expObj.synthNames = songObj.synthNames;
@@ -1153,7 +1221,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			expObj.patternColors.push(songObj.patterns[i].colorIndex);
 		}
 
-		return JSON.stringify(expObj, null, 1);
+		return JSON.stringify(expObj, null, isCleanup ? 1 : 0);
 	}
 
 	function backupToLocalStorage() {

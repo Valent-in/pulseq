@@ -67,6 +67,16 @@ label {
 	background-image: url("../img/icon.svg");
 }
 
+#samplerate-box {
+	font-size: 0.6rem;
+	color: #555;
+	clear: both;
+}
+
+#samplerate-box.sr-nondefault {
+	color: #fa0;
+}
+
 #container {
 	height: 100%;
 	display: flex;
@@ -1267,7 +1277,16 @@ input[type=file]:focus + span {
 .mixer-header-line label {
 	float: right;
 	margin-left: 4px;
-	margin-right: 12px;
+}
+
+.mixer-header-line .caption-text {
+	cursor: pointer;
+}
+
+.fx-warning-span {
+	float: right;
+	margin-right: 10px;
+	color: #fa0;
 }
 
 .mixer-line {

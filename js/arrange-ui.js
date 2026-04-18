@@ -361,7 +361,7 @@ function ArrangeUi(songObj, onPatternSelectCallback, defaults) {
 	function showPattern(index, isNewPattern) {
 		songObj.setCurrentPattern(index);
 		g_markCurrentPattern();
-		onPatternSelectCallback(songObj.currentPattern, isNewPattern);
+		onPatternSelectCallback(isNewPattern);
 		g_switchTab("pattern");
 	}
 

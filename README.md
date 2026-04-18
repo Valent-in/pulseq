@@ -1,4 +1,4 @@
-# PulseQueue
+# PulseQuaver
 
 Minimalistic web-application for creating electronic music with digital synthesizers.  
 Initially designed as sketching tool but can be used for making full-fledged tracks :musical_note::notes:

@@ -336,6 +336,7 @@ function Scheduler(songObj, barCallback, stepCallback) {
 
 			let filterF = pattern.patternData[j].filtF[stepIndex];
 			let filterQ = pattern.patternData[j].filtQ[stepIndex];
+			let fxWet = pattern.patternData[j].fxWet[stepIndex];
 
 			if (synthIndex !== null) {
 				let synth = synths[synthIndex];
@@ -346,6 +347,7 @@ function Scheduler(songObj, barCallback, stepCallback) {
 				let stopTime = time + lenCoef * stepLen;
 
 				synth.filterSweep(filterF, filterQ, time, stepLen);
+				synth.fxSweep(fxWet, time, stepLen);
 
 				if (!note)
 					continue;

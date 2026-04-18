@@ -43,6 +43,34 @@
 }
 
 {
+	let sampleRate = getAppSettings("samplerate");
+	let latency = getAppSettings("latency");
+
+	if (sampleRate || latency) {
+		console.log("WARNING! Monkey-patching AudioContext constructor!");
+
+		const OriginalContext = window.AudioContext || window.webkitAudioContext;
+
+		window.AudioContext = function (options = {}) {
+			let altOptions = { ...options };
+
+			if (latency)
+				altOptions.latencyHint = latency;
+
+			if (sampleRate)
+				altOptions.sampleRate = sampleRate;
+
+			console.log("AudioContext options", altOptions)
+			return new OriginalContext(altOptions);
+		};
+
+		window.AudioContext.prototype = OriginalContext.prototype;
+	} else {
+		console.log("No settings for AudioContext patching. Skipping.")
+	}
+}
+
+{
 	// Switch tabs
 	let tabs = document.querySelectorAll(".js-tab");
 	let containers = document.querySelectorAll(".js-view-container");

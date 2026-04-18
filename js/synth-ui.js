@@ -52,6 +52,7 @@ function SynthUi(songObj) {
 		let stepLen = (60 / songObj.bpm) / 4;
 
 		this.currentSynth.filterSweep(null, null, Tone.now(), 0.01)
+		this.currentSynth.fxSweep(null, Tone.now(), 0.01)
 
 		if (isPlaying)
 			this.currentSynth.glideTo(note, 0, Tone.now(), stepLen);
@@ -340,7 +341,7 @@ function SynthUi(songObj) {
 				label.style.visibility = "hidden";
 			}
 
-			if ("reverb phaser".includes(selector.value)) {
+			if (DEFAULT_PARAMS.heavyEffects.includes(selector.value)) {
 				warning.style.visibility = "visible";
 			} else {
 				warning.style.visibility = "hidden";

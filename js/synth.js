@@ -89,6 +89,7 @@ class Synth {
 		this.filterFreqInput = 0;
 		this.filterFreqSweep = 0;
 		this.filterQSweep = 0;
+		this.fxWetSweep = 0;
 
 		this.freqSignal = new Tone.Signal({ units: "frequency" });
 		this.lastVolumeMod = 0;
@@ -191,6 +192,25 @@ class Synth {
 			let fRamp = this.filterExp(fInput);
 			this.filter.frequency.linearRampTo(fRamp, glideTime, time);
 			this.filterFreqSweep = fInput;
+		}
+	}
+
+	fxSweep(wet, time, duration) {
+		if (!this.FX)
+			return;
+
+		let glideTime = Math.max(duration * this.glide, 0.01);
+		let wetRamp;
+
+		if (wet || wet === 0) {
+			wetRamp = wet;
+		} else {
+			wetRamp = this.values.FXWetValue;
+		}
+
+		if (wetRamp != this.fxWetSweep) {
+			this.FX.wet.linearRampTo(wetRamp, glideTime, time);
+			this.fxWetSweep = wetRamp;
 		}
 	}
 

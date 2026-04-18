@@ -12,7 +12,7 @@ class Pattern {
 
 	addLayer = () => {
 		this.activeIndex = this.patternData.length;
-		this.patternData.push({ notes: [], lengths: [], volumes: [], filtF: [], filtQ: [], synthIndex: null });
+		this.patternData.push({ notes: [], lengths: [], volumes: [], filtF: [], filtQ: [], fxWet: [], synthIndex: null });
 	}
 
 	deleteActiveLayer() {
@@ -129,6 +129,7 @@ class Pattern {
 				shiftOne(layer.volumes, direction);
 				shiftOne(layer.filtF, direction);
 				shiftOne(layer.filtQ, direction);
+				shiftOne(layer.fxWet, direction);
 			}
 		}
 

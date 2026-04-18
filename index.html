@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-	<title>PulseQueue</title>
+	<title>PulseQuaver</title>
 
 	<link rel="manifest" href="manifest.json">
 
@@ -15,7 +15,7 @@
 	<meta name="theme-color" content="#111111">
 	<meta name="description" content="Minimalistic application for creating electronic music. Boost your creativity!">
 
-	<meta property="og:title" content="PulseQueue - minimalistic web-app for creating electronic music">
+	<meta property="og:title" content="PulseQuaver - minimalistic web-app for creating electronic music">
 	<meta property="og:type" content="website">
 	<meta property="og:description"
 		content="Simple and easy to use application for creating electronic music. Boost your creativity!">
@@ -44,13 +44,14 @@
 	<link rel="stylesheet" href="css/table-arrange.css">
 	<link rel="stylesheet" href="css/table-pattern.css">
 
+	<script defer src="js/misc.js"></script>
+
 	<script defer src="lib/Tone.js"></script>
 	<script defer src="lib/bufferToWave.js"></script>
 	<script defer src="lib/midi-writer.js"></script>
 
 	<script defer src="js/defaults.js"></script>
 	<script defer src="js/alerts.js"></script>
-	<script defer src="js/misc.js"></script>
 
 	<script defer src="js/synth-param-apply.js"></script>
 	<script defer src="js/synth.js"></script>
@@ -519,12 +520,13 @@
 			<div class="modal-box" id="startup-menu-box">
 				<div class="modal-box-block notranslate" translate="no">
 					<span class="app-title-pulseq">PulseQ</span>
-					<span class="app-title-ueue">ueue</span>
+					<span class="app-title-ueue">uaver</span>
 					<div id="app-icons">
 						<div class="bg-stop"></div>
 						<div class="bg-icon"></div>
 						<div class="bg-stopg"></div>
 					</div>
+					<div id="samplerate-box"></div>
 				</div>
 
 				<div class="modal-box-block" id="startup-loading-title">
@@ -567,9 +569,9 @@
 			<div class="modal-box">
 				<div class="modal-box-block modal-box-header notranslate" translate="no">
 					<span class="app-title-pulseq">PulseQ</span>
-					<span class="app-title-ueue">ueue</span>
+					<span class="app-title-ueue">uaver</span>
 					<span style="margin-left:12px;color:#555;">music creation app</span>
-					<a href="https://github.com/valent-in/pulseq#pulsequeue" target="_blank" rel="noopener"
+					<a href="https://github.com/valent-in/pulseq#pulsequaver" target="_blank" rel="noopener"
 						title="GitHub" style="font-weight:bold;padding:0 6px;">?</a>
 				</div>
 				<div class="modal-box-block">
@@ -592,6 +594,7 @@
 				</div>
 				<div class="modal-box-block">
 					<button id="button-context-resume">Sound Fix</button>
+					<button id="button-advanced-open">Advanced</button>
 				</div>
 				<div class="modal-box-block">
 					<span>Zoom</span>
@@ -602,6 +605,57 @@
 				<div class="modal-box-block modal-box-footer">
 					<button id="button-reset-app" class="highlight-pink">Title&sol;Reset</button>
 					<button id="button-settings-close" class="button-modal-bottom">Close</button>
+				</div>
+			</div>
+		</div>
+
+		<div id="advanced-modal-menu" class="modal-container nodisplay">
+			<div class="modal-box">
+				<table>
+					<tr>
+						<td>
+							Lookahead
+						</td>
+						<td>
+							<select id="select-lookahead">
+								<option value="0.15">0.15s</option>
+								<option value="0.2">0.2s</option>
+								<option value="0.25">0.25s</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Sample rate
+						</td>
+						<td>
+							<select id="select-samplerate">
+								<option value="">auto</option>
+								<option>48000</option>
+								<option>44100</option>
+								<option>24000</option>
+								<option>22050</option>
+								<option>12000</option>
+								<option>11025</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Latency
+						</td>
+						<td>
+							<select id="select-latency">
+								<option value="">[default]</option>
+								<option value="interactive">interactive</option>
+								<option value="balanced">balanced</option>
+								<option value="playback">playback</option>
+							</select>
+						</td>
+					</tr>
+				</table>
+				<div class="modal-box-block modal-box-footer">
+					<button id="button-advanced-close" class="button-modal-bottom">Close</button>
 				</div>
 			</div>
 		</div>

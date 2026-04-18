@@ -1,11 +1,14 @@
 "use strict";
 
-console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v" + DEFAULT_PARAMS.programVersion + " ",
+console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQuaver v" + DEFAULT_PARAMS.programVersion + " ",
 	"color:#1ff", "color:#f81", "color:#bbb", "background-color:#000;color:#fff");
 
 {
-	Tone.context.lookAhead = 0.15;
+	Tone.context.lookAhead = getAppSettings("lookahead") || 0.15;
+
+	console.log("Lookahead:", Tone.context.lookAhead);
 	console.log("Sample rate:", Tone.context.sampleRate);
+	console.log("Latency:", Tone.context.rawContext.baseLatency);
 
 	// Disable closing browser window with back button (Android/PWA)
 	if (history.length == 1) {
@@ -79,7 +82,7 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v" + DEFAULT_PARAMS.progra
 	const patternUi = new PatternUi(songObject, synthUi.assignSynth, onSongChange);
 	patternUi.build();
 
-	const synthHelper = new SynthHelper(songObject, synthUi, updPatternSynthList);
+	const synthHelper = new SynthHelper(songObject, synthUi, redrawSequence);
 	synthHelper.buildPresetList();
 
 	const arrangeUi = new ArrangeUi(songObject, onPatternSelect, DEFAULT_PARAMS);
@@ -91,15 +94,20 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v" + DEFAULT_PARAMS.progra
 	menuInit(songObject, onSongChange, synthHelper.loadSynth, scheduler.renderSong, scheduler.exportMidiSequence);
 	waveformEditor(songObject);
 
+	let samplerateBox = document.getElementById("samplerate-box");
+	samplerateBox.appendChild(document.createTextNode("Sample rate: " + Tone.context.sampleRate));
+	if (getAppSettings("samplerate"))
+		samplerateBox.classList.add("sr-nondefault");
+
 	document.getElementById("startup-loading-title").style.display = "none";
 	document.getElementById("startup-menu").style.display = "block";
 	document.getElementById("input-import-track").focus();
 
 	function onSongChange(isNewSong, stopCommand, preserveArrangeView) {
-		updPatternSynthList(!preserveArrangeView);
+		redrawSequence(!preserveArrangeView);
 		if (isNewSong) {
-			synthUi.assignSynth(songObject.synthParams[0], songObject.synths[0], songObject.synthNames[0]);
-			songObject.currentSynthIndex = 0;
+			let ind = songObject.currentSynthIndex;
+			synthUi.assignSynth(songObject.synthParams[ind], songObject.synths[ind], songObject.synthNames[ind]);
 		}
 		synthHelper.rebuildSynthList();
 
@@ -113,20 +121,20 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQueue v" + DEFAULT_PARAMS.progra
 		}
 	}
 
-	function updPatternSynthList(updArrangeView) {
+	function redrawSequence(updArrangeView) {
 		if (updArrangeView) {
 			arrangeUi.fillSongView();
 			g_markCurrentPattern();
 		}
 
-		patternUi.importSequence(songObject.currentPattern);
-		patternUi.rebuildPatternSynthList(songObject.currentPattern);
+		patternUi.redrawPattern();
+		patternUi.rebuildPatternSynthList();
 	}
 
-	function onPatternSelect(newCurrentPattern, isNewPattern) {
+	function onPatternSelect(isNewPattern) {
 		scheduler.releasePattern();
-		patternUi.importSequence(newCurrentPattern);
-		patternUi.rebuildPatternSynthList(newCurrentPattern);
+		patternUi.redrawPattern();
+		patternUi.rebuildPatternSynthList();
 
 		if (isNewPattern)
 			patternUi.setNewPatternSynth();

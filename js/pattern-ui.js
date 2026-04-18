@@ -19,15 +19,21 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 	let barLength = 0;
 	let velocityStep = 12;
 
-	let autoRow, filterControls;
-	let noFilter = true;
+	let autoRow, automationControls;
 	let automationFreqMod = 3.5;
 	let automationQMod = 15;
-	const autoFreqScale = 26 / 5;
-	const autoQscale = 26 / 50;
+	let automationWetMod = 0.5;
+	const maxAutoBarHeight = 27;
+	const freqRange = 5;
+	const qRange = 50;
+	const autoFreqScale = maxAutoBarHeight / freqRange;
+	const autoQscale = maxAutoBarHeight / qRange;
+	const autoWetScale = maxAutoBarHeight / 1;
 	let fRangeInput = document.createElement("INPUT");
 	let qRangeInput = document.createElement("INPUT");
+	let isFxEdit = false;
 
+	let autoLevelsSet;
 	let sequenceCells = [];
 	let automationCells = [];
 	for (let i = 0; i < maxSequencerLength; i++) {
@@ -304,19 +310,17 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 		}
 	}
 
-	this.importSequence = (data) => {
-		if (data.length)
-			this.setLength(data.length);
-
-		let dataArr = data.patternData;
-		let currentIndex = data.activeIndex;
+	this.redrawPattern = () => {
+		let ptrn = songObj.currentPattern;
+		if (ptrn.length)
+			this.setLength(ptrn.length);
 
 		this.clearGrid();
-		importData(dataArr[currentIndex]);
-		importShadowData(dataArr, currentIndex);
+		redrawActiveLayer(ptrn.patternData[ptrn.activeIndex]);
+		redrawShadowLayers(ptrn.patternData, ptrn.activeIndex);
 		updateBarSeparator();
 
-		patternNameArea.textContent = data.name;
+		patternNameArea.textContent = ptrn.name;
 	}
 
 	function volumeControlReceiver(direction, isHalfStep) {
@@ -451,7 +455,7 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 		sequenceCells[col].len = 0;
 	}
 
-	function resetAutomationCell(col) {
+	function resetFiltAutomationCell(col) {
 		let synthIndex = songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].synthIndex;
 		let fHeight = 0;
 		let qHeight = 0;
@@ -467,17 +471,50 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 		automationCells[col].fBar.style.height = fHeight + "px";
 		automationCells[col].qBar.style.height = qHeight + "px";
 
-		automationCells[col].cell.classList.remove("active");
+		automationCells[col].cell.classList.remove("filt-active");
 	}
 
-	function setAutomationCell(col, freq, q) {
+	function resetWetAutomationCell(col) {
+		let synthIndex = songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].synthIndex;
+		let wHeight = 0;
+
+		if (synthIndex !== null) {
+			let w = songObj.synths[synthIndex].values.FXWetValue;
+			wHeight = Math.round(autoWetScale * w);
+		}
+
+		automationCells[col].wBar.style.height = wHeight + "px";
+
+		automationCells[col].cell.classList.remove("fx-active");
+	}
+
+	function setFiltAutomationCell(col, freq, q) {
 		let height = Math.round(autoFreqScale * freq);
 		automationCells[col].fBar.style.height = height + "px";
 
 		height = Math.round(autoQscale * q);
 		automationCells[col].qBar.style.height = height + "px";
 
-		automationCells[col].cell.classList.add("active");
+		automationCells[col].cell.classList.add("filt-active");
+	}
+
+	function setWetAutomationCell(col, wet) {
+		let height = Math.round(autoWetScale * wet);
+		automationCells[col].wBar.style.height = height + "px";
+
+		automationCells[col].cell.classList.add("fx-active");
+	}
+
+	function setAutomationCell(col, freq, q, wet) {
+		if (q || q === 0)
+			setFiltAutomationCell(col, freq, q)
+		else
+			resetFiltAutomationCell(col)
+
+		if (wet || wet === 0)
+			setWetAutomationCell(col, wet)
+		else
+			resetWetAutomationCell(col)
 	}
 
 	function buildAutomationRow() {
@@ -496,19 +533,21 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 
 			let fBar = document.createElement("DIV");
 			let qBar = document.createElement("DIV");
+			let wBar = document.createElement("DIV");
 
-			fBar.classList.add("filter-bar");
-			qBar.classList.add("filter-bar");
+			fBar.classList.add("filter-bar", "filt-f-bar");
+			qBar.classList.add("filter-bar", "filt-q-bar");
+			wBar.classList.add("filter-bar", "fx-wet-bar");
 
 			if (j == 0) {
 				td.id = "automation-levels-set"
 
-				filterControls = document.createElement("DIV");
-				filterControls.id = "automation-levels-control";
-				filterControls.classList.add("nodisplay");
+				automationControls = document.createElement("DIV");
+				automationControls.id = "automation-levels-control";
+				automationControls.classList.add("nodisplay");
 
 				// Prevent touch-scroll
-				filterControls.addEventListener("touchstart", e => {
+				automationControls.addEventListener("touchstart", e => {
 					e.stopPropagation();
 				});
 
@@ -528,31 +567,62 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 				});
 
 				qRangeInput.addEventListener("change", (e) => {
-					automationQMod = Number(e.target.value);
-					qBar.style.height = (autoQscale * automationQMod) + "px";
+					if (isFxEdit) {
+						automationWetMod = Number(e.target.value) / qRange;
+						wBar.style.height = (autoWetScale * automationWetMod) + "px";
+					} else {
+						automationQMod = Number(e.target.value);
+						qBar.style.height = (autoQscale * automationQMod) + "px";
+					}
 				});
 
 				fBar.style.height = (autoFreqScale * automationFreqMod) + "px";
 				qBar.style.height = (autoQscale * automationQMod) + "px";
+				wBar.style.height = (autoWetScale * automationWetMod) + "px";;
 				fRangeInput.value = automationFreqMod;
 				qRangeInput.value = automationQMod;
 
-				let title = document.createElement("SPAN");
-				title.appendChild(document.createTextNode("Filter"));
-				filterControls.appendChild(title);
+				let title = document.createElement("DIV");
+				title.id = "automation-levels-title";
 
-				filterControls.appendChild(fRangeInput);
-				filterControls.appendChild(qRangeInput);
-				td.appendChild(filterControls);
+				let titleFilt = document.createElement("SPAN");
+				titleFilt.id = "automation-title-filter";
+				let titleFx = document.createElement("SPAN");
+				titleFx.id = "automation-title-fx";
+				titleFilt.appendChild(document.createTextNode("Filter"));
+				titleFx.appendChild(document.createTextNode("FX"));
+				title.appendChild(titleFilt);
+				title.appendChild(titleFx);
+
+				title.onclick = () => {
+					isFxEdit = !isFxEdit;
+
+					if (isFxEdit && !checkFx())
+						showToast("FX is not set");
+
+					if (!isFxEdit && !checkFilter())
+						showToast("Filter is not set");
+
+					updateControlMode();
+				}
+
+				automationControls.appendChild(title);
+
+				automationControls.appendChild(fRangeInput);
+				automationControls.appendChild(qRangeInput);
+				td.appendChild(automationControls);
+				autoLevelsSet = td;
 			} else {
 				td.dataset.index = j - 1;
 				automationCells[j - 1].cell = td;
 				automationCells[j - 1].fBar = fBar;
 				automationCells[j - 1].qBar = qBar;
+				automationCells[j - 1].wBar = wBar;
 			}
 
 			td.appendChild(fBar);
 			td.appendChild(qBar);
+			td.appendChild(wBar);
 			autoRow.appendChild(td);
 		}
 	}
@@ -561,28 +631,36 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 		if (!e.target.classList.contains("js-auto-cell"))
 			return;
 
-		if (noFilter) {
-			showToast("Filter is not set");
+		if (!checkFilter() && !checkFx()) {
+			showToast("No automation target present");
 			return;
 		}
 
 		if (e.target.id == "automation-levels-set") {
-			filterControls.classList.toggle("nodisplay");
+			automationControls.classList.toggle("nodisplay");
 			return;
 		}
 
 		let index = Number(e.target.dataset.index);
 		let layer = songObj.currentPattern.patternData[songObj.currentPattern.activeIndex];
 
-		if (layer.filtQ[index] || layer.filtQ[index] === 0) {
-			layer.filtQ[index] = null;
-			layer.filtF[index] = null;
-			resetAutomationCell(index);
+		if (isFxEdit) {
+			if (layer.fxWet[index] || layer.fxWet[index] === 0) {
+				layer.fxWet[index] = null;
+			} else {
+				layer.fxWet[index] = automationWetMod;
+			}
 		} else {
-			layer.filtQ[index] = automationQMod;
-			layer.filtF[index] = automationFreqMod;
-			setAutomationCell(index, automationFreqMod, automationQMod);
+			if (layer.filtQ[index] || layer.filtQ[index] === 0) {
+				layer.filtQ[index] = null;
+				layer.filtF[index] = null;
+			} else {
+				layer.filtQ[index] = automationQMod;
+				layer.filtF[index] = automationFreqMod;
+			}
 		}
+
+		setAutomationCell(index, layer.filtF[index], layer.filtQ[index], layer.fxWet[index]);
 	}
 
 	function autoRowPointerListener(e) {
@@ -591,7 +669,7 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 
 		cancelClick = false;
 
-		if (noFilter)
+		if (!checkFilter() && !checkFx())
 			return;
 
 		if (e.target.id == "automation-levels-set")
@@ -602,13 +680,21 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 
 		pressTimeout = setTimeout(() => {
 			cancelClick = true;
-
-			if (layer.filtQ[index] || layer.filtQ[index] === 0) {
-				fRangeInput.value = automationFreqMod = layer.filtF[index];
-				qRangeInput.value = automationQMod = layer.filtQ[index];
+			if (isFxEdit) {
+				if (layer.fxWet[index] || layer.fxWet[index] === 0) {
+					automationWetMod = layer.fxWet[index];
+				} else {
+					automationWetMod = songObj.synths[layer.synthIndex].values.FXWetValue;
+				}
+				qRangeInput.value = automationWetMod * qRange;
 			} else {
-				fRangeInput.value = automationFreqMod = songObj.synths[layer.synthIndex].filterFreqInput;
-				qRangeInput.value = automationQMod = songObj.synths[layer.synthIndex].values.filterQValue;
+				if (layer.filtQ[index] || layer.filtQ[index] === 0) {
+					fRangeInput.value = automationFreqMod = layer.filtF[index];
+					qRangeInput.value = automationQMod = layer.filtQ[index];
+				} else {
+					fRangeInput.value = automationFreqMod = songObj.synths[layer.synthIndex].filterFreqInput;
+					qRangeInput.value = automationQMod = songObj.synths[layer.synthIndex].values.filterQValue;
+				}
 			}
 
 			fRangeInput.dispatchEvent(new Event("change"));
@@ -742,47 +828,99 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 			}`;
 	}
 
-	function importData(data) {
-		for (let i = 0; i < data.notes.length; i++) {
-			if (!data.notes[i])
+	function redrawActiveLayer(ptrnData) {
+		for (let i = 0; i < ptrnData.notes.length; i++) {
+			if (!ptrnData.notes[i])
 				continue;
 
-			let row = findRowByNote(data.notes[i])
-			setCell(i, row, data.lengths[i], data.volumes[i]);
+			let row = findRowByNote(ptrnData.notes[i])
+			setCell(i, row, ptrnData.lengths[i], ptrnData.volumes[i]);
 		}
 
-		redrawAutomationRow(data);
+		redrawAutomationRow(ptrnData);
 	}
 
-	function redrawAutomationRow(data) {
+	function checkFilter() {
 		let index = songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].synthIndex;
-		if (index !== null && songObj.synths[index].filter) {
-			autoRow.classList.remove("inactive");
-			noFilter = false;
-		} else {
-			autoRow.classList.add("inactive");
-			filterControls.classList.add("nodisplay");
-			noFilter = true;
+		if (index === null)
+			return false;
+
+		return songObj.synths[index].filter ? true : false;
+	}
+
+	function checkFx() {
+		let index = songObj.currentPattern.patternData[songObj.currentPattern.activeIndex].synthIndex;
+		if (index === null)
+			return false;
+
+		return songObj.synths[index].FX ? true : false;
+	}
+
+	function updateControlMode() {
+		if (!checkFx() && !checkFilter()) {
+			automationControls.classList.add("nodisplay");
+			autoLevelsSet.style.backgroundColor = "#333";
+			return;
 		}
 
-		for (let i = 0; i < sequencerLength; i++) {
-			if (data.filtQ[i] || data.filtQ[i] === 0)
-				setAutomationCell(i, data.filtF[i], data.filtQ[i]);
-			else
-				resetAutomationCell(i);
+		if (isFxEdit)
+			if (checkFx()) {
+				automationControls.classList.add("js-auto-control-fx");
+			} else {
+				automationControls.classList.remove("js-auto-control-fx");
+				isFxEdit = false;
+			}
+		else
+			if (checkFilter()) {
+				automationControls.classList.remove("js-auto-control-fx");
+			} else {
+				automationControls.classList.add("js-auto-control-fx");
+				isFxEdit = true;
+			}
+
+		if (isFxEdit) {
+			autoLevelsSet.style.backgroundColor = "#4ca";
+			autoLevelsSet.classList.add("control-fx");
+			qRangeInput.value = automationWetMod * qRange;
+		} else {
+			autoLevelsSet.style.backgroundColor = "#a5d";
+			autoLevelsSet.classList.remove("control-fx");
+			qRangeInput.value = automationQMod;
 		}
 	}
 
-	function importShadowData(dataArr, excludeIndex) {
-		for (let i = 0; i < dataArr.length; i++) {
+	function redrawAutomationRow(ptrnData) {
+		if (checkFilter() || checkFx())
+			autoRow.classList.remove("inactive");
+		else
+			autoRow.classList.add("inactive");
+
+		if (checkFilter())
+			autoRow.classList.remove("no-filter-set");
+		else
+			autoRow.classList.add("no-filter-set");
+
+		if (checkFx())
+			autoRow.classList.remove("no-fx-set");
+		else
+			autoRow.classList.add("no-fx-set");
+
+		updateControlMode();
+
+		for (let i = 0; i < sequencerLength; i++)
+			setAutomationCell(i, ptrnData.filtF[i], ptrnData.filtQ[i], ptrnData.fxWet[i]);
+	}
+
+	function redrawShadowLayers(ptrnData, excludeIndex) {
+		for (let i = 0; i < ptrnData.length; i++) {
 			if (i == excludeIndex)
 				continue;
 
-			for (let j = 0; j < dataArr[i].notes.length; j++) {
-				if (!dataArr[i].notes[j])
+			for (let j = 0; j < ptrnData[i].notes.length; j++) {
+				if (!ptrnData[i].notes[j])
 					continue;
 
-				let row = findRowByNote(dataArr[i].notes[j])
+				let row = findRowByNote(ptrnData[i].notes[j])
 				let cell = document.getElementById("seq_col-" + j + "_row-" + row);
 				if (cell)
 					cell.classList.add("shade");
@@ -816,10 +954,11 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 		event.target.classList.add("tab--active");
 		songObj.currentPattern.activeIndex = index;
 
-		this.importSequence(songObj.currentPattern);
+		this.redrawPattern();
 	}
 
-	this.rebuildPatternSynthList = function (pattern) {
+	this.rebuildPatternSynthList = function () {
+		let pattern = songObj.currentPattern;
 		let addLayerBtn = document.getElementById("button-add-pattern-layer");
 		let patternTabs = document.querySelectorAll(".js-pattern-layer-tab");
 		patternTabs.forEach(e => e.remove());
