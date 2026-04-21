@@ -101,6 +101,7 @@ class Pattern {
 			newLayer.volumes[i] = layer.volumes[i];
 			newLayer.filtF[i] = layer.filtF[i];
 			newLayer.filtQ[i] = layer.filtQ[i];
+			newLayer.fxWet[i] = layer.fxWet[i];
 		}
 	}
 
