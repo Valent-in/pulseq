@@ -696,6 +696,11 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		showModal("layer-transpose-modal-menu");
 	};
 
+	document.getElementById("button-reverse-layer").onclick = () => {
+		hideModal("layer-edit-modal-menu");
+		showModal("layer-reverse-modal-menu");
+	};
+
 	document.getElementById("button-copy-layer").onclick = () => {
 		hideModal("layer-edit-modal-menu");
 		hideModal("pattern-modal-menu");
@@ -848,7 +853,6 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		layerTranspose();
 	};
 
-
 	transposeStepsInput.addEventListener("keydown", (event) => {
 		if (event.key == "Enter")
 			enterPressed = true;
@@ -873,6 +877,21 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			onSongChangeCallback(false, null, true);
 		}
 	}
+
+	/*
+	 * Layer reverse menu
+	 */
+	document.getElementById("button-apply-reverse").onclick = () => {
+		let autoChk = document.getElementById("input-reverse-automation");
+		songObj.currentPattern.reverseActiveLayer(autoChk.checked);
+		hideModal("pattern-modal-menu");
+		hideModal("layer-reverse-modal-menu");
+		onSongChangeCallback(false, null, true);
+	}
+
+	document.getElementById("button-reverse-menu-close").onclick = () => {
+		hideModal("layer-reverse-modal-menu");
+	};
 
 	/*
 	 * Settings modal menu

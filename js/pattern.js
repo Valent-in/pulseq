@@ -187,4 +187,32 @@ class Pattern {
 			return null;
 		}
 	}
+
+	reverseActiveLayer(isReverseAutomation) {
+		let layer = this.patternData[this.activeIndex];
+
+		layer.notes.length = this.length;
+		layer.lengths.length = this.length;
+		layer.volumes.length = this.length;
+
+		layer.notes.reverse();
+		layer.volumes.reverse();
+		layer.lengths.reverse();
+
+		for (let i = 1; i < this.length; i++) {
+			if (layer.lengths[i - 1] && (layer.lengths[i] == 100)) {
+				layer.lengths[i] = layer.lengths[i - 1];
+				layer.lengths[i - 1] = 100;
+			}
+		}
+
+		if (isReverseAutomation) {
+			layer.filtF.length = this.length;
+			layer.filtQ.length = this.length;
+			layer.fxWet.length = this.length;
+			layer.filtF.reverse();
+			layer.filtQ.reverse();
+			layer.fxWet.reverse();
+		}
+	}
 }

@@ -1064,7 +1064,8 @@ button.button--highlight-yellow {
 #button-copy-layer,
 #button-fade-layer,
 #button-shift-layer,
-#button-transpose-layer {
+#button-transpose-layer,
+#button-reverse-layer {
 	min-width: 4rem;
 }
 
