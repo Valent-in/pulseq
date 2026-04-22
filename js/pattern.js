@@ -105,56 +105,36 @@ class Pattern {
 		}
 	}
 
-	shiftActiveLayer(steps, isShiftPattern) {
+	shiftActiveLayer(steps, isShiftAutomation) {
 		if (steps == 0)
 			return;
 
 		let length = this.length;
 		steps = steps % length;
 
-		if (isShiftPattern) {
-			for (let i = 0; i < this.patternData.length; i++) {
-				let layer = this.patternData[i];
-				shiftLayer(layer, steps, this.length);
-			}
-		} else {
-			let layer = this.patternData[this.activeIndex];
-			shiftLayer(layer, steps);
-		}
+		shiftLayer(this.patternData[this.activeIndex], steps);
 
 		function shiftLayer(layer, steps) {
 			for (let i = 0; i < Math.abs(steps); i++) {
-				let direction = steps > 0 ? 1 : -1;
-				shiftOne(layer.notes, direction);
-				shiftOne(layer.lengths, direction);
-				shiftOne(layer.volumes, direction);
-				shiftOne(layer.filtF, direction);
-				shiftOne(layer.filtQ, direction);
-				shiftOne(layer.fxWet, direction);
+				shiftOne(layer.notes, steps);
+				shiftOne(layer.lengths, steps);
+				shiftOne(layer.volumes, steps);
+
+				if (isShiftAutomation) {
+					shiftOne(layer.filtF, steps);
+					shiftOne(layer.filtQ, steps);
+					shiftOne(layer.fxWet, steps);
+				}
 			}
 		}
 
 		function shiftOne(arr, direction) {
+			arr.length = length;
+
 			if (direction < 0)
-				shiftOneLeft(arr);
-			if (direction > 0)
-				shiftOneRight(arr);
-		}
-
-		function shiftOneLeft(arr) {
-			let tmp = arr[0];
-			for (let i = 0; i < length - 1; i++)
-				arr[i] = arr[i + 1];
-
-			arr[length - 1] = tmp;
-		}
-
-		function shiftOneRight(arr) {
-			let tmp = arr[length - 1];
-			for (let i = length - 1; i > 0; i--)
-				arr[i] = arr[i - 1];
-
-			arr[0] = tmp;
+				arr.push(arr.shift());
+			else
+				arr.unshift(arr.pop());
 		}
 	}
 

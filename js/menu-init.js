@@ -828,9 +828,9 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	});
 
 	function patternShift() {
-		let wholeChk = document.getElementById("input-shift-whole-pattern");
+		let autoChk = document.getElementById("input-shift-automation");
 		let steps = Number(shiftStepsInput.value);
-		songObj.currentPattern.shiftActiveLayer(steps, wholeChk.checked);
+		songObj.currentPattern.shiftActiveLayer(steps, autoChk.checked);
 		hideModal("pattern-modal-menu");
 		hideModal("layer-shift-modal-menu");
 		onSongChangeCallback(false, null, true);
