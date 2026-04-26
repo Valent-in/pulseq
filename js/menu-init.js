@@ -701,6 +701,11 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		showModal("layer-reverse-modal-menu");
 	};
 
+	document.getElementById("button-invert-layer").onclick = () => {
+		hideModal("layer-edit-modal-menu");
+		showModal("layer-invert-modal-menu");
+	};
+
 	document.getElementById("button-copy-layer").onclick = () => {
 		hideModal("layer-edit-modal-menu");
 		hideModal("pattern-modal-menu");
@@ -891,6 +896,21 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 
 	document.getElementById("button-reverse-menu-close").onclick = () => {
 		hideModal("layer-reverse-modal-menu");
+	};
+
+	/*
+	 * Layer invert menu
+	 */
+	document.getElementById("button-apply-invert").onclick = () => {
+		let scaleChk = document.getElementById("input-invert-keepscale");
+		songObj.currentPattern.invertActiveLayer(scaleChk.checked);
+		hideModal("pattern-modal-menu");
+		hideModal("layer-invert-modal-menu");
+		onSongChangeCallback(false, null, true);
+	}
+
+	document.getElementById("button-invert-menu-close").onclick = () => {
+		hideModal("layer-invert-modal-menu");
 	};
 
 	/*

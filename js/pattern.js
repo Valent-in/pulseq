@@ -162,6 +162,48 @@ class Pattern {
 		return true;
 	}
 
+	invertActiveLayer(isKeepScale) {
+		let layer = this.patternData[this.activeIndex];
+		let buffer = [];
+
+		let max = 0;
+		let min = DEFAULT_PARAMS.noteSet.length;
+		let presentNotes = [];
+
+		for (let i = 0; i < this.length; i++) {
+			let buff = DEFAULT_PARAMS.noteSet.indexOf(layer.notes[i]);
+			if (buff == -1) {
+				buffer[i] = null;
+				continue;
+			}
+
+			buffer[i] = buff;
+			min = Math.min(min, buff);
+			max = Math.max(max, buff);
+
+			if (presentNotes.indexOf(buff) == -1)
+				presentNotes.push(buff);
+		}
+
+		let mid = min + (max - min) / 2;
+		presentNotes.sort((a, b) => a - b);
+		console.log(presentNotes);
+
+		for (let i = 0; i < this.length; i++) {
+			if (buffer[i] == null)
+				continue;
+
+			if (isKeepScale) {
+				let ind = presentNotes.indexOf(buffer[i]);
+				buffer[i] = presentNotes[presentNotes.length - 1 - ind];
+			} else {
+				buffer[i] = mid * 2 - buffer[i];
+			}
+
+			layer.notes[i] = DEFAULT_PARAMS.noteSet[buffer[i]];
+		}
+	}
+
 	reverseActiveLayer(isReverseAutomation) {
 		let layer = this.patternData[this.activeIndex];
 
