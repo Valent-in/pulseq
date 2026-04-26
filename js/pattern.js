@@ -139,34 +139,27 @@ class Pattern {
 	}
 
 	transposeActiveLayer(steps) {
-		let noteArr = DEFAULT_PARAMS.noteSet.slice().reverse();
 		let layer = this.patternData[this.activeIndex];
 		let buffer = [];
 
 		for (let i = 0; i < this.length; i++) {
-			buffer[i] = findRowByNote(layer.notes[i]);
+			let buff = DEFAULT_PARAMS.noteSet.indexOf(layer.notes[i]);
+			if (buff == -1) {
+				buffer[i] = null;
+				continue;
+			}
 
-			if (buffer[i] !== null)
-				buffer[i] -= steps;
+			buffer[i] = buff + steps;
 
-			if (buffer[i] < 0 || buffer[i] >= noteArr.length)
+			if (buffer[i] < 0 || buffer[i] >= DEFAULT_PARAMS.noteSet.length)
 				return false;
 		}
 
 		for (let i = 0; i < this.length; i++)
 			if (buffer[i] !== null)
-				layer.notes[i] = noteArr[buffer[i]];
-
+				layer.notes[i] = DEFAULT_PARAMS.noteSet[buffer[i]];
 
 		return true;
-
-		function findRowByNote(note) {
-			for (let i = 0; i < noteArr.length; i++)
-				if (noteArr[i] == note)
-					return i;
-
-			return null;
-		}
 	}
 
 	reverseActiveLayer(isReverseAutomation) {
