@@ -331,7 +331,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			URL.revokeObjectURL(lnk.href);
 
 		let expString = JSON.stringify(songObj.getCleanSynthParams(selectedSynthIndex), null, 1);
-		let file = new Blob([expString], { type: 'text/json' });
+		let file = new Blob([expString], { type: 'text/plain' });
 		lnk.href = URL.createObjectURL(file);
 		let name = songObj.synthNames[selectedSynthIndex] || "synth";
 		lnk.download = name + ".synth.json";

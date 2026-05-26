@@ -268,7 +268,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		if (lnk.protocol == "blob:")
 			URL.revokeObjectURL(lnk.href);
 
-		let file = new Blob([exportSong(true)], { type: 'text/json' });
+		let file = new Blob([exportSong(true)], { type: 'text/plain' });
 		lnk.href = URL.createObjectURL(file);
 		let name = songObj.title || "song";
 		lnk.download = name + ".json";
