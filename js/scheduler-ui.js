@@ -7,66 +7,29 @@ function schedulerUi(scheduler, setLoopMarkersCallback) {
 	let arrangeTab = document.getElementById("arrange-tab")
 	let patternTab = document.getElementById("pattern-tab")
 
-	document.addEventListener("keydown", (event) => {
-		if (event.target.type == "number" || event.target.type == "text")
-			return;
+	let listeners = {};
 
-		if (event.code == "Backquote")
-			songPlayListener();
+	listeners.patternPlay = () => {
+		if (scheduler.isPlaying())
+			scheduler.stop();
+		else
+			scheduler.playPattern(onForceStop);
 
-		if (event.code == "Digit1")
-			patternPlayListener();
-
-		if (event.code == "Space") {
-			if (event.target.type == "checkbox")
-				return;
-
-			event.preventDefault();
-
-			switch (window.g_activeTab) {
-				case "arrange":
-					songPlayListener();
-					break;
-
-				case "pattern":
-					patternPlayListener();
-					break;
-
-				default:
-					scheduler.stop();
-					updateButtons(false, false);
-			}
-		}
-	});
-
-	document.addEventListener("keyup", (event) => {
-		if (event.target.tagName != "INPUT" && event.code == "Space") {
-			event.preventDefault();
-		}
-	});
-
-	songPlayBtn.onclick = songPlayListener;
-	patternPlayBtn.onclick = patternPlayListener;
-
-	document.getElementById("button-loop-play").onclick = loopPlayListener;
-	barsInput.addEventListener("keyup", (event) => {
-		if (event.key == "Enter") {
-			loopPlayListener();
-		}
-	});
-
-	function onForceStop() {
-		updateButtons(false, false);
+		updateButtons(scheduler.isPlaying(), false);
 		removePlayMarkers();
 	};
 
-	function songPlayListener() {
-		let state = scheduler.playStopSong(onForceStop);
-		updateButtons(false, state);
-		removePlayMarkers();
-	};
+	listeners.songPlay = () => {
+		if (scheduler.isPlaying())
+			scheduler.stop();
+		else
+			scheduler.playSong(onForceStop);
 
-	function loopPlayListener() {
+		updateButtons(false, scheduler.isPlaying());
+		removePlayMarkers();
+	}
+
+	listeners.loopStart = () => {
 		let barsInLoop = Math.round(barsInput.value);
 
 		if (!(barsInLoop >= 1 && barsInLoop <= 99)) {
@@ -83,9 +46,25 @@ function schedulerUi(scheduler, setLoopMarkersCallback) {
 		hideModal("column-modal-menu");
 	};
 
-	function patternPlayListener() {
-		let state = scheduler.playStopPattern(onForceStop);
-		updateButtons(state, false);
+	listeners.loopPlay = () => {
+		if (scheduler.isPlaying())
+			scheduler.stop();
+		else
+			listeners.loopStart();
+	}
+
+	songPlayBtn.onclick = listeners.songPlay;
+	patternPlayBtn.onclick = listeners.patternPlay;
+
+	document.getElementById("button-loop-play").onclick = listeners.loopStart;
+	barsInput.addEventListener("keyup", (event) => {
+		if (event.key == "Enter") {
+			listeners.loopStart();
+		}
+	});
+
+	function onForceStop() {
+		updateButtons(false, false);
 		removePlayMarkers();
 	};
 
@@ -120,4 +99,6 @@ function schedulerUi(scheduler, setLoopMarkersCallback) {
 		songPlayBtn.classList.add("button--play-loop");
 		setLoopMarkersCallback(startIndex, length);
 	}
+
+	return listeners;
 }

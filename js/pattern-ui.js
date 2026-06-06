@@ -255,6 +255,15 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 
 		buildAutomationRow();
 		pattern.appendChild(table);
+
+		// Update automation row on pattern tab selection
+		document.getElementById("pattern-tab").addEventListener("click", () => {
+			this.redrawAutomationRow();
+		});
+	}
+
+	this.redrawAutomationRow = function () {
+		redrawAutomationRow(songObj.currentPattern.patternData[songObj.currentPattern.activeIndex]);
 	}
 
 	this.setMarker = function (index) {
@@ -521,11 +530,6 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 		autoRow = document.createElement("TR");
 		autoRow.id = "pattern-auto-row";
 		table.appendChild(autoRow);
-
-		// Update automation row on pattern tab selection
-		document.getElementById("pattern-tab").addEventListener("click", () => {
-			redrawAutomationRow(songObj.currentPattern.patternData[songObj.currentPattern.activeIndex]);
-		});
 
 		for (let j = 0; j <= maxSequencerLength; j++) {
 			let td = document.createElement("TD");

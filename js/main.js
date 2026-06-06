@@ -90,7 +90,7 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQuaver v" + DEFAULT_PARAMS.progr
 
 	const scheduler = new Scheduler(songObject, arrangeUi.setMarker, patternUi.setMarker);
 
-	schedulerUi(scheduler, arrangeUi.setLoopMarkers);
+	let schedListen = schedulerUi(scheduler, arrangeUi.setLoopMarkers);
 	menuInit(songObject, onSongChange, synthHelper.loadSynth, scheduler.renderSong, scheduler.exportMidiSequence);
 	waveformEditor(songObject);
 
@@ -98,6 +98,66 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQuaver v" + DEFAULT_PARAMS.progr
 	samplerateBox.appendChild(document.createTextNode("Sample rate: " + Tone.context.sampleRate));
 	if (getAppSettings("samplerate"))
 		samplerateBox.classList.add("sr-nondefault");
+
+	document.addEventListener("keydown", (event) => {
+		if (songObject.song.length == 0)
+			return;
+
+		if (event.target.type == "number" || event.target.type == "text")
+			return;
+
+		if (event.code == "Digit1")
+			g_switchTab("arrange");
+
+		if (event.code == "Digit2") {
+			g_switchTab("pattern");
+			patternUi.redrawAutomationRow();
+		}
+
+		if (event.code == "Digit3")
+			g_switchTab("synth");
+
+		if (event.code == "Digit4")
+			g_switchTab("synth-list");
+
+		if (event.code == "KeyM")
+			synthHelper.toggleMixer();
+
+		if (event.code == "KeyZ")
+			schedListen.songPlay();
+
+		if (event.code == "KeyX")
+			schedListen.patternPlay();
+
+		if (event.code == "KeyC")
+			schedListen.loopPlay();
+
+		if (event.code == "Space") {
+			if (event.target.type == "checkbox")
+				return;
+
+			event.preventDefault();
+
+			switch (window.g_activeTab) {
+				case "arrange":
+					schedListen.songPlay();
+					break;
+
+				case "pattern":
+					schedListen.patternPlay();
+					break;
+
+				default:
+					scheduler.stop();
+			}
+		}
+	});
+
+	document.addEventListener("keyup", (event) => {
+		if (event.target.tagName != "INPUT" && event.code == "Space") {
+			event.preventDefault();
+		}
+	});
 
 	document.getElementById("startup-loading-title").style.display = "none";
 	document.getElementById("startup-menu").style.display = "block";

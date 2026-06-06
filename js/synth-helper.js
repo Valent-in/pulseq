@@ -5,6 +5,13 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 	let selectedSynthIndex = 0;
 	let mixerIsShown = false;
 
+	this.toggleMixer = () => {
+		if (mixerIsShown)
+			closeMixer();
+		else
+			showMixer();
+	}
+
 	let pressTimeout = null;
 	let cancelClick = false;
 
@@ -463,11 +470,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		deleteSynthBtn.disabled = (songObj.synths.length == 1);
 	}
 
-	document.getElementById("button-mixer-menu-open").onclick = () => {
-		buildMixerList();
-		showModal("mixer-modal-menu");
-		mixerIsShown = true;
-	};
+	document.getElementById("button-mixer-menu-open").onclick = showMixer;
 
 	document.getElementById("button-mixer-menu-close").onclick = () => {
 		closeMixer();
@@ -487,6 +490,15 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		muteAllSynths(false);
 		buildMixerList();
 	};
+
+	function showMixer() {
+		if (!songObj.synths.length)
+			return;
+	
+		buildMixerList();
+		mixerIsShown = true;
+		showModal("mixer-modal-menu");
+	}
 
 	function closeMixer() {
 		selectSynth(songObj.currentSynthIndex);

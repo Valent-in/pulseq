@@ -49,6 +49,9 @@ function SynthUi(songObj) {
 	const lowerRow = document.createElement("DIV");
 
 	const playSynth = (note, newDomKey) => {
+		if (!this.currentSynth)
+			return;
+
 		let stepLen = (60 / songObj.bpm) / 4;
 
 		this.currentSynth.filterSweep(null, null, Tone.now(), 0.01)

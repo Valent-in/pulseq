@@ -8,6 +8,8 @@ function Scheduler(songObj, barCallback, stepCallback) {
 	let onInnerStopCallback = null;
 	let schedulerId = null;
 
+	this.isPlaying = () => isPlaying;
+
 	this.stop = () => {
 		stop();
 
@@ -17,8 +19,9 @@ function Scheduler(songObj, barCallback, stepCallback) {
 		}
 	}
 
-	this.playSong = () => {
+	this.playSong = (callback) => {
 		stop();
+		onInnerStopCallback = callback;
 
 		for (let i = 0; i < songObj.synths.length; i++) {
 			songObj.synths[i].resetFilter();
@@ -34,7 +37,6 @@ function Scheduler(songObj, barCallback, stepCallback) {
 
 	this.playLoop = (callback, barsInLoop) => {
 		stop();
-
 		onInnerStopCallback = callback;
 
 		isPlaying = true;
@@ -46,8 +48,9 @@ function Scheduler(songObj, barCallback, stepCallback) {
 		return songObj.arrangeStartPoint;
 	}
 
-	this.playPattern = () => {
+	this.playPattern = (callback) => {
 		stop();
+		onInnerStopCallback = callback;
 
 		isPlaying = true;
 		isPatternPlaying = true;
@@ -64,28 +67,6 @@ function Scheduler(songObj, barCallback, stepCallback) {
 	this.releasePattern = () => {
 		if (isPatternPlaying)
 			this.release();
-	}
-
-	this.playStopSong = (callback) => {
-		if (isPlaying) {
-			stop();
-			return false;
-		} else {
-			onInnerStopCallback = callback;
-			this.playSong();
-			return true;
-		}
-	}
-
-	this.playStopPattern = (callback) => {
-		if (isPlaying || !songObj.currentPattern) {
-			stop();
-			return false;
-		} else {
-			onInnerStopCallback = callback;
-			this.playPattern();
-			return true;
-		}
 	}
 
 	this.renderSong = (renderLength) => {
