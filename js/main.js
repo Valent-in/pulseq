@@ -82,7 +82,7 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQuaver v" + DEFAULT_PARAMS.progr
 	const patternUi = new PatternUi(songObject, synthUi.assignSynth, onSongChange);
 	patternUi.build();
 
-	const synthHelper = new SynthHelper(songObject, synthUi, redrawSequence);
+	const synthHelper = new SynthHelper(songObject, synthUi, onSynthListChange);
 	synthHelper.buildPresetList();
 
 	const arrangeUi = new ArrangeUi(songObject, onPatternSelect, DEFAULT_PARAMS);
@@ -99,6 +99,12 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQuaver v" + DEFAULT_PARAMS.progr
 	if (getAppSettings("samplerate"))
 		samplerateBox.classList.add("sr-nondefault");
 
+	// App init completed
+	document.getElementById("startup-loading-title").style.display = "none";
+	document.getElementById("startup-menu").style.display = "block";
+	document.getElementById("input-import-track").focus();
+
+	// Hotkeys
 	document.addEventListener("keydown", (event) => {
 		if (songObject.song.length == 0)
 			return;
@@ -159,17 +165,19 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQuaver v" + DEFAULT_PARAMS.progr
 		}
 	});
 
-	document.getElementById("startup-loading-title").style.display = "none";
-	document.getElementById("startup-menu").style.display = "block";
-	document.getElementById("input-import-track").focus();
-
 	function onSongChange(isNewSong, stopCommand, preserveArrangeView) {
-		redrawSequence(!preserveArrangeView);
+		if (!preserveArrangeView)
+			arrangeUi.fillSongView();
+
+		patternUi.redrawPattern();
+
+		// Also updates pattern layer tabs
+		synthHelper.rebuildSynthList();
+
 		if (isNewSong) {
 			let ind = songObject.currentSynthIndex;
 			synthUi.assignSynth(songObject.synthParams[ind], songObject.synths[ind], songObject.synthNames[ind]);
 		}
-		synthHelper.rebuildSynthList();
 
 		switch (stopCommand) {
 			case "stop":
@@ -181,13 +189,10 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQuaver v" + DEFAULT_PARAMS.progr
 		}
 	}
 
-	function redrawSequence(updArrangeView) {
-		if (updArrangeView) {
+	function onSynthListChange(updArrangeView) {
+		if (updArrangeView)
 			arrangeUi.fillSongView();
-			g_markCurrentPattern();
-		}
 
-		patternUi.redrawPattern();
 		patternUi.rebuildPatternSynthList();
 	}
 
