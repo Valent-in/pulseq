@@ -563,7 +563,7 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 				qRangeInput.type = "range";
 				qRangeInput.min = 0;
 				qRangeInput.max = 50;
-				qRangeInput.step = 0.1;
+				qRangeInput.step = 0.2;
 
 				fRangeInput.addEventListener("change", (e) => {
 					automationFreqMod = Number(e.target.value);
