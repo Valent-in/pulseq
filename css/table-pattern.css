@@ -345,10 +345,6 @@
 	background-color: #111;
 }
 
-#pattern-auto-row td.filt-active, #pattern-auto-row td.fx-active {
-	background-color: #241a34;
-}
-
 #pattern-auto-row .filter-bar {
 	position: absolute;
 	left: 1px;
@@ -384,6 +380,15 @@
 #pattern-auto-row.no-filter-set .filt-q-bar,
 #pattern-auto-row.no-fx-set .fx-wet-bar {
 	display: none;
+}
+
+#pattern-auto-row td.filt-active, #pattern-auto-row td.fx-active {
+	background-color: #241a34;
+}
+
+#pattern-auto-row.no-filter-set td.filt-active:not(.fx-active),
+#pattern-auto-row.no-fx-set td.fx-active:not(.filt-active) {
+	background-color: #322;
 }
 
 #pattern-auto-row.inactive td {
