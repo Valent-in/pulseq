@@ -2,6 +2,7 @@
 
 function ReorderMenu(songObj, onSongChangeCallback) {
 	let patternListContainer = document.getElementById("pattern-list-container");
+	let patternCountSpan = document.getElementById("span-pattern-count");
 	let sortMenuIsShown = false;
 	let patternEntries = [];
 	let dragPatternFrom;
@@ -9,6 +10,7 @@ function ReorderMenu(songObj, onSongChangeCallback) {
 	this.showMenu = () => {
 		if (songObj.patterns.length > 1) {
 			rebuildPatternList();
+			patternCountSpan.textContent = "(" + songObj.patterns.length + ")";
 			hideModal("column-modal-menu");
 			showModal("pattern-reorder-modal-menu");
 			sortMenuIsShown = true;
