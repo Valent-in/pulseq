@@ -199,7 +199,8 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 
 	let barStepsInput = document.getElementById("input-steps-value");
 	barStepsInput.addEventListener("input", () => {
-		highlight(barStepsSet, true);
+		if (songObj.isSongEmpty())
+			highlight(barStepsSet, true);
 	});
 
 	barStepsInput.addEventListener("keyup", (event) => {
@@ -224,15 +225,12 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		if (stepsValue == songObj.barSteps)
 			return;
 
-		if (songObj.isSongEmpty())
+		if (songObj.isSongEmpty()) {
 			setBarLength();
-		else
-			showConfirm("This will delete all patterns! Proceed?", isOk => {
-				if (isOk)
-					setBarLength();
-				else
-					barStepsInput.value = songObj.barSteps;
-			});
+		} else {
+			barStepsInput.value = songObj.barSteps;
+			showAlert("Changing bar length is allowed only for new/empty project");
+		}
 
 		function setBarLength() {
 			if (stepsValue > 32) {

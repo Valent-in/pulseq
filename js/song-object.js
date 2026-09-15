@@ -234,7 +234,7 @@ function SongObject() {
 
 		this.barSteps = Math.floor(steps);
 		this.patterns = [];
-		this.patterns.push(new Pattern("ptrn1", this.barSteps));
+		this.patterns.push(new Pattern("A1", this.barSteps));
 
 		this.fillSong();
 		this.calculateSynthFill();
