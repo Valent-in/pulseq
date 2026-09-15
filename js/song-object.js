@@ -498,6 +498,9 @@ function SongObject() {
 
 			if (!compareArrays(ptrn1.patternData[i].filtQ, ptrn2.patternData[i].filtQ, true))
 				return false;
+
+			if (!compareArrays(ptrn1.patternData[i].fxWet, ptrn2.patternData[i].fxWet, true))
+				return false;
 		}
 
 		return true;
