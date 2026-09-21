@@ -2,7 +2,7 @@
 
 const DEFAULT_PARAMS = {};
 
-DEFAULT_PARAMS.programVersion = "1.5.3";
+DEFAULT_PARAMS.programVersion = "1.5.4";
 DEFAULT_PARAMS.fileFormatVersion = "21";
 
 DEFAULT_PARAMS.maxPatternSteps = 64;
