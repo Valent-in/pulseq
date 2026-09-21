@@ -37,11 +37,17 @@ function SongObject() {
 	}
 
 	this.createEmptySong = function () {
-		this.fillSong();
 		this.createSynth("synth1");
-		this.patterns.push(new Pattern("A1"));
+		this.createEmptyTrack();
+	}
+
+	this.createEmptyTrack = function () {
+		this.patterns = [];
+		this.patterns.push(new Pattern("A1", this.barSteps));
 		this.setCurrentPattern(0);
-		this.currentPattern.patternData[0].synthIndex = 0;
+		this.setCurrentLayerSynthIndex(0);
+		this.fillSong();
+		this.calculateSynthFill();
 	}
 
 	this.deleteCurrentPattern = function () {
@@ -233,14 +239,7 @@ function SongObject() {
 			return;
 
 		this.barSteps = Math.floor(steps);
-		this.patterns = [];
-		this.patterns.push(new Pattern("A1", this.barSteps));
-
-		this.fillSong();
-		this.calculateSynthFill();
-
-		this.setCurrentPattern(0);
-		this.setCurrentLayerSynthIndex(0);
+		this.createEmptyTrack();
 	}
 
 	this.calculateDuration = function (bars) {
