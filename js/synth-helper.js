@@ -494,7 +494,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 	function showMixer() {
 		if (!songObj.synths.length)
 			return;
-	
+
 		buildMixerList();
 		mixerIsShown = true;
 		showModal("mixer-modal-menu");
@@ -559,7 +559,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			let fxWarn = document.createElement("SPAN");
 			fxWarn.classList.add("fx-warning-span")
 			fxWarn.appendChild(document.createTextNode("!"));
-			if (DEFAULT_PARAMS.heavyEffects.includes(params["synth-fx-type"])) {
+			if (DEFAULT_PARAMS.heavyEffects.includes(synth.lastFXType)) {
 				fxWarn.style.visibility = "visible";
 			} else {
 				fxWarn.style.visibility = "hidden";
