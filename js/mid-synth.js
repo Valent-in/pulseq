@@ -116,6 +116,7 @@ function MidSynth(songObj, index, exportParams) {
 
     // Dummy
     this.filterSweep = function () { }
+    this.fxSweep = function () { }
 
     this.setBarMarker = function (time) {
         if (barMarkerTick < lastTick)
