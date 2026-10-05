@@ -43,7 +43,7 @@ function SongObject() {
 			this.synths[synthIndex].reconnect(this.compressor);
 		} else {
 			if (wam.plugins[sendIndex]) {
-				this.synths[synthIndex].reconnect(wam.plugins[sendIndex].node.inGain)
+				this.synths[synthIndex].reconnect(wam.plugins[sendIndex].node)
 			} else {
 				console.log("synth " + synthIndex + " disconnected from empty slot " + sendIndex);
 			}
@@ -80,7 +80,7 @@ function SongObject() {
 
 			if (wam.plugins[i]) {
 				wam.plugins[i].wamInstance.audioNode.setState(state);
-				Tone.connect(wam.plugins[i].node.outGain, this.compressor);
+				Tone.connect(wam.plugins[i].node, this.compressor);
 			}
 		}
 
@@ -91,7 +91,7 @@ function SongObject() {
 	this.addPlugin = async function (name, pluginIndex) {
 		await wam.loadModule(name, pluginIndex);
 		if (wam.plugins[pluginIndex]) {
-			Tone.connect(wam.plugins[pluginIndex].node.outGain, this.compressor);
+			Tone.connect(wam.plugins[pluginIndex].node, this.compressor);
 			this.pluginStates[pluginIndex] = { name: name, state: null };
 		} else {
 			this.pluginStates[pluginIndex] = null;

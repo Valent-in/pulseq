@@ -8,30 +8,29 @@ function WamInit(songObj) {
 	let pluginMounts = document.querySelectorAll(".js-plugin-mount");
 	let pluginSelectors = document.querySelectorAll(".js-button-effect-select");
 
-	class BridgeNode {
+	class BridgeNode extends Tone.ToneAudioNode {
 		constructor(nativeNode) {
-			this.inGain = new Tone.getContext().rawContext.createGain();
-			this.outGain = new Tone.getContext().rawContext.createGain();
-			this.bridgeGain = Tone.getContext().rawContext.createGain();
-			this.bridgeGain.gain.value = 0;
-			this.nativeNode = nativeNode;
+			super();
+			this._nativeNode = nativeNode;
+			this._inGain = new Tone.getContext().rawContext.createGain();
+			this._outGain = new Tone.getContext().rawContext.createGain();
+			this._bridgeGain = Tone.getContext().rawContext.createGain();
+			this._bridgeGain.gain.value = 0;
 
-			this.inGain.connect(this.bridgeGain);
-			this.bridgeGain.connect(this.outGain);
-			this.inGain._nativeAudioNode.connect(nativeNode);
-			nativeNode.connect(this.outGain._nativeAudioNode);
+			this._inGain.connect(this._bridgeGain);
+			this._bridgeGain.connect(this._outGain);
+			this._inGain._nativeAudioNode.connect(nativeNode);
+			nativeNode.connect(this._outGain._nativeAudioNode);
+
+			this.input = this._inGain;
+			this.output = this._outGain;
 		}
 
 		destroy() {
-			this.inGain._nativeAudioNode.disconnect();
-			this.inGain.disconnect();
-			this.bridgeGain.disconnect();
-			this.outGain.disconnect();
-
-			this.inGain = null;
-			this.outGain = null;
-			this.bridgeGain = null;
-			this.nativeNode = null;
+			this._nativeNode.disconnect();
+			this._inGain.disconnect();
+			this._bridgeGain.disconnect();
+			this._outGain.disconnect();
 		}
 	}
 
@@ -137,7 +136,6 @@ function WamInit(songObj) {
 		}
 
 		if (instances[index].wamInstance) {
-			instances[index].wamInstance.audioNode.disconnect();
 			instances[index].wamInstance.audioNode.destroy();
 		}
 
