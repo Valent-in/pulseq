@@ -1,9 +1,12 @@
+"use strict";
+
 function WamInit(songObj) {
 	this.plugins = [];
 
 	let hostGroupId;
 	let selectedSlot = 0;
-	
+	let errorIsShown = false;
+
 	let pluginMounts = document.querySelectorAll(".js-plugin-mount");
 	let pluginSelectors = document.querySelectorAll(".js-button-effect-select");
 
@@ -62,7 +65,7 @@ function WamInit(songObj) {
 	fetch("wam-plugins/plugins.json").then(response => response.json()).then(data => {
 		buildPluginList(data);
 	}).catch(() => {
-		console.log(" ! Can not fetch plugin list ! ");
+		console.log("[WAM] Can not fetch plugin list");
 	});
 
 	this.loadModule = async function (name, index = 0, showNameOnError) {
@@ -79,30 +82,28 @@ function WamInit(songObj) {
 			try {
 				let initializeWamHost = await import("../wam-plugins/utils/sdk/src/initializeWamHost.js");
 				[hostGroupId] = await initializeWamHost.default(audioContext);
+				console.log("[WAM] Host initialized");
 			} catch (error) {
-				showAlert("Can not load plugins - WAM host initialization error\n" + error.message);
-				throw error;
+				if (!errorIsShown || !showNameOnError)
+					showAlert("Can not load plugins - WAM host initialization error\n" + error.message);
+
+				errorIsShown = true;
+				setUiErrState();
+				console.error(error.message);
+				return;
 			}
 		}
 
 		try {
 			const { default: WAM } = await import(pathToWam);
 			wamInstance = await WAM.createInstance(hostGroupId, audioContext);
+			wamGui = await wamInstance.createGui();
 		} catch (error) {
-			if (showNameOnError) {
-				updatePluginSelector(index, name);
-				mount.textContent = "Error";
-			} else {
-				mount.innerHTML = "";
-			}
-
-			pluginSelectors[index].disabled = false;
 			showAlert("Can not load plugin " + name + "\n" + error.message);
+			setUiErrState();
 			console.error(error.message);
 			return;
 		}
-
-		wamGui = await wamInstance.createGui();
 
 		mount.innerHTML = "";
 		mount.appendChild(wamGui);
@@ -112,7 +113,17 @@ function WamInit(songObj) {
 		this.plugins[index] = { wamInstance: wamInstance, wamGui: wamGui };
 		this.plugins[index].node = new BridgeNode(wamInstance.audioNode);
 
-		console.log("WAM INIT COMPLETED", pathToWam);
+		console.log("[WAM] Plugin loaded", name);
+
+		function setUiErrState() {
+			if (showNameOnError) {
+				updatePluginSelector(index, name);
+				mount.textContent = "Error";
+			} else {
+				mount.innerHTML = "";
+			}
+			pluginSelectors[index].disabled = false;
+		}
 	}
 
 	this.destroyModule = function (index = 0) {
@@ -120,7 +131,7 @@ function WamInit(songObj) {
 
 		if (!this.plugins[index]) {
 			pluginMounts[index].innerHTML = ""; // remove "Error" message
-			console.log("module at index " + index + " does not exist");
+			console.log("[WAM] (Destroy) skipped index", index);
 			return;
 		}
 
@@ -171,6 +182,5 @@ function WamInit(songObj) {
 			entry.appendChild(document.createTextNode(list[i].name));
 			listContainer.appendChild(entry);
 		}
-
 	}
 }
