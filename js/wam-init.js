@@ -1,10 +1,9 @@
 function WamInit(songObj) {
-	let initializeWamHost;
-	let hostGroupId;
-	let instances = [];
-	this.plugins = instances;
-	let selectedSlot = 0;
+	this.plugins = [];
 
+	let hostGroupId;
+	let selectedSlot = 0;
+	
 	let pluginMounts = document.querySelectorAll(".js-plugin-mount");
 	let pluginSelectors = document.querySelectorAll(".js-button-effect-select");
 
@@ -76,9 +75,9 @@ function WamInit(songObj) {
 		const pathToWam = "../wam-plugins/" + name + "/index.js";
 		const audioContext = Tone.getContext().rawContext._nativeAudioContext;
 
-		if (!initializeWamHost) {
+		if (!hostGroupId) {
 			try {
-				initializeWamHost = await import("../wam-plugins/utils/sdk/src/initializeWamHost.js");
+				let initializeWamHost = await import("../wam-plugins/utils/sdk/src/initializeWamHost.js");
 				[hostGroupId] = await initializeWamHost.default(audioContext);
 			} catch (error) {
 				showAlert("Can not load plugins - WAM host initialization error\n" + error.message);
@@ -110,9 +109,8 @@ function WamInit(songObj) {
 		updatePluginSelector(index, name);
 		pluginSelectors[index].disabled = false;
 
-		instances[index] = { wamInstance: wamInstance, wamGui: wamGui };
-
-		instances[index].node = new BridgeNode(wamInstance.audioNode);
+		this.plugins[index] = { wamInstance: wamInstance, wamGui: wamGui };
+		this.plugins[index].node = new BridgeNode(wamInstance.audioNode);
 
 		console.log("WAM INIT COMPLETED", pathToWam);
 	}
@@ -120,26 +118,26 @@ function WamInit(songObj) {
 	this.destroyModule = function (index = 0) {
 		updatePluginSelector(selectedSlot);
 
-		if (!instances[index]) {
+		if (!this.plugins[index]) {
 			pluginMounts[index].innerHTML = ""; // remove "Error" message
 			console.log("module at index " + index + " does not exist");
 			return;
 		}
 
-		if (instances[index].node) {
-			instances[index].node.destroy();
+		if (this.plugins[index].node) {
+			this.plugins[index].node.destroy();
 		}
 
-		if (instances[index].wamGui) {
-			instances[index].wamGui.remove();
-			instances[index].wamInstance.destroyGui(instances[index].wamGui);
+		if (this.plugins[index].wamGui) {
+			this.plugins[index].wamGui.remove();
+			this.plugins[index].wamInstance.destroyGui(this.plugins[index].wamGui);
 		}
 
-		if (instances[index].wamInstance) {
-			instances[index].wamInstance.audioNode.destroy();
+		if (this.plugins[index].wamInstance) {
+			this.plugins[index].wamInstance.audioNode.destroy();
 		}
 
-		instances[index] = null;
+		this.plugins[index] = null;
 	}
 
 	function updatePluginSelector(index, name) {
