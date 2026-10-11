@@ -25,11 +25,13 @@ function SongObject() {
 	this.compressor = new Tone.Compressor(this.compressorThreshold, this.compressorRatio);
 	this.compressor.toDestination();
 
-	let wam = new WamInit(this);
+	const wam = new WamInit();
+	const wamUi = new WamUi(this);
+	this.fxPlugins = [];
 	this.pluginStates = []; // {name, state}
 
 	this.isPluginLoaded = function (pluginIndex) {
-		return !!(wam.plugins[pluginIndex]);
+		return !!(this.fxPlugins[pluginIndex]);
 	}
 
 	this.setSend = function (synthIndex, sendIndex) {
@@ -42,8 +44,8 @@ function SongObject() {
 		if (sendIndex === null) {
 			this.synths[synthIndex].reconnect(this.compressor);
 		} else {
-			if (wam.plugins[sendIndex]) {
-				this.synths[synthIndex].reconnect(wam.plugins[sendIndex].node)
+			if (this.fxPlugins[sendIndex]) {
+				this.synths[synthIndex].reconnect(this.fxPlugins[sendIndex].node)
 			} else {
 				console.log("synth " + synthIndex + " disconnected from empty slot " + sendIndex);
 			}
@@ -56,15 +58,12 @@ function SongObject() {
 	}
 
 	this.storePluginStates = async function () {
-		for (let i = 0; i < wam.plugins.length; i++) {
-			if (wam.plugins[i]) {
-				let state = await wam.plugins[i].wamInstance.audioNode.getState();
+		for (let i = 0; i < this.fxPlugins.length; i++) {
+			if (this.fxPlugins[i]) {
+				let state = await this.fxPlugins[i].wamInstance.audioNode.getState();
 				this.pluginStates[i].state = state;
-			} else {
-				this.pluginStates[i] = null;
 			}
 		}
-
 		console.log("plugin states stored", this.pluginStates);
 	}
 
@@ -76,11 +75,14 @@ function SongObject() {
 			let name = this.pluginStates[i].name;
 			let state = this.pluginStates[i].state;
 
-			await wam.loadModule(name, i, true);
+			this.fxPlugins[i] = await wam.loadModule(name, true, false);
 
-			if (wam.plugins[i]) {
-				wam.plugins[i].wamInstance.audioNode.setState(state);
-				Tone.connect(wam.plugins[i].node, this.compressor);
+			if (this.fxPlugins[i]) {
+				this.fxPlugins[i].wamInstance.audioNode.setState(state);
+				Tone.connect(this.fxPlugins[i].node, this.compressor);
+				wamUi.appendFxGui(this.fxPlugins[i].wamGui, i, name);
+			} else {
+				wamUi.showFxSlotError(i, name);
 			}
 		}
 
@@ -88,26 +90,31 @@ function SongObject() {
 			this.restoreSends();
 	}
 
-	this.addPlugin = async function (name, pluginIndex) {
-		await wam.loadModule(name, pluginIndex);
-		if (wam.plugins[pluginIndex]) {
-			Tone.connect(wam.plugins[pluginIndex].node, this.compressor);
+	this.loadFxPlugin = async function (name, pluginIndex) {
+		this.fxPlugins[pluginIndex] = await wam.loadModule(name, false, false);
+		if (this.fxPlugins[pluginIndex]) {
+			Tone.connect(this.fxPlugins[pluginIndex].node, this.compressor);
 			this.pluginStates[pluginIndex] = { name: name, state: null };
+			wamUi.appendFxGui(this.fxPlugins[pluginIndex].wamGui, pluginIndex, name);
 		} else {
 			this.pluginStates[pluginIndex] = null;
+			wamUi.resetFxSlotState(pluginIndex);
 		}
 		this.restoreSends(); // reconnect to same slot on plugin switch
 	}
 
-	this.unloadPlugin = function (pluginIndex) {
+	this.unloadFxPlugin = function (pluginIndex) {
 		for (let i = 0; i < this.sends.length; i++)
 			if (this.sends[i] == pluginIndex)
 				this.synths[i].reconnect(this.compressor);
 
-		wam.destroyModule(pluginIndex);
+		if (this.fxPlugins[pluginIndex]) {
+			this.fxPlugins[pluginIndex].destroy();
+			this.fxPlugins[pluginIndex] = null;
+		}
 	}
 
-	this.removePluginState = function (pluginIndex) {
+	this.removeFxPluginState = function (pluginIndex) {
 		this.pluginStates[pluginIndex] = null;
 
 		for (let i = 0; i < this.sends.length; i++)

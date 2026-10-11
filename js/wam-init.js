@@ -1,14 +1,8 @@
 "use strict";
 
-function WamInit(songObj) {
-	this.plugins = [];
-
+function WamInit() {
 	let hostGroupId;
-	let selectedSlot = 0;
 	let errorIsShown = false;
-
-	let pluginMounts = document.querySelectorAll(".js-plugin-mount");
-	let pluginSelectors = document.querySelectorAll(".js-button-effect-select");
 
 	class BridgeNode extends Tone.ToneAudioNode {
 		constructor(nativeNode) {
@@ -36,44 +30,51 @@ function WamInit(songObj) {
 		}
 	}
 
-	document.getElementById("menu-plugin-list-container").onclick = (event) => {
-		if (!event.target.classList.contains("js-select-list-entry"))
-			return;
+	class SourceNode extends Tone.ToneAudioNode {
+		constructor(nativeNode) {
+			super();
+			this._nativeNode = nativeNode;
+			this._outGain = new Tone.getContext().rawContext.createGain();
+			this._source = Tone.getContext().rawContext.createConstantSource();
+			this._source.offset.value = 0;
+			this._source.start();
 
-		// delegated to external object which handles audionode graph
-		songObj.unloadPlugin(selectedSlot);
+			this._source.connect(this._outGain);
+			nativeNode.connect(this._outGain._nativeAudioNode);
 
-		if (event.target.dataset.name)
-			songObj.addPlugin(event.target.dataset.name, selectedSlot);
-		else
-			songObj.removePluginState(selectedSlot);
+			this.input = null;
+			this.output = this._outGain;
+		}
 
-		hideModal("plugin-select-modal-menu");
-	}
-
-	for (let i = 0; i < 4; i++) {
-		pluginSelectors[i].onclick = () => {
-			selectedSlot = i;
-			showModal("plugin-select-modal-menu");
+		destroy() {
+			this._nativeNode.disconnect();
+			this._source.disconnect();
+			this._outGain.disconnect();
 		}
 	}
 
-	document.getElementById("button-plugin-select-close").onclick = () => {
-		hideModal("plugin-select-modal-menu");
-	};
+	const wamObjectProto = {
+		destroy: function () {
+			console.log("[WAM] Plugin destroy");
 
-	fetch("wam-plugins/plugins.json").then(response => response.json()).then(data => {
-		buildPluginList(data);
-	}).catch(() => {
-		console.log("[WAM] Can not fetch plugin list");
-	});
+			if (this.node) {
+				this.node.destroy();
+			}
 
-	this.loadModule = async function (name, index = 0, showNameOnError) {
+			if (this.wamGui) {
+				this.wamGui.remove();
+				this.wamInstance.destroyGui(this.wamGui);
+			}
+
+			if (this.wamInstance) {
+				this.wamInstance.audioNode.destroy();
+			}
+		}
+	}
+
+	this.loadModule = async function (name, suppressErrors, isAudioSource) {
 		let wamInstance;
 		let wamGui;
-		let mount = pluginMounts[index];
-		mount.textContent = "Loading...";
-		pluginSelectors[index].disabled = true;
 
 		const pathToWam = "../wam-plugins/" + name + "/index.js";
 		const audioContext = Tone.getContext().rawContext._nativeAudioContext;
@@ -84,13 +85,12 @@ function WamInit(songObj) {
 				[hostGroupId] = await initializeWamHost.default(audioContext);
 				console.log("[WAM] Host initialized");
 			} catch (error) {
-				if (!errorIsShown || !showNameOnError)
+				if (!errorIsShown || !suppressErrors)
 					showAlert("Can not load plugins - WAM host initialization error\n" + error.message);
 
 				errorIsShown = true;
-				setUiErrState();
 				console.error(error.message);
-				return;
+				return null;
 			}
 		}
 
@@ -100,87 +100,19 @@ function WamInit(songObj) {
 			wamGui = await wamInstance.createGui();
 		} catch (error) {
 			showAlert("Can not load plugin " + name + "\n" + error.message);
-			setUiErrState();
 			console.error(error.message);
-			return;
+			return null;
 		}
 
-		mount.innerHTML = "";
-		mount.appendChild(wamGui);
-		updatePluginSelector(index, name);
-		pluginSelectors[index].disabled = false;
-
-		this.plugins[index] = { wamInstance: wamInstance, wamGui: wamGui };
-		this.plugins[index].node = new BridgeNode(wamInstance.audioNode);
+		let module = Object.create(wamObjectProto)
+		module.wamInstance = wamInstance;
+		module.wamGui = wamGui;
+		if (isAudioSource)
+			module.node = new SourceNode(wamInstance.audioNode);
+		else
+			module.node = new BridgeNode(wamInstance.audioNode);
 
 		console.log("[WAM] Plugin loaded", name);
-
-		function setUiErrState() {
-			if (showNameOnError) {
-				updatePluginSelector(index, name);
-				mount.textContent = "Error";
-			} else {
-				mount.innerHTML = "";
-			}
-			pluginSelectors[index].disabled = false;
-		}
-	}
-
-	this.destroyModule = function (index = 0) {
-		updatePluginSelector(selectedSlot);
-
-		if (!this.plugins[index]) {
-			pluginMounts[index].innerHTML = ""; // remove "Error" message
-			console.log("[WAM] (Destroy) skipped index", index);
-			return;
-		}
-
-		if (this.plugins[index].node) {
-			this.plugins[index].node.destroy();
-		}
-
-		if (this.plugins[index].wamGui) {
-			this.plugins[index].wamGui.remove();
-			this.plugins[index].wamInstance.destroyGui(this.plugins[index].wamGui);
-		}
-
-		if (this.plugins[index].wamInstance) {
-			this.plugins[index].wamInstance.audioNode.destroy();
-		}
-
-		this.plugins[index] = null;
-	}
-
-	function updatePluginSelector(index, name) {
-		if (name) {
-			pluginSelectors[index].textContent = name;
-			pluginSelectors[index].classList.add("button-select");
-		} else {
-			pluginSelectors[index].textContent = "+";
-			pluginSelectors[index].classList.remove("button-select");
-		}
-	}
-
-	function buildPluginList(list) {
-		let listContainer = document.getElementById("menu-plugin-list-container");
-		listContainer.innerHTML = "";
-
-		let noneEntry = document.createElement("DIV");
-		noneEntry.classList.add("js-select-list-entry");
-		noneEntry.classList.add("select-list-entry");
-		noneEntry.classList.add("select-list-entry--none");
-
-		noneEntry.appendChild(document.createTextNode("[none]"));
-		listContainer.appendChild(noneEntry);
-
-		for (let i = 0; i < list.length; i++) {
-			let entry = document.createElement("DIV");
-			entry.classList.add("js-select-list-entry");
-			entry.classList.add("select-list-entry");
-
-			entry.dataset.name = list[i].name;
-			entry.appendChild(document.createTextNode(list[i].name));
-			listContainer.appendChild(entry);
-		}
+		return module;
 	}
 }
