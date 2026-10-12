@@ -1162,7 +1162,12 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		songObj.compressor.ratio.value = songObj.compressorRatio;
 
 		for (let i = 0; i < expObj.synthParams.length; i++) {
-			let synth = new Synth(songObj.compressor, songObj.bpm);
+			let synth;
+			if (expObj.synthParams[i].pluginState)
+				synth = new WamSynth(songObj.compressor, songObj.bpm);
+			else
+				synth = new Synth(songObj.compressor, songObj.bpm);
+
 			songObj.synths.push(synth);
 			let newParams = loadSynthCallback(expObj.synthParams[i], songObj.synths[i]);
 			songObj.synthParams.push(newParams);

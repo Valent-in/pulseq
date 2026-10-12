@@ -26,6 +26,25 @@ function WamUi(songObj) {
 		hideModal("plugin-select-modal-menu");
 	}
 
+	document.getElementById("menu-iplugin-list-container").onclick = (event) => {
+		if (!event.target.classList.contains("js-select-list-entry"))
+			return;
+
+		//songObj.unloadFxPlugin(selectedSlot);
+		//let mount = pluginMounts[selectedSlot];
+
+		if (event.target.dataset.name) {
+			//pluginSelectors[selectedSlot].disabled = true;
+			//mount.innerHTML = "Loading...";
+			//songObj.loadFxPlugin(event.target.dataset.name, selectedSlot);
+			songObj.loadSynthPlugin(event.target.dataset.name)
+		} else {
+			songObj.resetCurrentSynth();
+		}
+
+		hideModal("iplugin-select-modal-menu");
+	}
+
 	for (let i = 0; i < 4; i++) {
 		pluginSelectors[i].onclick = () => {
 			selectedSlot = i;
@@ -35,6 +54,14 @@ function WamUi(songObj) {
 
 	document.getElementById("button-plugin-select-close").onclick = () => {
 		hideModal("plugin-select-modal-menu");
+	};
+
+	document.getElementById("button-set-plugin").onclick = () => {
+		showModal("iplugin-select-modal-menu");
+	};
+
+	document.getElementById("button-iplugin-select-close").onclick = () => {
+		hideModal("iplugin-select-modal-menu");
 	};
 
 	fetch("wam-plugins/plugins.json").then(response => response.json()).then(data => {
@@ -79,14 +106,20 @@ function WamUi(songObj) {
 	function buildPluginList(list) {
 		let listContainer = document.getElementById("menu-plugin-list-container");
 		listContainer.innerHTML = "";
+		let ilistContainer = document.getElementById("menu-iplugin-list-container");
+		ilistContainer.innerHTML = "";
 
-		let noneEntry = document.createElement("DIV");
-		noneEntry.classList.add("js-select-list-entry");
-		noneEntry.classList.add("select-list-entry");
-		noneEntry.classList.add("select-list-entry--none");
+		function makeNoneEntry() {
+			let noneEntry = document.createElement("DIV");
+			noneEntry.classList.add("js-select-list-entry");
+			noneEntry.classList.add("select-list-entry");
+			noneEntry.classList.add("select-list-entry--none");
+			noneEntry.appendChild(document.createTextNode("[none]"));
+			return noneEntry;
+		}
 
-		noneEntry.appendChild(document.createTextNode("[none]"));
-		listContainer.appendChild(noneEntry);
+		listContainer.appendChild(makeNoneEntry());
+		ilistContainer.appendChild(makeNoneEntry());
 
 		for (let i = 0; i < list.length; i++) {
 			let entry = document.createElement("DIV");
@@ -95,7 +128,11 @@ function WamUi(songObj) {
 
 			entry.dataset.name = list[i].name;
 			entry.appendChild(document.createTextNode(list[i].name));
-			listContainer.appendChild(entry);
+
+			if (i < list.length - 4)
+				listContainer.appendChild(entry);
+			else
+				ilistContainer.appendChild(entry);
 		}
 	}
 }

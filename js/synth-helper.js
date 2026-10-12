@@ -240,6 +240,13 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		songObj.setSend(selectedSynthIndex, index);
 	}
 
+	/*document.getElementById("button-set-plugin").onclick = () => {
+		console.log("use plugin as source");
+
+		songObj.synths[selectedSynthIndex].destroy();
+		songObj.synths[selectedSynthIndex] = new WamSynth(songObj.fxPlugins[0], songObj.compressor)
+	}*/
+
 	document.getElementById("button-copy-synth").onclick = () => {
 		let name = songObj.synthNames[selectedSynthIndex];
 		let defaultName = songObj.generateSynthName(name.split("-")[0] + "-", 2);
@@ -435,7 +442,10 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		let newParams = {};
 		let paramCount = 0;
 
-		for (let key in DEFAULT_PARAMS.synthState) {
+		if (synthParams.pluginState) {
+			newParams.pluginState = synthParams.pluginState;
+			paramCount++;
+		} else for (let key in DEFAULT_PARAMS.synthState) {
 			if (key in synthParams) {
 				newParams[key] = synthParams[key];
 				paramCount++;

@@ -68,6 +68,7 @@ function SongObject() {
 	}
 
 	this.restorePlugins = async function () {
+		console.log("Restoring WAM-effects");
 		for (let i = 0; i < this.pluginStates.length; i++) {
 			if (!this.pluginStates[i])
 				continue;
@@ -78,7 +79,8 @@ function SongObject() {
 			this.fxPlugins[i] = await wam.loadModule(name, true, false);
 
 			if (this.fxPlugins[i]) {
-				this.fxPlugins[i].wamInstance.audioNode.setState(state);
+				if (state)
+					await this.fxPlugins[i].wamInstance.audioNode.setState(state);
 				Tone.connect(this.fxPlugins[i].node, this.compressor);
 				wamUi.appendFxGui(this.fxPlugins[i].wamGui, i, name);
 			} else {
@@ -88,6 +90,18 @@ function SongObject() {
 
 		if (this.pluginStates.length)
 			this.restoreSends();
+
+		console.log("Restoring WAM-instruments");
+		for (let i = 0; i < this.synths.length; i++) {
+			let state = this.synthParams[i].pluginState;
+			if (state) {
+				let plugin = await wam.loadModule(state.name, true, true);
+				await plugin.wamInstance.audioNode.setState(state);
+				this.synths[i].setPlugin(plugin);
+			}
+		}
+
+		console.log("WAM restoring ended")
 	}
 
 	this.loadFxPlugin = async function (name, pluginIndex) {
@@ -101,6 +115,19 @@ function SongObject() {
 			wamUi.resetFxSlotState(pluginIndex);
 		}
 		this.restoreSends(); // reconnect to same slot on plugin switch
+	}
+
+	this.loadSynthPlugin = async function (name) {
+		let plugin = await wam.loadModule(name, false, true);
+
+		if (!plugin)
+			return;
+
+		this.synths[this.currentSynthIndex].destroy();
+		this.synths[this.currentSynthIndex] = new WamSynth(this.compressor);
+		this.synths[this.currentSynthIndex].setPlugin(plugin);
+
+		this.synthParams[this.currentSynthIndex] = { pluginState: { name: name } };
 	}
 
 	this.unloadFxPlugin = function (pluginIndex) {
@@ -172,7 +199,7 @@ function SongObject() {
 		return generateName(prefix || genPrefix || "A", patternNames, 2);
 	}
 
-	this.createSynth = function (name, copyFromParams) {
+	this.makeSynth = function (index, name, copyFromParams) {
 		let newSynth = new Synth(this.compressor, this.bpm);
 		let newSynthParamObj = {};
 		let params = copyFromParams || DEFAULT_PARAMS.synthState;
@@ -182,10 +209,20 @@ function SongObject() {
 			synthParamApply(key, newSynthParamObj[key], newSynth);
 		}
 
-		this.synthParams.push(newSynthParamObj);
-		this.synths.push(newSynth);
-		this.synthNames.push(name || "");
-		this.sends.push(null);
+		this.synthParams[index] = newSynthParamObj;
+		this.synths[index] = newSynth;
+		this.synthNames[index] = name || "";
+		this.sends[index] = null;
+	}
+
+	this.createSynth = function (name, copyFromParams) {
+		this.makeSynth(this.synths.length, name, copyFromParams)
+	}
+
+	this.resetCurrentSynth = function () {
+		this.synths[this.currentSynthIndex].destroy();
+		this.makeSynth(this.currentSynthIndex);
+		this.restoreSends();
 	}
 
 	this.deleteSynth = function (index) {
@@ -256,6 +293,10 @@ function SongObject() {
 	this.getCurrentLayerSynthName = function () {
 		let index = this.getCurrentLayerSynthIndex();
 		return index === null ? null : this.synthNames[index];
+	}
+
+	this.getCurrentSynth = function () {
+		return this.synths[this.currentSynthIndex];
 	}
 
 	this.setCurrentPattern = function (index) {
@@ -565,9 +606,10 @@ function SongObject() {
 		for (let key in params)
 			packed[key] = params[key];
 
-		for (let osc of ["osc1", "osc2", "osc3", "lfo1", "lfo2"])
-			if (packed["synth-" + osc + "-type"] != "custom")
-				packed["synth-" + osc + "-partials"] = "";
+		if (!params.pluginState)
+			for (let osc of ["osc1", "osc2", "osc3", "lfo1", "lfo2"])
+				if (packed["synth-" + osc + "-type"] != "custom")
+					packed["synth-" + osc + "-partials"] = "";
 
 		return packed;
 	}

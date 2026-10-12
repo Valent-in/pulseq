@@ -70,6 +70,7 @@
 
 	<script defer src="js/wam-init.js"></script>
 	<script defer src="js/wam-ui.js"></script>
+	<script defer src="js/wam-synth.js"></script>
 
 	<script defer src="js/song-object.js"></script>
 
@@ -1203,6 +1204,7 @@
 				<div class="modal-box-block">
 					<span>Send effect</span>
 					<select id="select-send-effect"></select>
+					<button id="button-set-plugin">plugin</button>
 				</div>
 				<div class="modal-box-block">
 					<button id="button-copy-synth">Copy Synth</button>
@@ -1222,6 +1224,18 @@
 				</div>
 				<div class="modal-box-block modal-box-footer">
 					<button id="button-synth-menu-close" class="button-modal-bottom">Close</button>
+				</div>
+			</div>
+		</div>
+
+		<div id="iplugin-select-modal-menu" class="modal-container force-centered nodisplay">
+			<div class="modal-box scrollable-modal narrow-modal">
+				<div class="modal-box-block">
+					<div class="scrollable-modal-header">Select Plugin</div>
+					<div id="menu-iplugin-list-container" class="notranslate" translate="no"></div>
+				</div>
+				<div class="modal-box-block modal-box-footer">
+					<button id="button-iplugin-select-close" class="button-modal-bottom">Cancel</button>
 				</div>
 			</div>
 		</div>
