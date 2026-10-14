@@ -70,6 +70,7 @@ function WamUi(songObj) {
 		hideModal("instrument-modal-menu");
 		let e = songObj.getCurrentSynthPluginUi();
 		e.parentElement.classList.add("nodisplay");
+		songObj.storeCurrentInstrumentState();
 	};
 
 	fetch("wam-plugins/plugins.json").then(response => response.json()).then(data => {

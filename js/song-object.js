@@ -67,6 +67,15 @@ function SongObject() {
 		console.log("plugin states stored", this.pluginStates);
 	}
 
+	this.storeCurrentInstrumentState = async function () {
+		let plugin = this.getCurrentSynth().plugin;
+		if (!plugin)
+			return;
+
+		let state = await plugin.wamInstance.audioNode.getState();
+		this.synthParams[this.currentSynthIndex].pluginState.state = state;
+	}
+
 	this.restorePlugins = async function () {
 		console.log("Restoring WAM-effects");
 		for (let i = 0; i < this.pluginStates.length; i++) {
@@ -93,12 +102,15 @@ function SongObject() {
 
 		console.log("Restoring WAM-instruments");
 		for (let i = 0; i < this.synths.length; i++) {
-			let state = this.synthParams[i].pluginState;
-			if (state) {
-				let plugin = await wam.loadModule(state.name, true, true);
-				await plugin.wamInstance.audioNode.setState(state);
+			let pState = this.synthParams[i].pluginState;
+			if (pState) {
+				let plugin = await wam.loadModule(pState.name, true, true);
+				if (!plugin)
+					return;
+
+				await plugin.wamInstance.audioNode.setState(pState.state);
 				this.synths[i].setPlugin(plugin);
-				wamUi.appendInstrumentGui(plugin.wamGui, state.name);
+				wamUi.appendInstrumentGui(plugin.wamGui, pState.name);
 			}
 		}
 

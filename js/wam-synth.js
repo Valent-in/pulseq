@@ -77,6 +77,7 @@ function WamSynth(outputNode) {
 	this.fxSweep = function () { }
 	this.resetFilter = function () { }
 	this.resetPorta = function () { }
+	this.mute = function () { }
 
 	this.destroy = function () {
 		for (let key in this)
