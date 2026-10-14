@@ -26,18 +26,13 @@ function WamUi(songObj) {
 		hideModal("plugin-select-modal-menu");
 	}
 
-	document.getElementById("menu-iplugin-list-container").onclick = (event) => {
+	document.getElementById("menu-iplugin-list-container").onclick = async (event) => {
 		if (!event.target.classList.contains("js-select-list-entry"))
 			return;
 
-		//songObj.unloadFxPlugin(selectedSlot);
-		//let mount = pluginMounts[selectedSlot];
-
 		if (event.target.dataset.name) {
-			//pluginSelectors[selectedSlot].disabled = true;
-			//mount.innerHTML = "Loading...";
-			//songObj.loadFxPlugin(event.target.dataset.name, selectedSlot);
-			songObj.loadSynthPlugin(event.target.dataset.name)
+			await songObj.loadSynthPlugin(event.target.dataset.name);
+			this.appendInstrumentGui(songObj.getCurrentSynthPluginUi());
 		} else {
 			songObj.resetCurrentSynth();
 		}
@@ -64,6 +59,19 @@ function WamUi(songObj) {
 		hideModal("iplugin-select-modal-menu");
 	};
 
+	document.getElementById("button-edit-plugin").onclick = () => {
+		showModal("instrument-modal-menu");
+
+		let e = songObj.getCurrentSynthPluginUi();
+		e.parentElement.classList.remove("nodisplay");
+	};
+
+	document.getElementById("button-instrument-menu-close").onclick = () => {
+		hideModal("instrument-modal-menu");
+		let e = songObj.getCurrentSynthPluginUi();
+		e.parentElement.classList.add("nodisplay");
+	};
+
 	fetch("wam-plugins/plugins.json").then(response => response.json()).then(data => {
 		buildPluginList(data);
 	}).catch(() => {
@@ -77,6 +85,14 @@ function WamUi(songObj) {
 		updateFxPluginSelector(index, name);
 		pluginSelectors[index].disabled = false;
 		updateFxPluginSelector(index, name)
+	}
+
+	this.appendInstrumentGui = function (wamGui, name) {
+		let container = document.getElementById("iplugin-outer-container");
+		let inner = document.createElement("DIV");
+		inner.classList.add("nodisplay");
+		inner.appendChild(wamGui);
+		container.appendChild(inner);
 	}
 
 	this.showFxSlotError = function (index, name) {

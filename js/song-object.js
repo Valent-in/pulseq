@@ -98,6 +98,7 @@ function SongObject() {
 				let plugin = await wam.loadModule(state.name, true, true);
 				await plugin.wamInstance.audioNode.setState(state);
 				this.synths[i].setPlugin(plugin);
+				wamUi.appendInstrumentGui(plugin.wamGui, state.name);
 			}
 		}
 
@@ -297,6 +298,11 @@ function SongObject() {
 
 	this.getCurrentSynth = function () {
 		return this.synths[this.currentSynthIndex];
+	}
+
+	this.getCurrentSynthPluginUi = function () {
+		if (this.synths[this.currentSynthIndex].plugin)
+			return this.synths[this.currentSynthIndex].plugin.wamGui;
 	}
 
 	this.setCurrentPattern = function (index) {
