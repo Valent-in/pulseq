@@ -225,16 +225,16 @@ function SongObject() {
 		this.synthParams[index] = newSynthParamObj;
 		this.synths[index] = newSynth;
 		this.synthNames[index] = name || "";
-		this.sends[index] = null;
 	}
 
 	this.createSynth = function (name, copyFromParams) {
-		this.makeSynth(this.synths.length, name, copyFromParams)
+		this.sends[this.synths.length] = null;
+		this.makeSynth(this.synths.length, name, copyFromParams);
 	}
 
 	this.resetCurrentSynth = function () {
 		this.synths[this.currentSynthIndex].destroy();
-		this.makeSynth(this.currentSynthIndex);
+		this.makeSynth(this.currentSynthIndex, this.generateSynthName(null, 1));
 		this.restoreSends();
 	}
 
