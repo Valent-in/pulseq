@@ -128,7 +128,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			groupBlock.classList.add("synth-ungroup");
 			groupButton.textContent = "Group";
 			groupTabs.forEach(e => { e.classList.remove("tab--active") });
-			synthGroups.forEach(e => { e.classList.remove("nodisplay") });
+			synthGroups.forEach(e => { e.classList.remove("hidden-group") });
 		} else {
 			groupBlock.classList.remove("synth-ungroup");
 			groupButton.textContent = "All";
@@ -143,9 +143,9 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		let group = this.dataset.group;
 		synthGroups.forEach(e => {
 			if (e.classList.contains(group))
-				e.classList.remove("nodisplay")
+				e.classList.remove("hidden-group")
 			else
-				e.classList.add("nodisplay")
+				e.classList.add("hidden-group")
 		});
 	}
 
@@ -239,13 +239,6 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		let index = Number(slot);
 		songObj.setSend(selectedSynthIndex, index);
 	}
-
-	/*document.getElementById("button-set-plugin").onclick = () => {
-		console.log("use plugin as source");
-
-		songObj.synths[selectedSynthIndex].destroy();
-		songObj.synths[selectedSynthIndex] = new WamSynth(songObj.fxPlugins[0], songObj.compressor)
-	}*/
 
 	document.getElementById("button-copy-synth").onclick = () => {
 		let name = songObj.synthNames[selectedSynthIndex];

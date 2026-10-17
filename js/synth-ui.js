@@ -269,9 +269,18 @@ function SynthUi(songObj) {
 		}
 	});
 
+	let synthContainer = document.getElementById("synth-main");
 	this.assignSynth = (params, targetSynth, name) => {
 		this.curSynthParamObj = params;
 		this.currentSynth = targetSynth;
+
+		if (params.pluginState) {
+			synthContainer.classList.add("js-synth-mode-plugin");
+			synthContainer.classList.remove("js-synth-mode-normal")
+		} else {
+			synthContainer.classList.remove("js-synth-mode-plugin");
+			synthContainer.classList.add("js-synth-mode-normal");
+		}
 
 		for (let key in params) {
 			let input = document.getElementById(key);

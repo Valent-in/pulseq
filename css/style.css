@@ -396,7 +396,8 @@ button.button--play.button--play-loop {
 	max-width: 3.5rem;
 }
 
-#synth-main #synth-grouping {
+#synth-main #synth-grouping,
+#synth-main #synth-plugin-edit {
 	border: none;
 	background-color: inherit;
 	padding: 0 6px;
@@ -436,6 +437,23 @@ button.button--play.button--play-loop {
 
 .group-tab.tab--active:hover {
 	color: #eee;
+}
+
+.js-synth-mode-normal > .hidden-group {
+	display: none;
+}
+
+.js-synth-mode-normal > #synth-plugin-edit {
+	display: none;
+}
+
+.js-synth-mode-plugin > div:not(.js-plugin-group) {
+	display: none;
+}
+
+.js-synth-mode-plugin #synth-porta,
+.js-synth-mode-plugin #synth-porta + label {
+	display: none;
 }
 
 @media (min-width: 720px) and (max-width: 1279px) {

@@ -142,7 +142,7 @@
 			</div>
 
 			<div id="synth-view" class="js-view-container view-container view--hidden focus-lock-area">
-				<div id="synth-main">
+				<div id="synth-main" class="js-synth-mode-normal">
 					<div id="synth-grouping" class="synth-ungroup">
 						<div class="tab group-tab" data-group="js-osc1-group">OSC 1</div>
 						<div class="tab group-tab" data-group="js-osc2-group">OSC 2</div>
@@ -154,6 +154,9 @@
 						<div class="tab group-tab" data-group="js-fx-group">FX</div>
 						<div class="tab group-tab" data-group="js-oth-group">Oth.</div>
 						<span id="button-toggle-group" class="button button--small">Group</span>
+					</div>
+					<div id="synth-plugin-edit" class="js-plugin-group">
+						<button id="button-edit-plugin">Plugin settings</button>
 					</div>
 					<div class="bg-oscillator border-osc js-osc1-group">
 						<span class="caption-text highlight-bluelight">OSC 1</span>
@@ -258,7 +261,7 @@
 						<br>
 						<input type="range" id="synth-envelope-release" min=0 max=12 step=0.1 class="range--4-marks">
 					</div>
-					<div class="js-oth-group">
+					<div class="js-oth-group js-plugin-group">
 						<span class="caption-text">Glide</span>
 						<input type="checkbox" id="synth-porta">
 						<label for="synth-porta">Porta</label>
@@ -303,7 +306,7 @@
 							<input type="range" id="synth-noise-level" min=0 max=2 step=0.02 class="range--4-marks">
 						</div>
 					</div>
-					<div class="js-amp-group">
+					<div class="js-amp-group js-plugin-group">
 						<span class="caption-text">Amplifier</span>
 						<br>
 						<span>Gain</span>
@@ -1205,7 +1208,6 @@
 					<span>Send effect</span>
 					<select id="select-send-effect"></select>
 					<button id="button-set-plugin">plugin</button>
-					<button id="button-edit-plugin">edit</button>
 				</div>
 				<div class="modal-box-block">
 					<button id="button-copy-synth">Copy Synth</button>
