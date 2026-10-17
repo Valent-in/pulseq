@@ -139,8 +139,9 @@ function SongObject() {
 		this.synths[this.currentSynthIndex].destroy();
 		this.synths[this.currentSynthIndex] = new WamSynth(this.compressor);
 		this.synths[this.currentSynthIndex].setPlugin(plugin);
+		wamUi.appendInstrumentGui(plugin.wamGui);
 
-		this.synthParams[this.currentSynthIndex] = { pluginState: { name: name } };
+		this.synthParams[this.currentSynthIndex] = { pluginState: { name: name, state: null } };
 	}
 
 	this.unloadFxPlugin = function (pluginIndex) {

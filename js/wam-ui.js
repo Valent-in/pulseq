@@ -26,13 +26,13 @@ function WamUi(songObj) {
 		hideModal("plugin-select-modal-menu");
 	}
 
-	document.getElementById("menu-iplugin-list-container").onclick = async (event) => {
+	document.getElementById("menu-iplugin-list-container").onclick = (event) => {
 		if (!event.target.classList.contains("js-select-list-entry"))
 			return;
 
 		if (event.target.dataset.name) {
-			await songObj.loadSynthPlugin(event.target.dataset.name);
-			this.appendInstrumentGui(songObj.getCurrentSynthPluginUi());
+			songObj.loadSynthPlugin(event.target.dataset.name);
+			showModal("instrument-modal-menu");
 		} else {
 			songObj.resetCurrentSynth();
 		}
@@ -91,7 +91,6 @@ function WamUi(songObj) {
 	this.appendInstrumentGui = function (wamGui, name) {
 		let container = document.getElementById("iplugin-outer-container");
 		let inner = document.createElement("DIV");
-		inner.classList.add("nodisplay");
 		inner.appendChild(wamGui);
 		container.appendChild(inner);
 	}
@@ -146,7 +145,7 @@ function WamUi(songObj) {
 			entry.dataset.name = list[i].name;
 			entry.appendChild(document.createTextNode(list[i].name));
 
-			if (i < list.length - 4)
+			if (i < list.length - 6)
 				listContainer.appendChild(entry);
 			else
 				ilistContainer.appendChild(entry);
