@@ -75,7 +75,7 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQuaver v" + DEFAULT_PARAMS.progr
 		document.getElementById("arrange-main").classList.add("add-scrollbar-spacing");
 	}
 
-	const songObject = new SongObject();
+	const songObject = new SongObject(onSynthChange);
 
 	const synthUi = new SynthUi(songObject);
 
@@ -187,6 +187,11 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQuaver v" + DEFAULT_PARAMS.progr
 				scheduler.release();
 				break;
 		}
+	}
+
+	function onSynthChange(...params) {
+		synthUi.assignSynth(...params);
+		synthHelper.rebuildSynthList();
 	}
 
 	function onSynthListChange(updArrangeView) {

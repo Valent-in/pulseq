@@ -38,6 +38,7 @@ function WamUi(songObj) {
 		}
 
 		hideModal("iplugin-select-modal-menu");
+		hideModal("synth-modal-menu");
 	}
 
 	for (let i = 0; i < 4; i++) {

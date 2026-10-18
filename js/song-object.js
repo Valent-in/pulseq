@@ -1,6 +1,6 @@
 "use strict";
 
-function SongObject() {
+function SongObject(onSynthChangeCallback) {
 	this.song = [];
 	this.patterns = [];
 	this.synthParams = [];
@@ -136,12 +136,16 @@ function SongObject() {
 		if (!plugin)
 			return;
 
-		this.synths[this.currentSynthIndex].destroy();
-		this.synths[this.currentSynthIndex] = new WamSynth(this.compressor);
-		this.synths[this.currentSynthIndex].setPlugin(plugin);
+		let ind = this.currentSynthIndex;
+		this.synths[ind].destroy();
+		this.synths[ind] = new WamSynth(this.compressor);
+		this.synths[ind].setPlugin(plugin);
+		this.synthNames[ind] = name;
 		wamUi.appendInstrumentGui(plugin.wamGui);
 
 		this.synthParams[this.currentSynthIndex] = { pluginState: { name: name, state: null } };
+
+		onSynthChangeCallback(this.synthParams[ind], this.synths[ind], this.synthNames[ind]);
 	}
 
 	this.unloadFxPlugin = function (pluginIndex) {
@@ -234,8 +238,11 @@ function SongObject() {
 	}
 
 	this.resetCurrentSynth = function () {
-		this.synths[this.currentSynthIndex].destroy();
-		this.makeSynth(this.currentSynthIndex, this.generateSynthName(null, 1));
+		let ind = this.currentSynthIndex;
+		this.synths[ind].destroy();
+		this.synthNames[ind] = "";
+		this.makeSynth(ind, this.generateSynthName(null, 1));
+		onSynthChangeCallback(this.synthParams[ind], this.synths[ind], this.synthNames[ind]);
 		this.restoreSends();
 	}
 
