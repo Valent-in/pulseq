@@ -797,7 +797,7 @@ input[type=range].range--volume {
 	float: left;
 }
 
-#button-effect-menu-open {
+#button-fx-plugin-menu-open {
 	margin: 2px;
 	float: left;
 }
@@ -1442,6 +1442,11 @@ button.button--arrow-up {
 }
 
 .effect-outer-container {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.effect-wrap-container {
 	padding: 6px 10px 10px 10px;
 }
 

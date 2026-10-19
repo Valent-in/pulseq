@@ -156,7 +156,7 @@
 						<span id="button-toggle-group" class="button button--small">Group</span>
 					</div>
 					<div id="synth-plugin-edit" class="js-plugin-group">
-						<button id="button-edit-plugin">Plugin settings</button>
+						<button id="button-i-plugin-menu-open">Plugin settings</button>
 					</div>
 					<div class="bg-oscillator border-osc js-osc1-group">
 						<span class="caption-text highlight-bluelight">OSC 1</span>
@@ -517,7 +517,7 @@
 				<div id="synth-list-footer" class="footer">
 					<button id="button-add-synth">+</button>
 					<button id="button-mixer-menu-open">Mix</button>
-					<button id="button-effect-menu-open">Effect</button>
+					<button id="button-fx-plugin-menu-open">Effect</button>
 					<div id="synth-list-caption-area"></div>
 				</div>
 			</div>
@@ -724,50 +724,6 @@
 					<button id="button-export-menu-open" disabled>Export WAV</button>
 					<button id="button-midi-menu-open">MIDI</button>
 					<button id="button-arrange-menu-close" class="button-modal-bottom">Close</button>
-				</div>
-			</div>
-		</div>
-
-		<div id="effect-modal-menu" class="modal-container force-centered nodisplay">
-			<div class="modal-box scrollable-modal">
-				<div class="modal-box-block">
-					<div class="scrollable-modal-header">Effect plugins</div>
-					<div style="display:flex; flex-wrap: wrap;">
-						<div class="effect-outer-container">
-							<button class="js-button-effect-select">+</button>
-							<div class="js-plugin-mount"></div>
-						</div>
-
-						<div class="effect-outer-container">
-							<button class="js-button-effect-select">+</button>
-							<div class="js-plugin-mount"></div>
-						</div>
-
-						<div class="effect-outer-container">
-							<button class="js-button-effect-select">+</button>
-							<div class="js-plugin-mount"></div>
-						</div>
-
-						<div class="effect-outer-container">
-							<button class="js-button-effect-select">+</button>
-							<div class="js-plugin-mount"></div>
-						</div>
-					</div>
-				</div>
-				<div class="modal-box-block modal-box-footer">
-					<button id="button-effect-menu-close" class="button-modal-bottom">Close</button>
-				</div>
-			</div>
-		</div>
-
-		<div id="plugin-select-modal-menu" class="modal-container force-centered nodisplay">
-			<div class="modal-box scrollable-modal narrow-modal">
-				<div class="modal-box-block">
-					<div class="scrollable-modal-header">Select Plugin</div>
-					<div id="menu-plugin-list-container" class="notranslate" translate="no"></div>
-				</div>
-				<div class="modal-box-block modal-box-footer">
-					<button id="button-plugin-select-close" class="button-modal-bottom">Cancel</button>
 				</div>
 			</div>
 		</div>
@@ -1207,14 +1163,16 @@
 				<div class="modal-box-block">
 					<span>Send effect</span>
 					<select id="select-send-effect"></select>
-					<button id="button-set-plugin">plugin</button>
+				</div>
+				<div class="modal-box-block">
+					<select id="select-synth-preset" class="notranslate" translate="no">
+						<option disabled hidden>Preset</option>
+					</select>
+					<button id="button-i-plugin-select">Plugin...</button>
 				</div>
 				<div class="modal-box-block">
 					<button id="button-copy-synth">Copy Synth</button>
 					<button id="button-delete-synth">Delete Synth</button>
-					<select id="select-synth-preset" class="notranslate" translate="no">
-						<option disabled hidden>Preset</option>
-					</select>
 				</div>
 				<div class="modal-box-block">
 					<div id="button-import-synth" class="button">
@@ -1231,26 +1189,70 @@
 			</div>
 		</div>
 
-		<div id="iplugin-select-modal-menu" class="modal-container force-centered nodisplay">
+		<div id="i-plugin-select-modal-menu" class="modal-container force-centered nodisplay">
 			<div class="modal-box scrollable-modal narrow-modal">
 				<div class="modal-box-block">
-					<div class="scrollable-modal-header">Select Plugin</div>
-					<div id="menu-iplugin-list-container" class="notranslate" translate="no"></div>
+					<div class="scrollable-modal-header">Select instrument plugin</div>
+					<div id="i-plugin-list-container" class="notranslate" translate="no"></div>
 				</div>
 				<div class="modal-box-block modal-box-footer">
-					<button id="button-iplugin-select-close" class="button-modal-bottom">Cancel</button>
+					<button id="button-i-plugin-select-close" class="button-modal-bottom">Cancel</button>
 				</div>
 			</div>
 		</div>
 
-		<div id="instrument-modal-menu" class="modal-container force-centered nodisplay">
+		<div id="i-plugin-modal-menu" class="modal-container force-centered nodisplay">
 			<div class="modal-box scrollable-modal">
 				<div class="modal-box-block">
 					<div class="scrollable-modal-header">Instrument plugin</div>
-					<div id="iplugin-outer-container"></div>
+					<div id="i-plugin-outer-container"></div>
 				</div>
 				<div class="modal-box-block modal-box-footer">
-					<button id="button-instrument-menu-close" class="button-modal-bottom">Close</button>
+					<button id="button-i-plugin-menu-close" class="button-modal-bottom">Close</button>
+				</div>
+			</div>
+		</div>
+
+		<div id="fx-plugin-modal-menu" class="modal-container force-centered nodisplay">
+			<div class="modal-box scrollable-modal">
+				<div class="modal-box-block">
+					<div class="scrollable-modal-header">Effect plugins</div>
+					<div class="effect-outer-container">
+						<div class="effect-wrap-container">
+							<button class="js-button-effect-select">+</button>
+							<div class="js-plugin-mount"></div>
+						</div>
+
+						<div class="effect-wrap-container">
+							<button class="js-button-effect-select">+</button>
+							<div class="js-plugin-mount"></div>
+						</div>
+
+						<div class="effect-wrap-container">
+							<button class="js-button-effect-select">+</button>
+							<div class="js-plugin-mount"></div>
+						</div>
+
+						<div class="effect-wrap-container">
+							<button class="js-button-effect-select">+</button>
+							<div class="js-plugin-mount"></div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-box-block modal-box-footer">
+					<button id="button-fx-plugin-menu-close" class="button-modal-bottom">Close</button>
+				</div>
+			</div>
+		</div>
+
+		<div id="fx-plugin-select-modal-menu" class="modal-container force-centered nodisplay">
+			<div class="modal-box scrollable-modal narrow-modal">
+				<div class="modal-box-block">
+					<div class="scrollable-modal-header">Select effect plugin</div>
+					<div id="fx-plugin-list-container" class="notranslate" translate="no"></div>
+				</div>
+				<div class="modal-box-block modal-box-footer">
+					<button id="button-fx-plugin-select-close" class="button-modal-bottom">Cancel</button>
 				</div>
 			</div>
 		</div>

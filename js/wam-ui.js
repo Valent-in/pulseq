@@ -5,7 +5,13 @@ function WamUi(songObj) {
 	let pluginMounts = document.querySelectorAll(".js-plugin-mount");
 	let pluginSelectors = document.querySelectorAll(".js-button-effect-select");
 
-	document.getElementById("menu-plugin-list-container").onclick = (event) => {
+	fetch("wam-plugins/plugins.json").then(response => response.json()).then(data => {
+		buildPluginList(data);
+	}).catch(() => {
+		console.log("[WAM] Can not fetch plugin list");
+	});
+
+	document.getElementById("fx-plugin-list-container").onclick = (event) => {
 		if (!event.target.classList.contains("js-select-list-entry"))
 			return;
 
@@ -23,62 +29,66 @@ function WamUi(songObj) {
 			mount.innerHTML = "";
 		}
 
-		hideModal("plugin-select-modal-menu");
+		hideModal("fx-plugin-select-modal-menu");
 	}
 
-	document.getElementById("menu-iplugin-list-container").onclick = (event) => {
+	document.getElementById("i-plugin-list-container").onclick = (event) => {
 		if (!event.target.classList.contains("js-select-list-entry"))
 			return;
 
 		if (event.target.dataset.name) {
 			songObj.loadSynthPlugin(event.target.dataset.name);
-			showModal("instrument-modal-menu");
+			showModal("i-plugin-modal-menu");
 		} else {
 			songObj.resetCurrentSynth();
 		}
 
-		hideModal("iplugin-select-modal-menu");
+		hideModal("i-plugin-select-modal-menu");
 		hideModal("synth-modal-menu");
 	}
 
 	for (let i = 0; i < 4; i++) {
 		pluginSelectors[i].onclick = () => {
 			selectedSlot = i;
-			showModal("plugin-select-modal-menu");
+			showModal("fx-plugin-select-modal-menu");
 		}
 	}
 
-	document.getElementById("button-plugin-select-close").onclick = () => {
-		hideModal("plugin-select-modal-menu");
+	document.getElementById("button-fx-plugin-select-close").onclick = () => {
+		hideModal("fx-plugin-select-modal-menu");
 	};
 
-	document.getElementById("button-set-plugin").onclick = () => {
-		showModal("iplugin-select-modal-menu");
+	document.getElementById("button-fx-plugin-menu-open").onclick = () => {
+		showModal("fx-plugin-modal-menu");
 	};
 
-	document.getElementById("button-iplugin-select-close").onclick = () => {
-		hideModal("iplugin-select-modal-menu");
+	document.getElementById("button-fx-plugin-menu-close").onclick = () => {
+		console.log("Storing plugin states...");
+		songObj.storePluginStates();
+		hideModal("fx-plugin-modal-menu");
 	};
 
-	document.getElementById("button-edit-plugin").onclick = () => {
-		showModal("instrument-modal-menu");
+	document.getElementById("button-i-plugin-select").onclick = () => {
+		showModal("i-plugin-select-modal-menu");
+	};
+
+	document.getElementById("button-i-plugin-select-close").onclick = () => {
+		hideModal("i-plugin-select-modal-menu");
+	};
+
+	document.getElementById("button-i-plugin-menu-open").onclick = () => {
+		showModal("i-plugin-modal-menu");
 
 		let e = songObj.getCurrentSynthPluginUi();
 		e.parentElement.classList.remove("nodisplay");
 	};
 
-	document.getElementById("button-instrument-menu-close").onclick = () => {
-		hideModal("instrument-modal-menu");
+	document.getElementById("button-i-plugin-menu-close").onclick = () => {
+		hideModal("i-plugin-modal-menu");
 		let e = songObj.getCurrentSynthPluginUi();
 		e.parentElement.classList.add("nodisplay");
 		songObj.storeCurrentInstrumentState();
 	};
-
-	fetch("wam-plugins/plugins.json").then(response => response.json()).then(data => {
-		buildPluginList(data);
-	}).catch(() => {
-		console.log("[WAM] Can not fetch plugin list");
-	});
 
 	this.appendFxGui = function (wamGui, index, name) {
 		let mount = pluginMounts[index];
@@ -87,13 +97,6 @@ function WamUi(songObj) {
 		updateFxPluginSelector(index, name);
 		pluginSelectors[index].disabled = false;
 		updateFxPluginSelector(index, name)
-	}
-
-	this.appendInstrumentGui = function (wamGui, name) {
-		let container = document.getElementById("iplugin-outer-container");
-		let inner = document.createElement("DIV");
-		inner.appendChild(wamGui);
-		container.appendChild(inner);
 	}
 
 	this.showFxSlotError = function (index, name) {
@@ -120,10 +123,18 @@ function WamUi(songObj) {
 		}
 	}
 
+	this.appendInstrumentGui = function (wamGui, name) {
+		let container = document.getElementById("i-plugin-outer-container");
+		let inner = document.createElement("DIV");
+		inner.appendChild(wamGui);
+		container.appendChild(inner);
+	}
+
+
 	function buildPluginList(list) {
-		let listContainer = document.getElementById("menu-plugin-list-container");
+		let listContainer = document.getElementById("fx-plugin-list-container");
 		listContainer.innerHTML = "";
-		let ilistContainer = document.getElementById("menu-iplugin-list-container");
+		let ilistContainer = document.getElementById("i-plugin-list-container");
 		ilistContainer.innerHTML = "";
 
 		function makeNoneEntry() {

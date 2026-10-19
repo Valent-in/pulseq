@@ -295,19 +295,6 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	};
 
 	/*
-	 * Effect modal menu
-	 */
-	document.getElementById("button-effect-menu-open").onclick = () => {
-		showModal("effect-modal-menu");
-	};
-
-	document.getElementById("button-effect-menu-close").onclick = () => {
-		console.log("Storing plugin states...");
-		songObj.storePluginStates();
-		hideModal("effect-modal-menu");
-	};
-
-	/*
 	 * Export modal menu
 	 */
 	document.getElementById("button-render").onclick = () => {
