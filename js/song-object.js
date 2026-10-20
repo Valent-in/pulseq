@@ -138,7 +138,7 @@ function SongObject(onSynthChangeCallback) {
 
 		let ind = this.currentSynthIndex;
 		this.synths[ind].destroy();
-		this.synths[ind] = new WamSynth(this.compressor);
+		this.synths[ind] = new WamSynth(this.compressor, this.bpm);
 		this.synths[ind].setPlugin(plugin);
 		this.synthNames[ind] = name;
 		wamUi.appendInstrumentGui(plugin.wamGui);

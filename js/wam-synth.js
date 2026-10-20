@@ -1,48 +1,34 @@
 "use strict";
 
 // Synth compatibility layer for WAMs
-function WamSynth(outputNode) {
+class WamSynth extends SynthProto {
+	constructor(outputNode, transportBPM) {
+		super(outputNode, transportBPM);
+	}
 
-	this.out = {}; // Exclude from destroying
-	this.out.outputNode = outputNode;
+	glideTo() { }
+	filterSweep() { }
+	resetFilter() { }
+	resetPorta() { }
 
-	this.isMuted = false;
-
-	this.ampout = new Tone.Gain(1);
-	this.ampout.connect(outputNode);
-
-
-	this.values = {
-		filterFreqValue: 0,
-		filterQValue: 0,
-		FXWetValue: 0,
-	};
-
-	this.setPlugin = function (plugin) {
+	setPlugin(plugin) {
 		this.plugin = plugin;
 		this.plugin.node.connect(this.ampout);
+		this.addPan(!!this.panValue);
 	}
 
-	this.reconnect = function (newOutNode) {
-		this.out.outputNode = newOutNode;
-		if (this.isMuted)
-			return;
-
-		this.ampout.disconnect();
-		this.ampout.connect(newOutNode);
+	addPan(isPan) {
+		if (this.plugin)
+			super.addPan(isPan, this.plugin.node, this.ampout);
 	}
 
-
-	let lastNote;
-
-
-	this.triggerAttack = function (note, volumeMod, time, duration) {
+	triggerAttack(note, volumeMod, time, duration) {
 		if (!this.plugin)
 			return;
 
-		lastNote = Tone.Frequency(note).toMidi();
+		this.lastNote = Tone.Frequency(note).toMidi();
 		let velo = Math.round((100 + volumeMod) * 1.27);
-		const midiData = [0x90, lastNote, velo];
+		const midiData = [0x90, this.lastNote, velo];
 
 		const wamMidiEvent = {
 			type: "wam-midi",
@@ -55,11 +41,11 @@ function WamSynth(outputNode) {
 		this.plugin.wamInstance.audioNode.scheduleEvents(wamMidiEvent);
 	}
 
-	this.triggerRelease = function (time) {
+	triggerRelease(time) {
 		if (!this.plugin)
 			return;
 
-		const midiData = [0x80, lastNote, 127];
+		const midiData = [0x80, this.lastNote, 127];
 
 		const wamMidiEvent = {
 			type: "wam-midi",
@@ -70,24 +56,5 @@ function WamSynth(outputNode) {
 		};
 
 		this.plugin.wamInstance.audioNode.scheduleEvents(wamMidiEvent);
-	}
-
-	this.glideTo = function (note, volumeMod, time, duration) { }
-	this.filterSweep = function () { }
-	this.fxSweep = function () { }
-	this.resetFilter = function () { }
-	this.resetPorta = function () { }
-	this.mute = function () { }
-
-	this.destroy = function () {
-		for (let key in this)
-			if (this[key] && this[key].disconnect)
-				this[key].disconnect();
-
-		for (let key in this)
-			if (this[key] && this[key].dispose) {
-				this[key].dispose();
-				this[key] = null;
-			}
 	}
 }
