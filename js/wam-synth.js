@@ -57,4 +57,11 @@ class WamSynth extends SynthProto {
 
 		this.plugin.wamInstance.audioNode.scheduleEvents(wamMidiEvent);
 	}
+
+	destroy() {
+		if (this.plugin)
+			this.plugin.destroy();
+
+		super.destroy();
+	}
 }

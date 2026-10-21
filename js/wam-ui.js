@@ -37,8 +37,9 @@ function WamUi(songObj) {
 			return;
 
 		if (event.target.dataset.name) {
-			songObj.loadSynthPlugin(event.target.dataset.name);
 			showModal("i-plugin-modal-menu");
+			this.showInstruentName(event.target.dataset.name)
+			songObj.loadSynthPlugin(event.target.dataset.name);
 		} else {
 			songObj.resetCurrentSynth();
 		}
@@ -78,16 +79,23 @@ function WamUi(songObj) {
 
 	document.getElementById("button-i-plugin-menu-open").onclick = () => {
 		showModal("i-plugin-modal-menu");
-
-		let e = songObj.getCurrentSynthPluginUi();
-		e.parentElement.classList.remove("nodisplay");
+		let name = songObj.synthParams[songObj.currentSynthIndex].pluginState.name;
+		this.showInstruentName(name);
+		let ui = songObj.getCurrentSynthPluginUi();
+		if (ui)
+			ui.parentElement.classList.remove("nodisplay");
+		else
+			this.showIPluginError(true);
 	};
 
 	document.getElementById("button-i-plugin-menu-close").onclick = () => {
 		hideModal("i-plugin-modal-menu");
-		let e = songObj.getCurrentSynthPluginUi();
-		e.parentElement.classList.add("nodisplay");
+		let ui = songObj.getCurrentSynthPluginUi();
+		if (ui)
+			ui.parentElement.classList.add("nodisplay");
 		songObj.storeCurrentInstrumentState();
+		this.showIPluginError(false);
+		this.showIPluginLoading(false);
 	};
 
 	this.appendFxGui = function (wamGui, index, name) {
@@ -123,13 +131,40 @@ function WamUi(songObj) {
 		}
 	}
 
-	this.appendInstrumentGui = function (wamGui, name) {
+	this.appendInstrumentGui = function (wamGui, isHide) {
+		if (!wamGui)
+			return;
+
 		let container = document.getElementById("i-plugin-outer-container");
 		let inner = document.createElement("DIV");
 		inner.appendChild(wamGui);
+
+		if (isHide)
+			inner.classList.add("nodisplay");
+
 		container.appendChild(inner);
 	}
 
+	this.showInstruentName = function (name) {
+		let nameDiv = document.getElementById("i-plugin-name");
+		nameDiv.textContent = name;
+	}
+
+	this.showIPluginError = function (isShow) {
+		let msg = document.getElementById("i-plugin-error");
+		if (isShow)
+			msg.classList.remove("nodisplay");
+		else
+			msg.classList.add("nodisplay");
+	}
+
+	this.showIPluginLoading = function (isShow) {
+		let msg = document.getElementById("i-plugin-loading");
+		if (isShow)
+			msg.classList.remove("nodisplay");
+		else
+			msg.classList.add("nodisplay");
+	}
 
 	function buildPluginList(list) {
 		let listContainer = document.getElementById("fx-plugin-list-container");
@@ -157,7 +192,7 @@ function WamUi(songObj) {
 			entry.dataset.name = list[i].name;
 			entry.appendChild(document.createTextNode(list[i].name));
 
-			if (i < list.length - 6)
+			if (i < list.length - 7)
 				listContainer.appendChild(entry);
 			else
 				ilistContainer.appendChild(entry);

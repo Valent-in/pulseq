@@ -103,23 +103,23 @@ function SongObject(onSynthChangeCallback) {
 		console.log("Restoring WAM-instruments");
 		for (let i = 0; i < this.synths.length; i++) {
 			let pState = this.synthParams[i].pluginState;
-			await this.restoreSynthPlugin(this.synths[i], pState);
+			await this.restoreSynthPlugin(this.synths[i], pState, true);
 		}
 
 		console.log("WAM restoring ended")
 	}
 
-	this.restoreSynthPlugin = async function (synth, pState) {
+	this.restoreSynthPlugin = async function (synth, pState, isBatch) {
 		if (!pState)
 			return;
 
-		let plugin = await wam.loadModule(pState.name, true, true);
+		let plugin = await wam.loadModule(pState.name, isBatch, true);
 		if (!plugin)
 			return;
 
 		await plugin.wamInstance.audioNode.setState(pState.state);
 		synth.setPlugin(plugin);
-		wamUi.appendInstrumentGui(plugin.wamGui, pState.name);
+		wamUi.appendInstrumentGui(plugin.wamGui, isBatch);
 	}
 
 	this.loadFxPlugin = async function (name, pluginIndex) {
@@ -136,17 +136,23 @@ function SongObject(onSynthChangeCallback) {
 	}
 
 	this.loadSynthPlugin = async function (name) {
-		let plugin = await wam.loadModule(name, false, true);
-
-		if (!plugin)
-			return;
-
 		let ind = this.currentSynthIndex;
 		this.synths[ind].destroy();
 		this.synths[ind] = new WamSynth(this.compressor, this.bpm);
-		this.synths[ind].setPlugin(plugin);
+
+		wamUi.showIPluginLoading(true);
+		let plugin = await wam.loadModule(name, false, true);
+		wamUi.showIPluginLoading(false);
+
 		this.synthNames[ind] = name;
-		wamUi.appendInstrumentGui(plugin.wamGui);
+		this.restoreSends();
+
+		if (plugin) {
+			this.synths[ind].setPlugin(plugin);
+			wamUi.appendInstrumentGui(plugin.wamGui);
+		} else {
+			wamUi.showIPluginError(true);
+		}
 
 		this.synthParams[ind] = { pluginState: { name: name, state: null } };
 		let params = DEFAULT_PARAMS.synthPluginState;
