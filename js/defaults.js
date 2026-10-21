@@ -14,6 +14,17 @@ DEFAULT_PARAMS.pressDelay = 380;
 
 DEFAULT_PARAMS.heavyEffects = "reverb phaser";
 
+DEFAULT_PARAMS.synthPluginState = {
+	"synth-amplifier-gain": 1,
+	"synth-fx-amount": 0.5,
+	"synth-fx-rate": 0.5,
+	"synth-fx-sync": false,
+	"synth-fx-type": "[none]",
+	"synth-fx-wet": 0.5,
+	"synth-glide": 0,
+	"synth-pan": 0
+};
+
 DEFAULT_PARAMS.synthState = {
 	"synth-amplifier-gain": 1,
 	"synth-amplifier-mod-input": "[none]",

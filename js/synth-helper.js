@@ -312,6 +312,15 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 				return;
 			}
 
+			songObj.synths[selectedSynthIndex].destroy();
+			if (params.pluginState) {
+				songObj.synths[selectedSynthIndex] = new WamSynth(songObj.compressor, songObj.bpm);
+				songObj.restoreSynthPlugin(songObj.synths[selectedSynthIndex], params.pluginState);
+			} else {
+				songObj.synths[selectedSynthIndex] = new Synth(songObj.compressor, songObj.bpm);
+			}
+			songObj.restoreSends();
+
 			let synth = songObj.synths[selectedSynthIndex];
 			let synthParams = songObj.synthParams[selectedSynthIndex];
 			let newParams = that.loadSynth(params, synth);
@@ -435,15 +444,18 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		let newParams = {};
 		let paramCount = 0;
 
+		let defaultState = DEFAULT_PARAMS.synthState;
 		if (synthParams.pluginState) {
 			newParams.pluginState = synthParams.pluginState;
-			paramCount++;
-		} else for (let key in DEFAULT_PARAMS.synthState) {
+			defaultState = DEFAULT_PARAMS.synthPluginState;
+		}
+
+		for (let key in defaultState) {
 			if (key in synthParams) {
 				newParams[key] = synthParams[key];
 				paramCount++;
 			} else {
-				newParams[key] = DEFAULT_PARAMS.synthState[key];
+				newParams[key] = defaultState[key];
 			}
 		}
 
