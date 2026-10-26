@@ -36,16 +36,22 @@ function WamUi(songObj) {
 		if (!event.target.classList.contains("js-select-list-entry"))
 			return;
 
-		if (event.target.dataset.name) {
-			showModal("i-plugin-modal-menu");
-			this.showInstruentName(event.target.dataset.name)
-			songObj.loadSynthPlugin(event.target.dataset.name);
-		} else {
-			songObj.resetCurrentSynth();
-		}
+		showConfirm("Overwrite selected synth?", (isOk) => {
+			if (!isOk)
+				return;
+
+			if (event.target.dataset.name) {
+				showModal("i-plugin-modal-menu");
+				this.showInstruentName(event.target.dataset.name)
+				songObj.loadSynthPlugin(event.target.dataset.name);
+			} else {
+				songObj.resetCurrentSynth();
+			}
+
+			hideModal("synth-modal-menu");
+		});
 
 		hideModal("i-plugin-select-modal-menu");
-		hideModal("synth-modal-menu");
 	}
 
 	for (let i = 0; i < 4; i++) {
@@ -69,9 +75,10 @@ function WamUi(songObj) {
 		hideModal("fx-plugin-modal-menu");
 	};
 
-	document.getElementById("button-i-plugin-select").onclick = () => {
+	document.getElementById("button-i-plugin-select").addEventListener("click", () => {
+		// Expect another listener (switch to selected synth from list)
 		showModal("i-plugin-select-modal-menu");
-	};
+	});
 
 	document.getElementById("button-i-plugin-select-close").onclick = () => {
 		hideModal("i-plugin-select-modal-menu");

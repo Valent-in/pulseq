@@ -15,6 +15,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 	let pressTimeout = null;
 	let cancelClick = false;
 
+	let synthPresetSelect = document.getElementById("select-synth-preset");
 	let deleteSynthBtn = document.getElementById("button-delete-synth");
 	let synthNameArea = document.getElementById("synth-name-area");
 
@@ -195,7 +196,16 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		});
 	};
 
-	let synthPresetSelect = document.getElementById("select-synth-preset");
+	document.getElementById("button-i-plugin-select").addEventListener("click", () => {
+		// Actual plugin selector implemented in wam-ui.js
+		// Pass selectedSynthIndex to songObj
+		g_switchTab("synth");
+		if (songObj.currentSynthIndex != selectedSynthIndex) {
+			selectSynth(selectedSynthIndex);
+			g_markCurrentSynth();
+		}
+	});
+
 	synthPresetSelect.onchange = () => {
 		let index = synthPresetSelect.selectedIndex - 1;
 		let value = synthPresetSelect.value;
@@ -240,6 +250,15 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		songObj.setSend(selectedSynthIndex, index);
 	}
 
+	function createSynthObj(index, params) {
+		if (params.pluginState) {
+			songObj.synths[index] = new WamSynth(songObj.compressor, songObj.bpm);
+			songObj.restoreSynthPlugin(songObj.synths[index], params.pluginState, true);
+		} else {
+			songObj.synths[index] = new Synth(songObj.compressor, songObj.bpm);
+		}
+	}
+
 	document.getElementById("button-copy-synth").onclick = () => {
 		let name = songObj.synthNames[selectedSynthIndex];
 		let defaultName = songObj.generateSynthName(name.split("-")[0] + "-", 2);
@@ -248,43 +267,13 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			if (result === null)
 				return;
 
-			let sameCount = 0;
-			for (let e of songObj.synthNames)
-				if (e == result)
-					sameCount++;
-
-			let confirmMsg = sameCount <= 1 ?
-				"Synth with name '" + result + "' already exists. Overwrite?" :
-				sameCount + " synths with name '" + result + "' already exist. Overwrite?";
-
-			if (sameCount > 0) {
-				showConfirm(confirmMsg, (isOk) => {
-					hideModal("synth-modal-menu");
-					if (!isOk)
-						return;
-
-					for (let i = 0; i < songObj.synthNames.length; i++) {
-						if (result == songObj.synthNames[i]) {
-
-							let sourceParams = songObj.synthParams[selectedSynthIndex];
-							let targetParams = songObj.synthParams[i];
-							let targetSynth = songObj.synths[i];
-
-							for (let key in sourceParams) {
-								targetParams[key] = sourceParams[key];
-								synthParamApply(key, targetParams[key], targetSynth);
-							}
-						}
-					}
-				});
-			}
-
-			if (sameCount >= 1) {
-				g_switchTab("synth-list");
-				return;
-			}
-
-			that.createNewSynth(result, songObj.synthParams[selectedSynthIndex]);
+			let nextInd = songObj.synths.length;
+			let params = songObj.synthParams[selectedSynthIndex];
+			let newParams = JSON.parse(JSON.stringify(params));
+			createSynthObj(nextInd, newParams);
+			that.loadSynth(newParams, songObj.synths[nextInd]);
+			songObj.synthParams[nextInd] = newParams;
+			songObj.synthNames[nextInd] = result;
 
 			console.log("Synth '" + name + "' copied to '" + result + "'");
 			that.rebuildSynthList();
@@ -313,19 +302,11 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			}
 
 			songObj.synths[selectedSynthIndex].destroy();
-			if (params.pluginState) {
-				songObj.synths[selectedSynthIndex] = new WamSynth(songObj.compressor, songObj.bpm);
-				songObj.restoreSynthPlugin(songObj.synths[selectedSynthIndex], params.pluginState);
-			} else {
-				songObj.synths[selectedSynthIndex] = new Synth(songObj.compressor, songObj.bpm);
-			}
+			createSynthObj(selectedSynthIndex, params);
 			songObj.restoreSends();
 
 			let synth = songObj.synths[selectedSynthIndex];
-			let synthParams = songObj.synthParams[selectedSynthIndex];
-			let newParams = that.loadSynth(params, synth);
-			for (let key in newParams)
-				synthParams[key] = newParams[key];
+			songObj.synthParams[selectedSynthIndex] = that.loadSynth(params, synth);
 
 			let newName = songObj.generateSynthName(file.name.split(".")[0].split(" ")[0], 0);
 			songObj.synthNames[selectedSynthIndex] = newName;
@@ -333,7 +314,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			that.rebuildSynthList();
 
 			if (selectedSynthIndex == songObj.currentSynthIndex)
-				synthUi.assignSynth(synthParams, synth, songObj.synthNames[selectedSynthIndex]);
+				synthUi.assignSynth(songObj.synthParams[selectedSynthIndex], synth, newName);
 
 			hideModal("synth-modal-menu");
 		};
@@ -495,6 +476,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		showModal("synth-modal-menu");
 		document.getElementById("input-synth-name").value = songObj.synthNames[selectedSynthIndex];
 		deleteSynthBtn.disabled = (songObj.synths.length == 1);
+		synthPresetSelect.disabled = !!songObj.synthParams[selectedSynthIndex].pluginState;
 
 		let select = document.getElementById("select-send-effect");
 		select.innerHTML = "";
