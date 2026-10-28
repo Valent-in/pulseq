@@ -119,7 +119,7 @@ function SongObject(onSynthChangeCallback) {
 
 		await plugin.wamInstance.audioNode.setState(pState.state);
 		synth.setPlugin(plugin);
-		wamUi.appendInstrumentGui(plugin.wamGui, isBatch);
+		wamUi.appendIPluginGui(plugin.wamGui, isBatch);
 	}
 
 	this.loadFxPlugin = async function (name, pluginIndex) {
@@ -149,7 +149,7 @@ function SongObject(onSynthChangeCallback) {
 
 		if (plugin) {
 			this.synths[ind].setPlugin(plugin);
-			wamUi.appendInstrumentGui(plugin.wamGui);
+			wamUi.appendIPluginGui(plugin.wamGui);
 		} else {
 			wamUi.showIPluginError(true);
 		}
@@ -334,11 +334,6 @@ function SongObject(onSynthChangeCallback) {
 
 	this.getCurrentSynth = function () {
 		return this.synths[this.currentSynthIndex];
-	}
-
-	this.getCurrentSynthPluginUi = function () {
-		if (this.synths[this.currentSynthIndex].plugin)
-			return this.synths[this.currentSynthIndex].plugin.wamGui;
 	}
 
 	this.setCurrentPattern = function (index) {

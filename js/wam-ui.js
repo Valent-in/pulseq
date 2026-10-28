@@ -42,7 +42,7 @@ function WamUi(songObj) {
 
 			if (event.target.dataset.name) {
 				showModal("i-plugin-modal-menu");
-				this.showInstruentName(event.target.dataset.name)
+				this.showIPluginName(event.target.dataset.name)
 				songObj.loadSynthPlugin(event.target.dataset.name);
 			} else {
 				songObj.resetCurrentSynth();
@@ -87,8 +87,8 @@ function WamUi(songObj) {
 	document.getElementById("button-i-plugin-menu-open").onclick = () => {
 		showModal("i-plugin-modal-menu");
 		let name = songObj.synthParams[songObj.currentSynthIndex].pluginState.name;
-		this.showInstruentName(name);
-		let ui = songObj.getCurrentSynthPluginUi();
+		this.showIPluginName(name);
+		let ui = getCurrentIPluginUi();
 		if (ui)
 			ui.parentElement.classList.remove("nodisplay");
 		else
@@ -97,13 +97,18 @@ function WamUi(songObj) {
 
 	document.getElementById("button-i-plugin-menu-close").onclick = () => {
 		hideModal("i-plugin-modal-menu");
-		let ui = songObj.getCurrentSynthPluginUi();
+		let ui = getCurrentIPluginUi();
 		if (ui)
 			ui.parentElement.classList.add("nodisplay");
 		songObj.storeCurrentInstrumentState();
 		this.showIPluginError(false);
 		this.showIPluginLoading(false);
 	};
+
+	function getCurrentIPluginUi() {
+		let plugin = songObj.getCurrentSynth().plugin;
+		return plugin ? plugin.wamGui : null;
+	}
 
 	this.appendFxGui = function (wamGui, index, name) {
 		let mount = pluginMounts[index];
@@ -138,7 +143,7 @@ function WamUi(songObj) {
 		}
 	}
 
-	this.appendInstrumentGui = function (wamGui, isHide) {
+	this.appendIPluginGui = function (wamGui, isHide) {
 		if (!wamGui)
 			return;
 
@@ -152,9 +157,9 @@ function WamUi(songObj) {
 		container.appendChild(inner);
 	}
 
-	this.showInstruentName = function (name) {
+	this.showIPluginName = function (name) {
 		let nameDiv = document.getElementById("i-plugin-name");
-		nameDiv.textContent = name;
+		nameDiv.textContent = "Plugin - " + name;
 	}
 
 	this.showIPluginError = function (isShow) {
