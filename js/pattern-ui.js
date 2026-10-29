@@ -46,6 +46,7 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 
 	let isSidekeyPalying = false;
 	let lastSideKey;
+	let lastSideNote = "";
 
 	let patternNameArea = document.getElementById("pattern-name-area");
 	let pattern = document.getElementById("pattern-main");
@@ -366,8 +367,9 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 
 			let synth = getSynthFromLayer();
 			if (synth)
-				synth.triggerRelease();
+				synth.triggerRelease(Tone.now(), lastSideNote);
 
+			lastSideNote = "";
 			if (lastSideKey) {
 				lastSideKey.classList.remove("key--pressed");
 				lastSideKey = null;
@@ -383,7 +385,8 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 					lastSideKey.classList.remove("key--pressed");
 
 				let stepLen = (60 / songObj.bpm) / 4;
-				synth.triggerAttack(e.target.dataset.note, 0, Tone.now(), stepLen);
+				lastSideNote = e.target.dataset.note;
+				synth.triggerAttack(lastSideNote, 0, Tone.now(), stepLen);
 				isSidekeyPalying = true;
 				lastSideKey = e.target;
 				lastSideKey.classList.add("key--pressed");
@@ -1033,7 +1036,7 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 			return;
 		}
 
-		if (songObj.isSynthInCurrentPattern(index)) {
+		if (songObj.isMonoSynthInCurrentPattern(index)) {
 			showAlert("Synth is already in this pattern");
 		} else {
 			let synthIndex = index >= 0 ? index : null;
@@ -1093,7 +1096,7 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 			if (!songObj.testSynthOnPattern(i))
 				entry.classList.add("select-list-entry--disabled");
 
-			if (isCreateNewLayer && songObj.isSynthInCurrentPattern(i))
+			if (isCreateNewLayer && songObj.isMonoSynthInCurrentPattern(i))
 				entry.classList.add("select-list-entry--disabled");
 
 			if (songObj.synths[i].isMuted)

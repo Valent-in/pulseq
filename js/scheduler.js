@@ -339,12 +339,17 @@ function Scheduler(songObj, barCallback, stepCallback) {
 				}
 
 				if (stepIndex > 0 && lengths[stepIndex - 1] >= 100)
-					synth.glideTo(note, volume, time, stepLen)
+					if (synth.plugin && note != notes[stepIndex - 1]) {
+						synth.triggerRelease(attackTime, notes[stepIndex - 1]);
+						synth.triggerAttack(note, volume, attackTime, stepLen);
+					} else {
+						synth.glideTo(note, volume, time, stepLen)
+					}
 				else
 					synth.triggerAttack(note, volume, attackTime, stepLen);
 
 				if (lengths[stepIndex] < 100 || stepIndex == pattern.length - 1 || !notes[stepIndex + 1])
-					synth.triggerRelease(stopTime);
+					synth.triggerRelease(stopTime, note);
 			}
 		}
 	}

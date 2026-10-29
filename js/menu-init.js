@@ -1216,8 +1216,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		onSongChangeCallback(true);
 		showSongTitle();
 
-		if (songObj.calculateSynthFill() > 0)
-			showAlert("WARNING: Patterns overlap in imported file!");
+		songObj.calculateSynthFill();
 
 		return true;
 	}

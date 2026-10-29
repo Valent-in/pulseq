@@ -282,16 +282,18 @@ function SongObject(onSynthChangeCallback) {
 	}
 
 	this.testSynthOnPattern = function (synthIndex) {
-		let layerIndex = this.currentPattern.activeIndex;
-
 		if (synthIndex === null)
 			return true;
 
+		let layerIndex = this.currentPattern.activeIndex;
 		if (this.currentPattern.patternData[layerIndex].synthIndex == synthIndex)
 			return true;
 
-		if (this.isSynthInCurrentPattern(synthIndex))
+		if (this.isMonoSynthInCurrentPattern(synthIndex))
 			return false;
+
+		if (this.isSynthInCurrentPattern(synthIndex))
+			return true;
 
 		let patternBars = Math.ceil(this.currentPattern.length / this.barSteps);
 		for (let i = 0; i <= this.song.length - patternBars; i++)
@@ -322,6 +324,16 @@ function SongObject(onSynthChangeCallback) {
 		return false;
 	}
 
+	this.isMonoSynthInCurrentPattern = function (synthIndex) {
+		if (synthIndex < 0 || !this.synthParams[synthIndex])
+			return false;
+
+		if (this.synthParams[synthIndex].pluginState)
+			return false;
+
+		return this.isSynthInCurrentPattern(synthIndex);
+	}
+
 	this.getCurrentLayerSynthIndex = function () {
 		let layerIndex = this.currentPattern.activeIndex;
 		return this.currentPattern.patternData[layerIndex].synthIndex;
@@ -346,14 +358,6 @@ function SongObject(onSynthChangeCallback) {
 		this.currentPattern.length = len;
 
 		let collisions = this.calculateSynthFill();
-
-		let ptrnBars = Math.ceil(len / this.barSteps);
-		for (let i = 0; i <= this.song.length - ptrnBars; i++) {
-			if (this.song[i][this.currentPatternIndex])
-				for (let j = 1; j < ptrnBars; j++)
-					if (this.song[i + j][this.currentPatternIndex])
-						collisions++;
-		}
 
 		if (len >= tmpLen && collisions > 0) {
 			this.currentPattern.length = tmpLen;
@@ -449,9 +453,9 @@ function SongObject(onSynthChangeCallback) {
 		this.setCurrentPattern(this.patterns.length - 1);
 	}
 
-	this.calculateSynthFill = function (statrPoint, endPoint) {
+	this.calculateSynthFill = function (startPoint, endPoint) {
 		let collisions = 0;
-		if (statrPoint === undefined || this.song.length != this.synthFill.length) {
+		if (startPoint === undefined || this.song.length != this.synthFill.length) {
 			this.synthFill = [];
 			for (let i = 0; i < this.song.length; i++) {
 				let col = [];
@@ -459,12 +463,12 @@ function SongObject(onSynthChangeCallback) {
 				this.synthFill.push(col);
 			}
 
-			statrPoint = 0;
+			startPoint = 0;
 			endPoint = this.song.length - 1;
 		}
 
 		const setPatternFill = (pattern, startPosition) => {
-			let patternSynthIndexes = getPatternSynthIndexes(pattern);
+			let patternSynthIndexes = [...new Set(getPatternSynthIndexes(pattern))];
 
 			let patternBars = Math.ceil(pattern.length / this.barSteps);
 			for (let i = startPosition; i < startPosition + patternBars; i++) {
@@ -479,7 +483,7 @@ function SongObject(onSynthChangeCallback) {
 			}
 		}
 
-		for (let i = statrPoint; i <= endPoint; i++) {
+		for (let i = startPoint; i <= endPoint; i++) {
 			for (let j = 0; j < this.song[i].length; j++) {
 				if (this.song[i][j]) {
 					let ptrn = this.patterns[j];

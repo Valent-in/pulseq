@@ -58,7 +58,12 @@ function SynthUi(songObj) {
 		this.currentSynth.fxSweep(null, Tone.now(), 0.01)
 
 		if (isPlaying)
-			this.currentSynth.glideTo(note, 0, Tone.now(), stepLen);
+			if (this.currentSynth.plugin) {
+				this.currentSynth.triggerRelease(Tone.now(), lastNote);
+				this.currentSynth.triggerAttack(note, 0, Tone.now(), stepLen);
+			} else {
+				this.currentSynth.glideTo(note, 0, Tone.now(), stepLen);
+			}
 		else
 			this.currentSynth.triggerAttack(note, 0, Tone.now(), stepLen);
 
@@ -70,8 +75,8 @@ function SynthUi(songObj) {
 		lastDomKey.classList.add("key--pressed");
 	}
 
-	const stopSynth = () => {
-		this.currentSynth.triggerRelease();
+	const stopSynth = (note) => {
+		this.currentSynth.triggerRelease(Tone.now(), note);
 		isPlaying = false;
 		lastNote = "";
 		lastDomKey.classList.remove("key--pressed");
@@ -129,14 +134,23 @@ function SynthUi(songObj) {
 			if (lastKey && note != lastNote)
 				return;
 
-			stopSynth();
+			if (isPlaying)
+				stopSynth(note);
 		});
 
 		key.addEventListener("pointercancel", () => {
 			if (pianoTouched)
 				return;
 
-			stopSynth();
+			stopSynth(note);
+		});
+
+		key.addEventListener("pointerleave", () => {
+			if (pianoTouched)
+				return;
+
+			if (isPlaying && lastNote == note)
+				stopSynth(note);
 		});
 
 		key.addEventListener("touchstart", () => {
@@ -153,12 +167,12 @@ function SynthUi(songObj) {
 				return;
 
 			pianoTouched = false;
-			stopSynth();
+			stopSynth(note);
 		});
 
 		key.addEventListener("touchcancel", () => {
 			pianoTouched = false;
-			stopSynth();
+			stopSynth(note);
 		});
 	}
 
@@ -212,7 +226,7 @@ function SynthUi(songObj) {
 		if (note != lastNote)
 			return;
 
-		stopSynth();
+		stopSynth(note);
 	});
 
 	if ("ontouchstart" in window) {
