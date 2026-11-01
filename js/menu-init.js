@@ -1199,11 +1199,8 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			songObj.arrangeStartPoint = appState.startPoint || 0;
 			songObj.currentSynthIndex = appState.activeSynth || 0;
 
-			setTimeout(() => {
-				for (let i = 0; i < songObj.synths.length; i++)
-					songObj.synths[i].mute(appState.muteStatus[i]);
-				onSongChangeCallback(false, null, true);
-			}, 909);
+			for (let i = 0; i < songObj.synths.length; i++)
+				songObj.synths[i].mute(appState.muteStatus[i]);
 
 			selectRoot.selectedIndex = appState.rootIndex || 0;
 			selectScale.selectedIndex = appState.scaleIndex || 0;

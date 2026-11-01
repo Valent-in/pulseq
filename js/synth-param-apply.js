@@ -384,9 +384,7 @@ function synthParamApply(paramId, controlValue, synth) {
 			break;
 
 		case "synth-fx-wet":
-			synth.values.FXWetValue = value;
-			if (synth.FX)
-				synth.FX.wet.value = synth.values.FXWetValue;
+			synth.setFxWet(value);
 			break;
 
 		default:

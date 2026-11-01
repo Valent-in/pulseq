@@ -32,8 +32,6 @@ class SynthProto {
 
 	reconnect(newOutNode) {
 		this.out.outputNode = newOutNode;
-		if (this.isMuted)
-			return;
 
 		let preOut = this.FX || this.ampout;
 		preOut.disconnect();
@@ -41,17 +39,20 @@ class SynthProto {
 	}
 
 	calculateVolume() {
+		if (this.isMuted)
+			return 0;
+
 		let volume = (1 + this.lastVolumeMod / 100) * this.values.volumeValue;
 		return (Math.exp(volume * 5.76) - 1) / 1000 * 3.1611;
 	}
 
 	setVolume(value) {
-		this.values.volumeValue = value
+		this.values.volumeValue = value;
 		this.ampout.gain.value = this.calculateVolume();
 	}
 
 	fxSweep(wet, time, duration) {
-		if (!this.FX)
+		if (!this.FX || this.isMuted)
 			return;
 
 		let glideTime = Math.max(duration * this.glide, 0.01);
@@ -69,20 +70,25 @@ class SynthProto {
 		}
 	}
 
-	mute(isMute) {
-		if (isMute && !this.isMuted) {
-			if (this.FX)
-				this.FX.disconnect();
-			else
-				this.ampout.disconnect();
-		} else if (!isMute && this.isMuted) {
-			if (this.FX)
-				this.FX.chain(this.out.outputNode);
-			else
-				this.ampout.chain(this.out.outputNode);
-		}
+	setFxWet(value) {
+		if (value !== undefined)
+			this.values.FXWetValue = value;
 
+		if (this.FX && !this.isMuted)
+			this.FX.wet.value = this.values.FXWetValue;
+	}
+
+	mute(isMute) {
 		this.isMuted = isMute;
+
+		if (isMute) {
+			this.ampout.gain.value = 0;
+			if (this.FX)
+				this.FX.wet.value = 0;
+		} else {
+			this.ampout.gain.value = this.calculateVolume();
+			this.setFxWet();
+		}
 	}
 
 	addFX(type) {
@@ -92,8 +98,7 @@ class SynthProto {
 			this.FX.dispose();
 			this.FX = null;
 
-			if (!this.isMuted)
-				this.ampout.chain(this.out.outputNode);
+			this.ampout.chain(this.out.outputNode);
 
 			console.log("remove FX");
 		}
@@ -155,12 +160,11 @@ class SynthProto {
 		this.ampout.disconnect();
 		this.ampout.chain(this.FX);
 
-		if (!this.isMuted)
-			this.FX.chain(this.out.outputNode);
+		this.FX.chain(this.out.outputNode);
 
 		this.setFXValue();
 		this.setFXRate();
-		this.FX.wet.value = this.values.FXWetValue;
+		this.setFxWet();
 		console.log("add FX - " + type);
 	}
 
