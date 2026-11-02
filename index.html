@@ -595,7 +595,7 @@
 					<label for="input-more-velosteps">More velocity steps</label>
 				</div>
 				<div class="modal-box-block">
-					<span>Show scale</span>
+					<span class="dialog-caption">Show scale</span>
 					<select id="select-root-highlight" disabled></select>
 					<select id="select-scale-highlight"></select>
 				</div>
@@ -607,9 +607,9 @@
 					<button id="button-advanced-open">Advanced</button>
 				</div>
 				<div class="modal-box-block">
-					<span>Zoom</span>
+					<span class="dialog-caption">Zoom</span>
 					<input type="number" id="input-zoom-value">
-					<span class="dim-text">&percnt;</span>
+					<span class="dim-text dialog-caption">&percnt;</span>
 					<button id="button-zoom-set">Set</button>
 				</div>
 				<div class="modal-box-block modal-box-footer">
@@ -762,7 +762,7 @@
 					<a id="link-midi-download" href="">Download file</a>
 				</div>
 				<div class="modal-box-block">
-					<span>Velocity curve</span>
+					<span class="dialog-caption">Velocity curve</span>
 					<select id="select-velocity-scale" autocomplete="off">
 						<option>Exponential</option>
 						<option>Linear</option>
@@ -913,7 +913,8 @@
 								<span id="layer-block-title">Synth&sol;Layer</span>
 							</td>
 							<td>
-								<button id="button-synth-select" class="button-select notranslate" translate="no">[none]</button>
+								<button id="button-synth-select" class="button-select notranslate"
+									translate="no">[none]</button>
 							</td>
 						</tr>
 						<tr>
@@ -990,11 +991,11 @@
 						<input type="radio" id="input-fade-type-set" name="fade-type" autocomplete="off" checked>
 						<label for="input-fade-type-set">Set values</label>
 						<br>
-						<span>start</span>
+						<span class="dialog-caption">Start</span>
 						<input type="number" id="input-fade-start" class="js-request-focus">
 						<span class="dim-text">&percnt;</span>
 
-						<span style="margin-left:1.5rem">end</span>
+						<span style="margin-left:1rem" class="dialog-caption">End</span>
 						<input type="number" id="input-fade-end">
 						<span class="dim-text">&percnt;</span>
 
@@ -1005,7 +1006,7 @@
 						<input type="radio" id="input-fade-type-add" name="fade-type" autocomplete="off">
 						<label for="input-fade-type-add">Add value</label>
 						<br>
-						<span>modifier</span>
+						<span class="dialog-caption">Modifier</span>
 						<input type="number" id="input-fade-add" class="js-request-focus" autocomplete="off" value="12">
 						<span class="dim-text">&percnt;</span>
 					</div>
@@ -1158,20 +1159,21 @@
 		<div id="synth-modal-menu" class="modal-container nodisplay">
 			<div class="modal-box">
 				<div id="synth-name-container" class="modal-box-block">
-					<span>Synth name</span>
+					<span class="dialog-caption">Synth name</span>
 					<input type="text" id="input-synth-name">
 				</div>
 				<div class="modal-box-block">
-					<span>Send effect</span>
+					<span class="dialog-caption">Send to effect</span>
 					<select id="select-send-effect"></select>
 				</div>
 				<div class="modal-box-block">
-					<select id="select-synth-preset" class="notranslate" translate="no">
-						<option disabled hidden>Preset</option>
-					</select>
-					<button id="button-i-plugin-select">Plugin...</button>
+					<span class="dialog-caption">Plugin</span>
+					<button id="button-i-plugin-select" class="button-select">plugin</button>
 				</div>
 				<div class="modal-box-block">
+					<select id="select-synth-preset" class="notranslate" translate="no">
+						<option disabled hidden value="Preset">Preset...</option>
+					</select>
 					<button id="button-copy-synth">Copy Synth</button>
 					<button id="button-delete-synth">Delete Synth</button>
 				</div>

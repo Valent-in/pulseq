@@ -1011,7 +1011,6 @@ input[type=range].range--volume {
 	box-sizing: border-box;
 	overflow-x: hidden;
 	text-overflow: ellipsis;
-	text-align: left;
 }
 
 #button-color-select {
@@ -1209,6 +1208,10 @@ input[type=file]:focus + span {
 	background-color: rgba(100, 100, 0, 0.4);
 }
 
+.dialog-caption {
+	margin-right: 2px;
+}
+
 #synth-name-container {
 	display: flex;
 	align-items: baseline;
@@ -1219,7 +1222,7 @@ input[type=file]:focus + span {
 	width: 10rem;
 	min-width: 50%;
 	flex-grow: 1;
-	margin-left: 8px;
+	margin-left: 2px;
 }
 
 #button-import-synth {
@@ -1230,7 +1233,10 @@ input[type=file]:focus + span {
 	vertical-align: middle;
 }
 
+#select-send-effect,
+#button-i-plugin-select,
 #select-synth-preset {
+	width: 5rem;
 	max-width: 5rem;
 }
 
@@ -1461,6 +1467,7 @@ button.button-select {
 	background-position: center right 0.5em;
 	background-repeat: no-repeat;
 	background-size: auto 25%;
+	text-align: left;
 }
 
 .toast-container {
