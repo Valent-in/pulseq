@@ -1234,7 +1234,12 @@ input[type=file]:focus + span {
 }
 
 #select-send-effect,
-#button-i-plugin-select,
+#button-i-plugin-select {
+	min-width: 5rem;
+	max-width: 8rem;
+	text-overflow: ellipsis;
+}
+
 #select-synth-preset {
 	width: 5rem;
 	max-width: 5rem;

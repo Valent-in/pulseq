@@ -499,6 +499,12 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 
 		if (songObj.sends[selectedSynthIndex] !== null)
 			select.value = songObj.sends[selectedSynthIndex];
+
+		let pluginSelect = document.getElementById("button-i-plugin-select");
+		if (songObj.synthParams[selectedSynthIndex].pluginState)
+			pluginSelect.textContent = songObj.synthParams[selectedSynthIndex].pluginState.name;
+		else
+			pluginSelect.textContent = "[none]";
 	}
 
 	document.getElementById("button-mixer-menu-open").onclick = showMixer;
