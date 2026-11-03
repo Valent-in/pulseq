@@ -78,6 +78,8 @@ function SongObject(onSynthChangeCallback) {
 
 	this.restorePlugins = async function () {
 		console.log("Restoring WAM-effects");
+		wamUi.showLoadingIndicator(true);
+
 		for (let i = 0; i < this.pluginStates.length; i++) {
 			if (!this.pluginStates[i])
 				continue;
@@ -106,7 +108,8 @@ function SongObject(onSynthChangeCallback) {
 			await this.restoreSynthPlugin(this.synths[i], pState, true);
 		}
 
-		console.log("WAM restoring ended")
+		wamUi.showLoadingIndicator(false);
+		console.log("WAM restoring ended");
 	}
 
 	this.restoreSynthPlugin = async function (synth, pState, isBatch) {

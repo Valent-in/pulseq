@@ -178,6 +178,14 @@ function WamUi(songObj) {
 			msg.classList.add("nodisplay");
 	}
 
+	this.showLoadingIndicator = function (isLoading) {
+		let loading = document.getElementById("loading-plugins-indicator");
+		if (isLoading)
+			loading.classList.add("loading-ongoing");
+		else
+			loading.classList.remove("loading-ongoing");
+	}
+
 	function buildPluginList(list) {
 		let listContainer = document.getElementById("fx-plugin-list-container");
 		listContainer.innerHTML = "";

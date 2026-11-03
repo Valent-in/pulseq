@@ -846,6 +846,19 @@ input[type=range].range--volume {
 	color: #feb;
 }
 
+#loading-plugins-indicator.loading-ongoing {
+	display: block;
+	position: fixed;
+	top: 1.5rem;
+	right: 1.5rem;
+	padding: 8px 12px;
+	background-color: #111;
+	border: 1px solid #444;
+	border-radius: 3px;
+	pointer-events: none;
+	animation: beaming 2s infinite;
+}
+
 .modal-container {
 	position: fixed;
 	top: 0;
