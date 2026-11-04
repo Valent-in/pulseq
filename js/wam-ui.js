@@ -4,6 +4,19 @@ function WamUi(songObj) {
 	let selectedSlot = 0;
 	let pluginMounts = document.querySelectorAll(".js-plugin-mount");
 	let pluginSelectors = document.querySelectorAll(".js-button-effect-select");
+	let fxDialogIsShown = false;
+	let iDialogIsShown = false;
+
+	window.addEventListener("keyup", (event) => {
+		if (event.key != "Escape")
+			return;
+
+		if (fxDialogIsShown)
+			closeFxPluginDialog();
+
+		if (iDialogIsShown)
+			closeIPluginDialog();
+	});
 
 	fetch("wam-plugins/plugins.json").then(response => response.json()).then(data => {
 		buildPluginList(data);
@@ -42,6 +55,8 @@ function WamUi(songObj) {
 
 			if (event.target.dataset.name) {
 				showModal("i-plugin-modal-menu");
+				iDialogIsShown = true;
+				this.showIPluginLoading(true);
 				this.showIPluginName(event.target.dataset.name)
 				songObj.loadSynthPlugin(event.target.dataset.name);
 			} else {
@@ -63,17 +78,22 @@ function WamUi(songObj) {
 
 	document.getElementById("button-fx-plugin-select-close").onclick = () => {
 		hideModal("fx-plugin-select-modal-menu");
-	};
+	}
 
 	document.getElementById("button-fx-plugin-menu-open").onclick = () => {
 		showModal("fx-plugin-modal-menu");
-	};
+		fxDialogIsShown = true;
+	}
 
 	document.getElementById("button-fx-plugin-menu-close").onclick = () => {
-		console.log("Storing plugin states...");
+		closeFxPluginDialog();
+	}
+
+	const closeFxPluginDialog = () => {
 		songObj.storePluginStates();
 		hideModal("fx-plugin-modal-menu");
-	};
+		fxDialogIsShown = false;
+	}
 
 	document.getElementById("button-i-plugin-select").addEventListener("click", () => {
 		// Expect another listener (switch to selected synth from list)
@@ -82,10 +102,11 @@ function WamUi(songObj) {
 
 	document.getElementById("button-i-plugin-select-close").onclick = () => {
 		hideModal("i-plugin-select-modal-menu");
-	};
+	}
 
 	document.getElementById("button-i-plugin-menu-open").onclick = () => {
 		showModal("i-plugin-modal-menu");
+		iDialogIsShown = true;
 		let name = songObj.synthParams[songObj.currentSynthIndex].pluginState.name;
 		this.showIPluginName(name);
 		let ui = getCurrentIPluginUi();
@@ -93,17 +114,22 @@ function WamUi(songObj) {
 			ui.parentElement.classList.remove("nodisplay");
 		else
 			this.showIPluginError(true);
-	};
+	}
 
 	document.getElementById("button-i-plugin-menu-close").onclick = () => {
+		closeIPluginDialog();
+	}
+
+	const closeIPluginDialog = () => {
 		hideModal("i-plugin-modal-menu");
+		iDialogIsShown = false;
 		let ui = getCurrentIPluginUi();
 		if (ui)
 			ui.parentElement.classList.add("nodisplay");
 		songObj.storeCurrentInstrumentState();
 		this.showIPluginError(false);
 		this.showIPluginLoading(false);
-	};
+	}
 
 	function getCurrentIPluginUi() {
 		let plugin = songObj.getCurrentSynth().plugin;
@@ -144,6 +170,7 @@ function WamUi(songObj) {
 	}
 
 	this.appendIPluginGui = function (wamGui, isHide) {
+		this.showIPluginLoading(false);
 		if (!wamGui)
 			return;
 
@@ -163,6 +190,7 @@ function WamUi(songObj) {
 	}
 
 	this.showIPluginError = function (isShow) {
+		this.showIPluginLoading(false);
 		let msg = document.getElementById("i-plugin-error");
 		if (isShow)
 			msg.classList.remove("nodisplay");
