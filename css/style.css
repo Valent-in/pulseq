@@ -1470,8 +1470,9 @@ button.button--arrow-up {
 	flex-wrap: wrap;
 }
 
+#i-plugin-outer-container,
 .effect-wrap-container {
-	padding: 6px 10px 10px 10px;
+	padding: 6px 10px;
 }
 
 button.js-button-effect-select {
