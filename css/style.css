@@ -788,15 +788,11 @@ input[type=range].range--volume {
 
 #button-add-synth {
 	font-weight: bold;
-	margin: 2px;
+	margin: 2px 10px 2px 2px;
 	float: left;
 }
 
-#button-mixer-menu-open {
-	margin: 2px;
-	float: left;
-}
-
+#button-mixer-menu-open,
 #button-fx-plugin-menu-open {
 	margin: 2px;
 	float: left;
@@ -809,6 +805,8 @@ input[type=range].range--volume {
 	-webkit-user-select: none;
 	user-select: none;
 	font-size: 1rem;
+	max-width: 37%;
+	white-space: nowrap;
 }
 
 .caption-text {
