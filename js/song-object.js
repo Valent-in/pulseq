@@ -94,7 +94,7 @@ function SongObject(onSynthChangeCallback) {
 				if (state)
 					await this.fxPlugins[i].wamInstance.audioNode.setState(state);
 				Tone.connect(this.fxPlugins[i].node, this.compressor);
-				wamUi.appendFxGui(this.fxPlugins[i].wamGui, i, name);
+				wamUi.appendFxGui(this.fxPlugins[i].wamGui, i, this.pluginStates[i].title);
 			} else {
 				wamUi.showFxSlotError(i, name);
 			}
@@ -128,12 +128,12 @@ function SongObject(onSynthChangeCallback) {
 		wamUi.appendIPluginGui(plugin.wamGui, isBatch);
 	}
 
-	this.loadFxPlugin = async function (name, pluginIndex) {
+	this.loadFxPlugin = async function (name, title, pluginIndex) {
 		this.fxPlugins[pluginIndex] = await wam.loadModule(name, false, false);
 		if (this.fxPlugins[pluginIndex]) {
 			Tone.connect(this.fxPlugins[pluginIndex].node, this.compressor);
-			this.pluginStates[pluginIndex] = { name: name, state: null };
-			wamUi.appendFxGui(this.fxPlugins[pluginIndex].wamGui, pluginIndex, name);
+			this.pluginStates[pluginIndex] = { name: name, title: title, state: null };
+			wamUi.appendFxGui(this.fxPlugins[pluginIndex].wamGui, pluginIndex, title);
 		} else {
 			this.pluginStates[pluginIndex] = null;
 			wamUi.resetFxSlotState(pluginIndex);
@@ -141,11 +141,11 @@ function SongObject(onSynthChangeCallback) {
 		this.restoreSends(); // reconnect to same slot on plugin switch
 	}
 
-	this.loadSynthPlugin = async function (name) {
+	this.loadSynthPlugin = async function (name, title) {
 		let ind = this.currentSynthIndex;
 		this.synths[ind].destroy();
 		this.synths[ind] = new WamSynth(this.compressor, this.bpm);
-		this.synthNames[ind] = name;
+		this.synthNames[ind] = title.split(" ")[0];
 		this.restoreSends();
 
 		let plugin = await wam.loadModule(name, false, true);
@@ -157,7 +157,7 @@ function SongObject(onSynthChangeCallback) {
 			wamUi.showIPluginError(true);
 		}
 
-		this.synthParams[ind] = { pluginState: { name: name, state: null } };
+		this.synthParams[ind] = { pluginState: { name: name, title: title, state: null } };
 		let params = DEFAULT_PARAMS.synthPluginState;
 		for (let key in params) {
 			this.synthParams[ind][key] = params[key];

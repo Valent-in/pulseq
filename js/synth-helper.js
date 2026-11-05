@@ -488,7 +488,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 
 		for (let i = 0; i < songObj.pluginStates.length; i++) {
 			let o = document.createElement("OPTION");
-			let pluginName = songObj.isPluginLoaded(i) && songObj.pluginStates[i].name;
+			let pluginName = songObj.isPluginLoaded(i) && songObj.pluginStates[i].title;
 			let text = "slot " + (i + 1) + " (" + (pluginName || "---") + ")";
 			if (!songObj.isPluginLoaded(i))
 				o.disabled = true;
@@ -502,7 +502,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 
 		let pluginSelect = document.getElementById("button-i-plugin-select");
 		if (songObj.synthParams[selectedSynthIndex].pluginState)
-			pluginSelect.textContent = songObj.synthParams[selectedSynthIndex].pluginState.name;
+			pluginSelect.textContent = songObj.synthParams[selectedSynthIndex].pluginState.title;
 		else
 			pluginSelect.textContent = "[none]";
 	}

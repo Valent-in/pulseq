@@ -1248,6 +1248,8 @@ input[type=file]:focus + span {
 #button-i-plugin-select {
 	min-width: 5rem;
 	max-width: 8rem;
+	overflow-x: hidden;
+	white-space: nowrap;
 	text-overflow: ellipsis;
 }
 
@@ -1475,6 +1477,10 @@ button.button--arrow-up {
 
 button.js-button-effect-select {
 	min-width: 1rem;
+	max-width: 10rem;
+	overflow-x: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 	margin-bottom: 6px
 }
 

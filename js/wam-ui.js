@@ -21,6 +21,7 @@ function WamUi(songObj) {
 	fetch("wam-plugins/plugins.json").then(response => response.json()).then(data => {
 		buildPluginList(data);
 	}).catch(() => {
+		buildPluginList([]);
 		console.log("[WAM] Can not fetch plugin list");
 	});
 
@@ -34,7 +35,7 @@ function WamUi(songObj) {
 		if (event.target.dataset.name) {
 			pluginSelectors[selectedSlot].disabled = true;
 			mount.innerHTML = "Loading...";
-			songObj.loadFxPlugin(event.target.dataset.name, selectedSlot);
+			songObj.loadFxPlugin(event.target.dataset.name, event.target.dataset.title, selectedSlot);
 		} else {
 			songObj.removeFxPluginState(selectedSlot);
 			updateFxPluginSelector(selectedSlot, null);
@@ -57,8 +58,8 @@ function WamUi(songObj) {
 				showModal("i-plugin-modal-menu");
 				iDialogIsShown = true;
 				this.showIPluginLoading(true);
-				this.showIPluginName(event.target.dataset.name)
-				songObj.loadSynthPlugin(event.target.dataset.name);
+				this.showIPluginTitle(event.target.dataset.title)
+				songObj.loadSynthPlugin(event.target.dataset.name, event.target.dataset.title);
 			} else {
 				songObj.resetCurrentSynth();
 			}
@@ -69,7 +70,7 @@ function WamUi(songObj) {
 		hideModal("i-plugin-select-modal-menu");
 	}
 
-	for (let i = 0; i < 4; i++) {
+	for (let i = 0; i < pluginSelectors.length; i++) {
 		pluginSelectors[i].onclick = () => {
 			selectedSlot = i;
 			showModal("fx-plugin-select-modal-menu");
@@ -107,8 +108,7 @@ function WamUi(songObj) {
 	document.getElementById("button-i-plugin-menu-open").onclick = () => {
 		showModal("i-plugin-modal-menu");
 		iDialogIsShown = true;
-		let name = songObj.synthParams[songObj.currentSynthIndex].pluginState.name;
-		this.showIPluginName(name);
+		this.showIPluginTitle(songObj.synthParams[songObj.currentSynthIndex].pluginState.title);
 		let ui = getCurrentIPluginUi();
 		if (ui)
 			ui.parentElement.classList.remove("nodisplay");
@@ -140,7 +140,6 @@ function WamUi(songObj) {
 		let mount = pluginMounts[index];
 		mount.innerHTML = "";
 		mount.appendChild(wamGui);
-		updateFxPluginSelector(index, name);
 		pluginSelectors[index].disabled = false;
 		updateFxPluginSelector(index, name)
 	}
@@ -184,9 +183,9 @@ function WamUi(songObj) {
 		container.appendChild(inner);
 	}
 
-	this.showIPluginName = function (name) {
+	this.showIPluginTitle = function (title) {
 		let nameDiv = document.getElementById("i-plugin-name");
-		nameDiv.textContent = "Plugin - " + name;
+		nameDiv.textContent = "Plugin - " + title;
 	}
 
 	this.showIPluginError = function (isShow) {
@@ -215,10 +214,10 @@ function WamUi(songObj) {
 	}
 
 	function buildPluginList(list) {
-		let listContainer = document.getElementById("fx-plugin-list-container");
-		listContainer.innerHTML = "";
-		let ilistContainer = document.getElementById("i-plugin-list-container");
-		ilistContainer.innerHTML = "";
+		let fxListContainer = document.getElementById("fx-plugin-list-container");
+		fxListContainer.innerHTML = "";
+		let iListContainer = document.getElementById("i-plugin-list-container");
+		iListContainer.innerHTML = "";
 
 		function makeNoneEntry() {
 			let noneEntry = document.createElement("DIV");
@@ -229,8 +228,8 @@ function WamUi(songObj) {
 			return noneEntry;
 		}
 
-		listContainer.appendChild(makeNoneEntry());
-		ilistContainer.appendChild(makeNoneEntry());
+		fxListContainer.appendChild(makeNoneEntry());
+		iListContainer.appendChild(makeNoneEntry());
 
 		for (let i = 0; i < list.length; i++) {
 			let entry = document.createElement("DIV");
@@ -238,12 +237,14 @@ function WamUi(songObj) {
 			entry.classList.add("select-list-entry");
 
 			entry.dataset.name = list[i].name;
-			entry.appendChild(document.createTextNode(list[i].name));
+			let title = list[i].title || list[i].name;
+			entry.dataset.title = title;
+			entry.appendChild(document.createTextNode(title));
 
-			if (i < list.length - 7)
-				listContainer.appendChild(entry);
+			if (list[i].type == "instrument")
+				iListContainer.appendChild(entry);
 			else
-				ilistContainer.appendChild(entry);
+				fxListContainer.appendChild(entry);
 		}
 	}
 }
