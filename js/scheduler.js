@@ -339,12 +339,7 @@ function Scheduler(songObj, barCallback, stepCallback) {
 				}
 
 				if (stepIndex > 0 && lengths[stepIndex - 1] >= 100)
-					if (synth.plugin && note != notes[stepIndex - 1]) {
-						synth.triggerRelease(attackTime, notes[stepIndex - 1]);
-						synth.triggerAttack(note, volume, attackTime, stepLen);
-					} else {
-						synth.glideTo(note, volume, time, stepLen)
-					}
+					synth.glideTo(note, volume, time, stepLen, notes[stepIndex - 1])
 				else
 					synth.triggerAttack(note, volume, attackTime, stepLen);
 

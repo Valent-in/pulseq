@@ -58,12 +58,7 @@ function SynthUi(songObj) {
 		this.currentSynth.fxSweep(null, Tone.now(), 0.01)
 
 		if (isPlaying)
-			if (this.currentSynth.plugin) {
-				this.currentSynth.triggerRelease(Tone.now(), lastNote);
-				this.currentSynth.triggerAttack(note, 0, Tone.now(), stepLen);
-			} else {
-				this.currentSynth.glideTo(note, 0, Tone.now(), stepLen);
-			}
+			this.currentSynth.glideTo(note, 0, Tone.now(), stepLen, lastNote);
 		else
 			this.currentSynth.triggerAttack(note, 0, Tone.now(), stepLen);
 

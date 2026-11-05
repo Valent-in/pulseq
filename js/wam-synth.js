@@ -4,9 +4,9 @@
 class WamSynth extends SynthProto {
 	constructor(outputNode, transportBPM) {
 		super(outputNode, transportBPM);
+		this._overlap = 128 / Tone.context.sampleRate;
 	}
 
-	glideTo() { }
 	filterSweep() { }
 	resetFilter() { }
 	resetPorta() { }
@@ -72,6 +72,14 @@ class WamSynth extends SynthProto {
 			this._release(time, note);
 		else
 			this._releaseAll(time);
+	}
+
+	glideTo(note, volumeMod, time, duration, noteFrom) {
+		if (note == noteFrom)
+			return;
+
+		this.triggerAttack(note, volumeMod, time, duration);
+		this.triggerRelease(time + this._overlap, noteFrom);
 	}
 
 	destroy() {
