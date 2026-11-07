@@ -3,17 +3,16 @@
 Minimalistic web-application for creating electronic music with digital synthesizers.  
 Initially designed as sketching tool but can be used for making full-fledged tracks :musical_note::notes:
 
-Web Audio Modules support - test branch  
-https://valent-in.github.io/pulseq-test
+**[:link: RUN IN BROWSER :link:](https://valent-in.github.io/pulseq)**
 
 - Simple and easy to use
 - Mobile-friendly
 - Client only (no data processed on servers)
 
-- Subtractive synthesizers with various effects
-- Harmonic oscillators & basic FM
+- Built in subtractive synthesizer with harmonic oscillators & basic FM
+- Plugin support via Web Audio Modules API
+- Exportable synth patches (including plugin configuration)
 - Multi-layered step sequencer
-- Exportable synth presets
 - WAV audio export
 - MIDI export
 

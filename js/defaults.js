@@ -2,8 +2,8 @@
 
 const DEFAULT_PARAMS = {};
 
-DEFAULT_PARAMS.programVersion = "1.5.4+test";
-DEFAULT_PARAMS.fileFormatVersion = "21";
+DEFAULT_PARAMS.programVersion = "2.0";
+DEFAULT_PARAMS.fileFormatVersion = "22";
 
 DEFAULT_PARAMS.maxPatternSteps = 64;
 DEFAULT_PARAMS.minSongBars = 32;
