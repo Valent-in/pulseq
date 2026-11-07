@@ -77,7 +77,9 @@ function WamInit() {
 		let wamGui;
 
 		const pathToWam = "../wam-plugins/" + name + "/index.js";
-		const audioContext = Tone.getContext().rawContext._nativeAudioContext;
+		let audioContext = Tone.getContext().rawContext._nativeAudioContext;
+		if (!audioContext)
+			audioContext = Tone.getContext().rawContext._nativeContext;
 
 		if (!hostGroupId) {
 			try {

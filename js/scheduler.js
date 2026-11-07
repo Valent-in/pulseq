@@ -83,19 +83,28 @@ function Scheduler(songObj, barCallback, stepCallback) {
 		let lSynths = [];
 
 		// Promise
-		return Tone.Offline(({ transport }) => {
+		return Tone.Offline(async ({ transport }) => {
 			transport.bpm.value = songObj.bpm;
 			let compressor = new Tone.Compressor(songObj.compressorThreshold, songObj.compressorRatio);
 			compressor.toDestination();
 
 			for (let i = 0; i < songObj.synthParams.length; i++) {
 				console.log(" >> >> Offline synth " + i);
-				lSynths[i] = new Synth(compressor, songObj.bpm);
+
+				if (songObj.synthParams[i].pluginState)
+					lSynths[i] = new WamSynth(compressor, songObj.bpm);
+				else
+					lSynths[i] = new Synth(compressor, songObj.bpm);
+
 				lSynths[i].mute(songObj.synths[i].isMuted);
 
 				for (let key in songObj.synthParams[i])
 					synthParamApply(key, songObj.synthParams[i][key], lSynths[i]);
 			}
+
+			songObj.synths = lSynths;
+			songObj.compressor = compressor;
+			await songObj.restorePlugins();
 
 			let synced = false;
 			transport.scheduleRepeat(function (time) {

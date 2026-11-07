@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>PulseQuaver exporter</title>
+
+	<link rel="apple-touch-icon" type="image/png" href="img/icon.png">
+	<link rel="icon" type="image/png" href="img/icon.png">
+	<link rel="icon" type="image/svg+xml" href="img/icon.svg">
+
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no">
+	<meta name="theme-color" content="#111111">
+	<meta name="description" content="Export audio from PulseQuaver">
+
+	<style>
+		* {
+			padding: 0;
+			margin: 0;
+			color: #aaa;
+			font-family: sans-serif;
+		}
+	</style>
+	<link rel="stylesheet" href="css/elements.css">
+	<link rel="stylesheet" href="css/style.css">
+
+	<style>
+		body {
+			background-color: #191919;
+		}
+
+		#export-menu-result-container {
+			padding-top: 8px;
+		}
+
+		#render-title {
+			display: inline-block;
+			padding-bottom: 8px;
+		}
+
+		#render-title+div {
+			display: inline-block;
+		}
+
+		#input-render-length {
+			width: 70px;
+		}
+
+		#export-ongoing-container {
+			display: none;
+		}
+
+		.progress-animation {
+			position: relative;
+			background-color: black;
+			border: 2px solid black;
+			height: 1rem;
+		}
+
+		.progress-animation:before {
+			content: "";
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			width: 25%;
+			background-color: #777;
+		}
+
+		@keyframes bounce {
+			0% {
+				transform: translateX(0);
+			}
+
+			50% {
+				transform: translateX(300%);
+			}
+
+			100% {
+				transform: translateX(0);
+			}
+		}
+
+		.progress-animation.moving:before {
+			animation: bounce 5s infinite linear;
+		}
+
+		#wav-link-container {
+			display: none;
+		}
+	</style>
+</head>
+
+<body>
+	<button id="button-fullscreen" class="nodisplay"></button>
+	<input type="text" id="input-fullscreen" class="nodisplay">
+	<input type="text" id="input-fullscreen-padding" class="nodisplay">
+
+
+	<div>
+		<div>
+			<div id="render-title">Export audio</div>
+			<div>
+				<input type="number" id="input-render-length">
+				<span class="dim-text">sec.</span>
+				<button id="button-render" class="js-request-focus">Start</button>
+			</div>
+		</div>
+		<div class="nodisplay" id="export-menu-result-container">
+			<div id="export-ongoing-container">
+				<span>Rendering...</span>
+				<span class="dim-text">May take some time.</span>
+				<div id="export-progress-anim" class="progress-animation"></div>
+			</div>
+			<div id="wav-link-container">
+				<a id="link-wav-download">Download WAV</a>
+			</div>
+		</div>
+	</div>
+
+	<div id="modal-alert" class="modal-container shiftdialog nodisplay">
+		<div class="modal-box modal-alert-box">
+			<div class="modal-box-block" id="modal-alert-message">
+			</div>
+			<div class="modal-box-block" id="input-area-modal-alert">
+				<input type="text" id="input-modal-alert" class="js-request-focus">
+			</div>
+			<div class="modal-box-block modal-box-footer">
+				<button id="button-alert-ok" class="button-modal-bottom js-request-focus notranslate"
+					translate="no">OK</button>
+				<button id="button-alert-cancel" class="button-modal-bottom">Cancel</button>
+			</div>
+		</div>
+	</div>
+
+	<div id="toast-alert" class="toast-container nodisplay">
+		<div id="toast-box"></div>
+	</div>
+
+
+	<script src="js/settings.js"></script>
+
+	<script src="lib/Tone.js"></script>
+	<script src="lib/bufferToWave.js"></script>
+
+	<script src="js/defaults.js"></script>
+	<script src="js/alerts.js"></script>
+	<script src="js/loader.js"></script>
+
+	<script src="js/pattern.js"></script>
+
+	<script src="js/synth-param-apply.js"></script>
+	<script src="js/synth-proto.js"></script>
+	<script src="js/synth.js"></script>
+
+	<script src="js/scheduler.js"></script>
+
+	<script src="js/wam-init.js"></script>
+	<script src="js/wam-synth.js"></script>
+
+	<script>
+		function WamUi(songObj) {
+			console.log("[WAM] Fake UI host init");
+			this.showLoadingIndicator = () => { };
+			this.appendIPluginGui = () => { };
+			this.appendFxGui = () => { };
+
+		}
+	</script>
+
+	<script src="js/song-object.js"></script>
+
+	<script>
+		{
+			const songObj = new SongObject(() => { });
+			const scheduler = new Scheduler(songObj);
+
+			let storedSong = localStorage.getItem(DEFAULT_PARAMS.backupStorage);
+
+			if (importSong(storedSong)) {
+				document.getElementById("input-render-length").value = songObj.getSongDuration();
+				console.log("## loaded from local storage ##");
+				storedSong = null;
+			} else {
+				console.log("## error in local storage data ##");
+				showAlert("Can not restore previous session");
+			}
+
+			document.getElementById("button-render").onclick = () => {
+				let exportResult = document.getElementById("export-menu-result-container");
+				exportResult.style.display = "none";
+
+				let renderLengthInput = document.getElementById("input-render-length");
+				let renderLength = Number(renderLengthInput.value);
+
+				if (renderLength <= 0) {
+					showAlert("Duration should be greater than 0.")
+					renderLengthInput.value = songObj.getSongDuration();
+					return;
+				}
+
+				if (renderLength > songObj.getSongDuration() + 30) {
+					showAlert("Duration should not exceed track length by more than 30 sec.")
+					renderLengthInput.value = songObj.getSongDuration();
+					return;
+				}
+
+				exportResult.style.display = "block";
+				updateUiOnExport(true);
+
+				let downloadLink = document.getElementById("link-wav-download");
+				if (downloadLink.protocol == "blob:")
+					URL.revokeObjectURL(downloadLink.href);
+
+				let timer = new Date();
+				scheduler.renderSong(renderLength).then(buffer => {
+					// check offline render time
+					let renderTime = Date.now() - timer;
+
+					//let player = new Tone.Player(buffer).toDestination();
+					//player.start();
+					console.log("Render buffer length:", buffer.length);
+
+					let expData = bufferToWave(buffer, buffer.length);
+
+					// check convert time
+					let convertTime = Date.now() - timer - renderTime;
+					console.log("render time: " + (renderTime / 1000).toFixed(2)
+						+ "  convert time: " + (convertTime / 1000).toFixed(2)
+						+ "  total: " + ((Date.now() - timer) / 1000).toFixed(2));
+
+					let newFile = URL.createObjectURL(expData);
+					downloadLink.href = newFile;
+					let name = songObj.title || "export";
+					downloadLink.download = name + ".wav";
+					updateUiOnExport(false);
+				})
+			};
+
+			function importSong(songStr) {
+				let expObj;
+				try {
+					expObj = JSON.parse(songStr);
+				} catch {
+					showAlert("JSON parsing error");
+					return false;
+				}
+
+				return loader.importSong(songObj, expObj, true);
+			}
+
+			function updateUiOnExport(isExporting) {
+				let startButton = document.getElementById("button-render");
+				let renderLength = document.getElementById("input-render-length");
+				let ongoing = document.getElementById("export-ongoing-container");
+				let progress = document.getElementById("export-progress-anim");
+				let link = document.getElementById("wav-link-container");
+
+				startButton.disabled = isExporting;
+				renderLength.disabled = isExporting;
+
+				if (isExporting) {
+					ongoing.style.display = "block";
+					link.style.display = "none";
+					progress.classList.add("moving");
+				} else {
+					ongoing.style.display = "none";
+					link.style.display = "block";
+					progress.classList.remove("moving");
+				}
+			}
+		}
+	</script>
+</body>
+
+</html>

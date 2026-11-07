@@ -217,7 +217,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 				return;
 
 			let synth = songObj.synths[selectedSynthIndex];
-			let synthParams = this.loadSynth(SYNTH_PRESETS[index], synth);
+			let synthParams = loader.loadSynth(SYNTH_PRESETS[index], synth);
 			songObj.synthParams[selectedSynthIndex] = synthParams;
 
 			// Clear name to prevent number cycling
@@ -271,7 +271,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			let params = songObj.synthParams[selectedSynthIndex];
 			let newParams = JSON.parse(JSON.stringify(params));
 			createSynthObj(nextInd, newParams);
-			that.loadSynth(newParams, songObj.synths[nextInd]);
+			loader.loadSynth(newParams, songObj.synths[nextInd]);
 			songObj.synthParams[nextInd] = newParams;
 			songObj.synthNames[nextInd] = result;
 
@@ -306,7 +306,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			songObj.restoreSends();
 
 			let synth = songObj.synths[selectedSynthIndex];
-			songObj.synthParams[selectedSynthIndex] = that.loadSynth(params, synth);
+			songObj.synthParams[selectedSynthIndex] = loader.loadSynth(params, synth);
 
 			let newName = songObj.generateSynthName(file.name.split(".")[0].split(" ")[0], 0);
 			songObj.synthNames[selectedSynthIndex] = newName;
@@ -419,57 +419,6 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			entry.classList.add("select-list-entry");
 			return entry;
 		}
-	}
-
-	this.loadSynth = function (synthParams, targetSynth) {
-		let newParams = {};
-		let paramCount = 0;
-
-		let defaultState = DEFAULT_PARAMS.synthState;
-		if (synthParams.pluginState) {
-			newParams.pluginState = synthParams.pluginState;
-			defaultState = DEFAULT_PARAMS.synthPluginState;
-		}
-
-		for (let key in defaultState) {
-			if (key in synthParams) {
-				newParams[key] = synthParams[key];
-				paramCount++;
-			} else {
-				newParams[key] = defaultState[key];
-			}
-		}
-
-		// Convert modulation envelope settings (previous versions)
-		if (synthParams["synth-mod-envelope-state"] == "enabled") {
-			newParams["synth-mod-envelope-type"] = "exponential";
-		}
-
-		if (synthParams["synth-mod-envelope-state"] == "lock") {
-			newParams["synth-mod-envelope-type"] = "exponential";
-			newParams["synth-mod-envelope-attack"] = newParams["synth-envelope-attack"];
-			newParams["synth-mod-envelope-decay"] = newParams["synth-envelope-decay"];
-			newParams["synth-mod-envelope-release"] = newParams["synth-envelope-release"];
-			newParams["synth-mod-envelope-sustain"] = newParams["synth-envelope-sustain"];
-		}
-
-		// Convert modulation intensity
-		for (let param in newParams) {
-			if (newParams[param] == "envelopeModRev") {
-				newParams[param] = "envelopeMod";
-				let valueKey = param.replace("-input", "-value");
-				newParams[valueKey] = -newParams[valueKey];
-			}
-		}
-
-		for (let key in newParams) {
-			synthParamApply(key, newParams[key], targetSynth);
-		}
-
-		if (paramCount == 0)
-			showToast("Invalid synth config");
-
-		return newParams;
 	}
 
 	function openSynthMenu() {

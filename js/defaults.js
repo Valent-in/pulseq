@@ -6,9 +6,10 @@ DEFAULT_PARAMS.programVersion = "1.5.4+test";
 DEFAULT_PARAMS.fileFormatVersion = "21";
 
 DEFAULT_PARAMS.maxPatternSteps = 64;
-
 DEFAULT_PARAMS.minSongBars = 32;
 DEFAULT_PARAMS.emptyBarsBuffer = 8;
+
+DEFAULT_PARAMS.backupStorage = "pulseq-backup";
 
 DEFAULT_PARAMS.pressDelay = 380;
 

@@ -1106,61 +1106,6 @@ button.button--highlight-yellow {
 	color: #e88;
 }
 
-#render-title {
-	display: inline-block;
-	padding-bottom: 8px;
-}
-
-#render-title + div {
-	display: inline-block;
-}
-
-#input-render-length {
-	width: 70px;
-}
-
-#export-ongoing-container {
-	display: none;
-}
-
-.progress-animation {
-	position: relative;
-	background-color: black;
-	border: 2px solid black;
-	height: 1rem;
-}
-
-.progress-animation:before {
-	content: "";
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	width: 25%;
-	background-color: #777;
-}
-
-@keyframes bounce {
-	0% {
-		transform: translateX(0);
-	}
-
-	50% {
-		transform: translateX(300%);
-	}
-
-	100% {
-		transform: translateX(0);
-	}
-}
-
-.progress-animation.moving:before {
-	animation: bounce 5s infinite linear;
-}
-
-#wav-link-container {
-	display: none;
-}
-
 #startup-menu-box {
 	min-width: 35vw;
 }

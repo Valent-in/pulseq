@@ -44,14 +44,16 @@
 	<link rel="stylesheet" href="css/table-arrange.css">
 	<link rel="stylesheet" href="css/table-pattern.css">
 
-	<script defer src="js/misc.js"></script>
+	<script defer src="js/settings.js"></script>
 
 	<script defer src="lib/Tone.js"></script>
-	<script defer src="lib/bufferToWave.js"></script>
 	<script defer src="lib/midi-writer.js"></script>
 
-	<script defer src="js/defaults.js"></script>
+	<script defer src="js/ui-helper.js"></script>
 	<script defer src="js/alerts.js"></script>
+
+	<script defer src="js/defaults.js"></script>
+	<script defer src="js/loader.js"></script>
 
 	<script defer src="js/synth-param-apply.js"></script>
 	<script defer src="js/synth-proto.js"></script>
@@ -723,7 +725,7 @@
 				</table>
 
 				<div class="modal-box-block modal-box-footer">
-					<button id="button-export-menu-open" disabled>Export WAV</button>
+					<button id="button-export-menu-open">Export WAV</button>
 					<button id="button-midi-menu-open">MIDI</button>
 					<button id="button-arrange-menu-close" class="button-modal-bottom">Close</button>
 				</div>
@@ -732,24 +734,7 @@
 
 		<div id="export-modal-menu" class="modal-container shiftdialog nodisplay js-noskip">
 			<div class="modal-box">
-				<div class="modal-box-block">
-					<div id="render-title">Export audio</div>
-					<div>
-						<input type="number" id="input-render-length">
-						<span class="dim-text">sec.</span>
-						<button id="button-render" class="js-request-focus">Start</button>
-					</div>
-				</div>
-				<div class="modal-box-block nodisplay" id="export-menu-result-container">
-					<div id="export-ongoing-container">
-						<span>Rendering...</span>
-						<span class="dim-text">May take some time.</span>
-						<div id="export-progress-anim" class="progress-animation"></div>
-					</div>
-					<div id="wav-link-container">
-						<a id="link-wav-download">Download WAV</a>
-					</div>
-				</div>
+				<div class="modal-box-block" id="export-iframe-container"></div>
 				<div class="modal-box-block modal-box-footer" id="export-menu-close-container">
 					<button id="button-export-menu-close" class="button-modal-bottom">Close</button>
 				</div>

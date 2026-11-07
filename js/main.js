@@ -91,7 +91,7 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQuaver v" + DEFAULT_PARAMS.progr
 	const scheduler = new Scheduler(songObject, arrangeUi.setMarker, patternUi.setMarker);
 
 	let schedListen = schedulerUi(scheduler, arrangeUi.setLoopMarkers);
-	menuInit(songObject, onSongChange, synthHelper.loadSynth, scheduler.renderSong, scheduler.exportMidiSequence);
+	menuInit(songObject, onSongChange, scheduler.renderSong, scheduler.exportMidiSequence);
 	waveformEditor(songObject);
 
 	let samplerateBox = document.getElementById("samplerate-box");

@@ -1,9 +1,8 @@
 "use strict";
 
-function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallback, midiCallback) {
+function menuInit(songObj, onSongChangeCallback, renderCallback, midiCallback) {
 
-	const backupStorage = "pulseq-backup";
-	let storedSong = localStorage.getItem(backupStorage);
+	let storedSong = localStorage.getItem(DEFAULT_PARAMS.backupStorage);
 
 	let enterPressed = false;
 
@@ -272,17 +271,6 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		lnk.download = name + ".json";
 	};
 
-	const showEmptyTrackMsg = () => { showAlert("Can not export empty track") };
-
-	document.getElementById("button-export-menu-open").onclick = () => {
-		if (songObj.playableLength > 0) {
-			showModal("export-modal-menu");
-			document.getElementById("input-render-length").value = songObj.getSongDuration();
-		} else {
-			showEmptyTrackMsg();
-		}
-	};
-
 	document.getElementById("button-midi-menu-open").onclick = () => {
 		if (songObj.playableLength > 0)
 			showModal("midi-modal-menu");
@@ -297,66 +285,36 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	/*
 	 * Export modal menu
 	 */
-	document.getElementById("button-render").onclick = () => {
-		let exportResult = document.getElementById("export-menu-result-container");
-		exportResult.style.display = "none";
+	let exportIframe = null;
 
-		let renderLengthInput = document.getElementById("input-render-length");
-		let renderLength = Number(renderLengthInput.value);
+	document.getElementById("button-export-menu-open").onclick = () => {
+		backupToLocalStorage();
 
-		if (renderLength <= 0) {
-			showAlert("Duration should be greater than 0.")
-			renderLengthInput.value = songObj.getSongDuration();
-			return;
+		console.log("#### AUDIO EXPORT IFRAME ####");
+		if (songObj.playableLength > 0) {
+			let container = document.getElementById("export-iframe-container");
+			exportIframe = document.createElement("IFRAME");
+			exportIframe.src = "export.html";
+			exportIframe.style.border = "none";
+			exportIframe.style.width = "340px";
+			exportIframe.style.height = "80px";
+			container.appendChild(exportIframe);
+			showModal("export-modal-menu");
+		} else {
+			showEmptyTrackMsg();
 		}
-
-		if (renderLength > songObj.getSongDuration() + 30) {
-			showAlert("Duration should not exceed track length by more than 30 sec.")
-			renderLengthInput.value = songObj.getSongDuration();
-			return;
-		}
-
-		exportResult.style.display = "block";
-		updateUiOnExport(true);
-
-		let downloadLink = document.getElementById("link-wav-download");
-		if (downloadLink.protocol == "blob:")
-			URL.revokeObjectURL(downloadLink.href);
-
-		let timer = new Date();
-		renderCallback(renderLength).then(buffer => {
-			// check offline render time
-			let renderTime = Date.now() - timer;
-
-			//let player = new Tone.Player(buffer).toDestination();
-			//player.start();
-			console.log("Render buffer length:", buffer.length);
-
-			let expData = bufferToWave(buffer, buffer.length);
-
-			// check convert time
-			let convertTime = Date.now() - timer - renderTime;
-			console.log("render time: " + (renderTime / 1000).toFixed(2)
-				+ "  convert time: " + (convertTime / 1000).toFixed(2)
-				+ "  total: " + ((Date.now() - timer) / 1000).toFixed(2));
-
-			let newFile = URL.createObjectURL(expData);
-			downloadLink.href = newFile;
-			let name = songObj.title || "export";
-			downloadLink.download = name + ".wav";
-			updateUiOnExport(false);
-		})
 	};
 
 	document.getElementById("button-export-menu-close").onclick = () => {
 		hideModal("export-modal-menu");
 
-		let downloadLink = document.getElementById("link-wav-download");
-		URL.revokeObjectURL(downloadLink.href);
-		downloadLink.href = "";
+		if (!exportIframe)
+			return;
 
-		document.getElementById("export-menu-result-container").style.display = "none";
-		document.getElementById("wav-link-container").style.display = "none";
+		exportIframe.src = "about:blank";
+		exportIframe.remove();
+		exportIframe = null;
+		console.log("#### IFRAME CLOSED ####");
 	};
 
 	/*
@@ -983,7 +941,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 				return;
 
 			console.log("bye!");
-			localStorage.removeItem(backupStorage);
+			localStorage.removeItem(DEFAULT_PARAMS.backupStorage);
 			window.onbeforeunload = null;
 			document.location.reload(true);
 		});
@@ -1098,6 +1056,10 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		songTitle.textContent = songObj.title || "[untitled]";
 	}
 
+	function showEmptyTrackMsg() {
+		showAlert("Can not export empty track")
+	}
+
 	function fillAdditionalValues() {
 		let cell = document.getElementById("compressor-values-cell");
 		cell.textContent = "T:" + songObj.compressorThreshold + "dB / R:" + songObj.compressorRatio;
@@ -1122,151 +1084,25 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			return false;
 		}
 
-		if (!expObj.songFormatVersion) {
-			showAlert("Can not load data");
-			return false;
+		let ret = loader.importSong(songObj, expObj);
+
+		if (ret) {
+			onSongChangeCallback(true);
+			showSongTitle();
+
+			if (expObj.appState) {
+				selectRoot.selectedIndex = expObj.appState.rootIndex || 0;
+				selectScale.selectedIndex = expObj.appState.scaleIndex || 0;
+				setScaleHighlight();
+			}
 		}
 
-		if (Number(expObj.songFormatVersion) > Number(DEFAULT_PARAMS.fileFormatVersion))
-			showAlert("WARNING:\nFile was created in more recent PulseQuaver version.");
-
-		songObj.title = expObj.title || "";
-		songObj.synthParams = [];
-		songObj.synthNames = expObj.synthNames;
-
-		songObj.synths.forEach(e => e.destroy());
-		songObj.synths = [];
-
-		songObj.bpm = expObj.bpm || 120;
-		Tone.Transport.bpm.value = songObj.bpm;
-		songObj.swing = expObj.swing || 0;
-
-		songObj.barSteps = expObj.barSteps || 16;
-
-		songObj.compressorThreshold = expObj.compressorThreshold || 0;
-		songObj.compressorRatio = expObj.compressorRatio || 1;
-		songObj.compressor.threshold.value = songObj.compressorThreshold;
-		songObj.compressor.ratio.value = songObj.compressorRatio;
-
-		for (let i = 0; i < expObj.synthParams.length; i++) {
-			let synth;
-			if (expObj.synthParams[i].pluginState)
-				synth = new WamSynth(songObj.compressor, songObj.bpm);
-			else
-				synth = new Synth(songObj.compressor, songObj.bpm);
-
-			songObj.synths.push(synth);
-			let newParams = loadSynthCallback(expObj.synthParams[i], songObj.synths[i]);
-			songObj.synthParams.push(newParams);
-		}
-
-		songObj.pluginStates = expObj.pluginStates || [];
-		songObj.sends = expObj.sends || new Array(songObj.synths.length).fill(null);
-		songObj.restorePlugins();
-
-		songObj.patterns = [];
-		for (let i = 0; i < expObj.patterns.length; i++) {
-			let ptrn = new Pattern(expObj.patternNames[i]);
-			ptrn.patternData = expObj.patterns[i];
-
-			// Create automation if file does not contain it
-			ptrn.patternData.forEach(e => {
-				if (!e.filtQ) {
-					e.filtQ = [];
-					e.filtF = [];
-				}
-
-				if (!e.fxWet) {
-					e.fxWet = [];
-				}
-			});
-
-			if (expObj.patternLengths)
-				ptrn.length = expObj.patternLengths[i];
-
-			if (expObj.patternColors)
-				ptrn.colorIndex = expObj.patternColors[i];
-
-			songObj.patterns.push(ptrn);
-		}
-
-		songObj.song = expObj.song;
-
-		if (expObj.appState) {
-			console.log("Restoring app state");
-			let appState = expObj.appState;
-			songObj.setCurrentPattern(appState.activePattern || 0);
-			songObj.arrangeStartPoint = appState.startPoint || 0;
-			songObj.currentSynthIndex = appState.activeSynth || 0;
-
-			for (let i = 0; i < songObj.synths.length; i++)
-				songObj.synths[i].mute(appState.muteStatus[i]);
-
-			selectRoot.selectedIndex = appState.rootIndex || 0;
-			selectScale.selectedIndex = appState.scaleIndex || 0;
-			setScaleHighlight();
-		} else {
-			songObj.setCurrentPattern(0);
-			songObj.arrangeStartPoint = 0;
-			songObj.currentSynthIndex = 0;
-		}
-		onSongChangeCallback(true);
-		showSongTitle();
-
-		songObj.calculateSynthFill();
-
-		return true;
+		return ret;
 	}
 
 	function exportSong(isCleanup) {
-		let expObj = {};
-
-		expObj.songFormatVersion = DEFAULT_PARAMS.fileFormatVersion;
-
-		if (isCleanup) {
-			expObj.synthParams = [];
-			for (let i = 0; i < songObj.synthParams.length; i++)
-				expObj.synthParams.push(songObj.getCleanSynthParams(i))
-		} else {
-			expObj.synthParams = songObj.synthParams;
-
-			let appState = {};
-			appState.activePattern = songObj.currentPatternIndex;
-			appState.activeSynth = songObj.currentSynthIndex;
-			appState.startPoint = songObj.arrangeStartPoint;
-			appState.rootIndex = selectRoot.selectedIndex;
-			appState.scaleIndex = selectScale.selectedIndex;
-
-			appState.muteStatus = [];
-			songObj.synths.forEach(e => { appState.muteStatus.push(e.isMuted) });
-
-			expObj.appState = appState;
-		}
-
-		expObj.synthNames = songObj.synthNames;
-		expObj.song = songObj.song;
-		expObj.patterns = [];
-		expObj.patternLengths = [];
-		expObj.patternNames = [];
-		expObj.patternColors = [];
-		expObj.compressorThreshold = songObj.compressorThreshold;
-		expObj.compressorRatio = songObj.compressorRatio;
-		expObj.bpm = songObj.bpm;
-		expObj.barSteps = songObj.barSteps;
-		expObj.title = songObj.title;
-		expObj.swing = songObj.swing;
-
-		expObj.pluginStates = songObj.pluginStates;
-		expObj.sends = songObj.sends;
-
-		for (let i = 0; i < songObj.patterns.length; i++) {
-			expObj.patterns.push(songObj.patterns[i].patternData);
-			expObj.patternLengths.push(songObj.patterns[i].length);
-			expObj.patternNames.push(songObj.patterns[i].name);
-			expObj.patternColors.push(songObj.patterns[i].colorIndex);
-		}
-
-		return JSON.stringify(expObj, null, isCleanup ? 1 : 0);
+		let selectors = { selectRoot: selectRoot.selectedIndex, selectScale: selectScale.selectedIndex };
+		return loader.exportSong(songObj, isCleanup, selectors);
 	}
 
 	function backupToLocalStorage() {
@@ -1277,10 +1113,10 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 
 		if (songObj.isSongEmpty()) {
 			console.log("## clearing local storage backup ##");
-			localStorage.removeItem(backupStorage);
+			localStorage.removeItem(DEFAULT_PARAMS.backupStorage);
 		} else {
 			console.log("## saving song data to local storage ##");
-			localStorage.setItem(backupStorage, exportSong(false));
+			localStorage.setItem(DEFAULT_PARAMS.backupStorage, exportSong(false));
 		}
 	}
 
