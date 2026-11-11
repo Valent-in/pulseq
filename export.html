@@ -86,6 +86,7 @@
 
 		#wav-link-container {
 			display: none;
+			padding: 10px;
 		}
 	</style>
 </head>
@@ -94,7 +95,6 @@
 	<button id="button-fullscreen" class="nodisplay"></button>
 	<input type="text" id="input-fullscreen" class="nodisplay">
 	<input type="text" id="input-fullscreen-padding" class="nodisplay">
-
 
 	<div>
 		<div>
@@ -136,7 +136,6 @@
 		<div id="toast-box"></div>
 	</div>
 
-
 	<script src="js/settings.js"></script>
 
 	<script src="lib/Tone.js"></script>
@@ -163,7 +162,6 @@
 			this.showLoadingIndicator = () => { };
 			this.appendIPluginGui = () => { };
 			this.appendFxGui = () => { };
-
 		}
 	</script>
 
@@ -255,8 +253,8 @@
 				let progress = document.getElementById("export-progress-anim");
 				let link = document.getElementById("wav-link-container");
 
-				startButton.disabled = isExporting;
-				renderLength.disabled = isExporting;
+				startButton.disabled = true;
+				renderLength.disabled = true;
 
 				if (isExporting) {
 					ongoing.style.display = "block";

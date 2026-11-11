@@ -295,9 +295,6 @@ function menuInit(songObj, onSongChangeCallback, renderCallback, midiCallback) {
 			let container = document.getElementById("export-iframe-container");
 			exportIframe = document.createElement("IFRAME");
 			exportIframe.src = "export.html";
-			exportIframe.style.border = "none";
-			exportIframe.style.width = "340px";
-			exportIframe.style.height = "80px";
 			container.appendChild(exportIframe);
 			showModal("export-modal-menu");
 		} else {

@@ -25,6 +25,16 @@ label {
 	position: relative;
 }
 
+iframe {
+	border: none;
+	width: 340px;
+	height: 80px;
+}
+
+.iframe-loading {
+	height: 0;
+}
+
 .app-title-pulseq {
 	font-weight: bold;
 	color: #ddd;

@@ -38,7 +38,7 @@
 {
 	// Set UI zoom on startup
 	let zoom = getAppSettings("zoom");
-	if (zoom)
+	if (zoom && (window.top == window.self))
 		document.body.style.zoom = zoom + "%";
 }
 
@@ -47,7 +47,7 @@
 	let latency = getAppSettings("latency");
 
 	if (sampleRate || latency) {
-		console.log("WARNING! Monkey-patching AudioContext constructor!");
+		console.warn("Monkey-patching AudioContext constructor!");
 
 		const OriginalContext = window.AudioContext || window.webkitAudioContext;
 
