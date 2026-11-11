@@ -8,7 +8,7 @@ loader.loadSynth = function (synthParams, targetSynth) {
 
     let defaultState = DEFAULT_PARAMS.synthState;
     if (synthParams.pluginState) {
-        newParams.pluginState = synthParams.pluginState;
+        newParams.pluginState = JSON.parse(JSON.stringify(synthParams.pluginState));
         defaultState = DEFAULT_PARAMS.synthPluginState;
     }
 
@@ -83,7 +83,7 @@ loader.importSong = function (songObj, expObj, isOffline) {
     if (isOffline) {
         songObj.synthParams = expObj.synthParams;
         for (let i = 0; i < expObj.synthParams.length; i++)
-            songObj.synths.push({mute: function(isMuted) {this.isMuted = isMuted}});
+            songObj.synths.push({ mute: function (isMuted) { this.isMuted = isMuted } });
     } else {
         for (let i = 0; i < expObj.synthParams.length; i++) {
             let synth;

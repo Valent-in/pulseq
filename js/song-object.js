@@ -199,7 +199,7 @@ function SongObject(onSynthChangeCallback) {
 	}
 
 	this.createEmptySong = function () {
-		this.createSynth("synth1");
+		this.appendSynth("synth1");
 		this.createEmptyTrack();
 	}
 
@@ -236,24 +236,32 @@ function SongObject(onSynthChangeCallback) {
 		return generateName(prefix || genPrefix || "A", patternNames, 2);
 	}
 
-	this.makeSynth = function (index, name, copyFromParams) {
-		let newSynth = new Synth(this.compressor, this.bpm);
-		let newSynthParamObj = {};
-		let params = copyFromParams || DEFAULT_PARAMS.synthState;
+	this.makeSynth = function (index, name, fromParams) {
+		if (this.synths[index])
+			this.synths[index].destroy();
 
-		for (let key in params) {
-			newSynthParamObj[key] = params[key];
-			synthParamApply(key, newSynthParamObj[key], newSynth);
+		let params = fromParams || DEFAULT_PARAMS.synthState;
+
+		let newSynth;
+		if (params.pluginState) {
+			newSynth = new WamSynth(this.compressor, this.bpm);
+			this.restoreSynthPlugin(newSynth, params.pluginState, true);
+		} else {
+			newSynth = new Synth(this.compressor, this.bpm);
 		}
+
+		let newSynthParamObj = loader.loadSynth(params, newSynth);
 
 		this.synthParams[index] = newSynthParamObj;
 		this.synths[index] = newSynth;
 		this.synthNames[index] = name || "";
+
+		return newSynth;
 	}
 
-	this.createSynth = function (name, copyFromParams) {
+	this.appendSynth = function (name, copyFromParams) {
 		this.sends[this.synths.length] = null;
-		this.makeSynth(this.synths.length, name, copyFromParams);
+		return this.makeSynth(this.synths.length, name, copyFromParams);
 	}
 
 	this.resetCurrentSynth = function () {

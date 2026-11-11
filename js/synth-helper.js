@@ -250,15 +250,6 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		songObj.setSend(selectedSynthIndex, index);
 	}
 
-	function createSynthObj(index, params) {
-		if (params.pluginState) {
-			songObj.synths[index] = new WamSynth(songObj.compressor, songObj.bpm);
-			songObj.restoreSynthPlugin(songObj.synths[index], params.pluginState, true);
-		} else {
-			songObj.synths[index] = new Synth(songObj.compressor, songObj.bpm);
-		}
-	}
-
 	document.getElementById("button-copy-synth").onclick = () => {
 		let name = songObj.synthNames[selectedSynthIndex];
 		let defaultName = songObj.generateSynthName(name.split("-")[0] + "-", 2);
@@ -267,13 +258,8 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			if (result === null)
 				return;
 
-			let nextInd = songObj.synths.length;
 			let params = songObj.synthParams[selectedSynthIndex];
-			let newParams = JSON.parse(JSON.stringify(params));
-			createSynthObj(nextInd, newParams);
-			loader.loadSynth(newParams, songObj.synths[nextInd]);
-			songObj.synthParams[nextInd] = newParams;
-			songObj.synthNames[nextInd] = result;
+			songObj.appendSynth(result, params);
 
 			console.log("Synth '" + name + "' copied to '" + result + "'");
 			that.rebuildSynthList();
@@ -301,15 +287,11 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 				return;
 			}
 
-			songObj.synths[selectedSynthIndex].destroy();
-			createSynthObj(selectedSynthIndex, params);
+			let newName = songObj.generateSynthName(file.name.split(".")[0].split(" ")[0], 0);
+
+			let synth = songObj.makeSynth(selectedSynthIndex, newName, params);
 			songObj.restoreSends();
 
-			let synth = songObj.synths[selectedSynthIndex];
-			songObj.synthParams[selectedSynthIndex] = loader.loadSynth(params, synth);
-
-			let newName = songObj.generateSynthName(file.name.split(".")[0].split(" ")[0], 0);
-			songObj.synthNames[selectedSynthIndex] = newName;
 			rebuildPatternSynthListCallback(false);
 			that.rebuildSynthList();
 
@@ -356,7 +338,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 	};
 
 	this.createNewSynth = function (name, copyFromParams) {
-		songObj.createSynth(name, copyFromParams);
+		songObj.appendSynth(name, copyFromParams);
 
 		if (!copyFromParams)
 			selectSynth(songObj.synths.length - 1);
