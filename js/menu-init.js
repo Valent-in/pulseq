@@ -1108,36 +1108,7 @@ function menuInit(songObj, onSongChangeCallback, renderCallback, midiCallback) {
 			return;
 		}
 
-		if (songObj.isSongEmpty()) {
-			console.log("## clearing local storage backup ##");
-			localStorage.removeItem(DEFAULT_PARAMS.backupStorage);
-		} else {
-			console.log("## saving song data to local storage ##");
-			localStorage.setItem(DEFAULT_PARAMS.backupStorage, exportSong(false));
-		}
-	}
-
-	function updateUiOnExport(isExporting) {
-		let closeButton = document.getElementById("export-menu-close-container");
-		let startButton = document.getElementById("button-render");
-		let renderLength = document.getElementById("input-render-length");
-		let ongoing = document.getElementById("export-ongoing-container");
-		let progress = document.getElementById("export-progress-anim");
-		let link = document.getElementById("wav-link-container");
-
-		startButton.disabled = isExporting;
-		renderLength.disabled = isExporting;
-
-		if (isExporting) {
-			ongoing.style.display = "block";
-			link.style.display = "none";
-			progress.classList.add("moving");
-			closeButton.style.display = "none";
-		} else {
-			ongoing.style.display = "none";
-			link.style.display = "block";
-			progress.classList.remove("moving");
-			closeButton.style.display = "block";
-		}
+		console.log("## saving song data to local storage ##");
+		localStorage.setItem(DEFAULT_PARAMS.backupStorage, exportSong(false));
 	}
 }
