@@ -735,7 +735,7 @@ input[type=range].range--volume {
 	background-color: #222;
 	border-radius: 3px;
 	margin: 8px auto 8px auto;
-	padding: 8px 12px;
+	padding: 8px 14px;
 	width: 80%;
 	max-width: 80vh;
 	min-height: 2rem;
@@ -748,16 +748,15 @@ input[type=range].range--volume {
 	font-size: 1rem;
 }
 
-.select-list-entry--current {
-	border-left: 9px solid #444;
+.select-list-entry--current:before {
+	content: "*";
+	font-weight: bold;
+	position: absolute;
+	left: 3px;
 }
 
 .select-list-entry:hover {
 	border: 1px solid #606060;
-}
-
-.select-list-entry--current:hover:before {
-	border-left: 6px solid #606060;
 }
 
 .select-list-entry:active {
@@ -1108,10 +1107,6 @@ button.button--highlight-yellow {
 	min-width: 4rem;
 }
 
-#menu-synth-list-container .select-list-entry {
-	padding: 8px;
-}
-
 .select-list-entry--none {
 	color: #e88;
 }
@@ -1441,10 +1436,10 @@ button.js-button-effect-select {
 
 button.button-select {
 	padding-right: 1.2rem;
-	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' height='70' width='120'><path d='M 10,10 60,60 110,10' style='fill:none;stroke:rgb(150,150,150);stroke-width:20;stroke-linecap:round; stroke-linejoin:round'/></svg>");
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' height='120' width='70'><path d='M 10,10 60,60 10,110' style='fill:none;stroke:rgb(150,150,150);stroke-width:20;stroke-linecap:round; stroke-linejoin:round'/></svg>");
 	background-position: center right 0.5em;
 	background-repeat: no-repeat;
-	background-size: auto 25%;
+	background-size: auto 40%;
 	text-align: left;
 }
 
