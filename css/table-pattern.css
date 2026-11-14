@@ -2,6 +2,7 @@
 	border-spacing: 0;
 	-webkit-user-select: none;
 	user-select: none;
+	padding-right: 1px;
 }
 
 #pattern-main td {
@@ -61,8 +62,8 @@
 
 #pattern-main table td:first-child {
 	background-color: #ccc;
-	width: 39px;
-	min-width: 39px;
+	width: 38px;
+	min-width: 38px;
 	position: -webkit-sticky;
 	position: sticky;
 	left: 0;
